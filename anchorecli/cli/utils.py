@@ -48,8 +48,12 @@ def format_error_output(config, op, params, payload):
         ret = json.dumps(errdata, indent=4, sort_keys=True)
         return(ret)
 
+    # error message overrides
+    if op == 'image_add':
+        if 'httpcode' in errdata and errdata['httpcode'] == 404:
+            errdata['message'] = "image cannot found/fetched from registry"
+
     obuf = ""
-    
     try:
         outdict = OrderedDict()    
         if 'message' in errdata:
