@@ -109,9 +109,9 @@ def format_output(config, op, params, payload):
                     filtered_records.append(latest_records[fulltag])
 
             if params['full']:
-                header = ['Full Tag', 'Image Digest', 'Image ID', 'Analysis Status']
+                header = ['Full Tag', 'Image ID', 'Analysis Status', 'Image Digest']
             else:
-                header = ['Full Tag', 'Image Digest']
+                header = ['Full Tag', 'Image ID', 'Analysis Status']
 
             t = PrettyTable(header)
             t.set_style(PLAIN_COLUMNS)
@@ -132,9 +132,9 @@ def format_output(config, op, params, payload):
                     #registry = image_detail.pop('registry', "None")
 
                     if params['full']:
-                        row = [fulltag, image_record['imageDigest'], imageId, image_record['analysis_status']]
+                        row = [fulltag, imageId, image_record['analysis_status'], image_record['imageDigest']]
                     else:
-                        row = [fulltag, image_record['imageDigest']]
+                        row = [fulltag, imageId, image_record['analysis_status']]
                     if row not in add_rows:
                         add_rows.append(row)
             for row in add_rows:
