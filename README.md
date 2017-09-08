@@ -44,3 +44,24 @@ Rather than passing these parameters for every call to the cli they can be store
     ANCHORE_CLI_USER=admin
     ANCHORE_CLI_PASS=foobar
 
+## Command line examples
+
+Add an image to the Anchore Engine
+
+    anchore-cli image add docker.io/library/debian:latest 
+    
+List images analyzed by the Anchore Engine
+
+    anchore-cli image list 
+    
+List operating system packges present in an image
+
+    anchore-cli image content docker.io/library/nginx:latest os 
+    
+Subscribe to receive webhook notifications when new CVEs are added to an update
+
+    anchore-cli subscription activate vuln_update docker.io/library/ubuntu:latest
+
+## More Information
+
+For further details on use of the Anchore CLI with the Anchore Engine please refer to the [Anchore Engine Wiki](https://github.com/anchore/anchore-engine/wiki/)
