@@ -242,9 +242,9 @@ def format_output(config, op, params, payload):
             for image_record in payload:
                 outdict = OrderedDict()
 
-                outdict['Image Digest'] = image_record['imageDigest']
-                outdict['Analysis Status'] = image_record['analysis_status']
-                outdict['Image Type'] = image_record['image_type']
+                outdict['Image Digest'] = str(image_record['imageDigest'])
+                outdict['Analysis Status'] = str(image_record['analysis_status'])
+                outdict['Image Type'] = str(image_record['image_type'])
 
                 image_detail = copy.deepcopy(image_record['image_detail'][0])
                 dockerfile = image_detail.pop('dockerfile', None)
@@ -254,8 +254,8 @@ def format_output(config, op, params, payload):
                     dockerpresent = "Present"
 
                 imageId = image_detail.pop('imageId', "None") 
-                outdict['Dockerfile'] = dockerpresent
-                outdict['Image ID'] = imageId
+                outdict['Dockerfile'] = str(dockerpresent)
+                outdict['Image ID'] = str(imageId)
 
                 for k in outdict.keys():
                     obuf = obuf + k + ": " + outdict[k] + "\n"
@@ -265,7 +265,7 @@ def format_output(config, op, params, payload):
                     image_detail = copy.deepcopy(image_detail_record)
                     outdict = OrderedDict()
                     #outdict['Digest'] = image_detail.pop('fulldigest', "None") 
-                    outdict['Full Tag'] = image_detail.pop('fulltag', "None")
+                    outdict['Full Tag'] = str(image_detail.pop('fulltag', "None"))
                     #outdict['Registry'] = image_detail.pop('registry', "None")
 
                     for k in outdict.keys():
@@ -278,11 +278,11 @@ def format_output(config, op, params, payload):
             for registry_record in payload:
                 outdict = OrderedDict()
 
-                outdict['Registry'] = registry_record['registry']
-                outdict['User'] = registry_record['registry_user']
+                outdict['Registry'] = str(registry_record['registry'])
+                outdict['User'] = str(registry_record['registry_user'])
                 outdict['Verify TLS'] = str(registry_record['registry_verify'])
-                outdict['Created'] = registry_record['created_at']
-                outdict['Updated'] = registry_record['last_updated']
+                outdict['Created'] = str(registry_record['created_at'])
+                outdict['Updated'] = str(registry_record['last_updated'])
 
                 for k in outdict.keys():
                     obuf = obuf + k + ": " + outdict[k] + "\n"
@@ -326,10 +326,10 @@ def format_output(config, op, params, payload):
                 for policy_record in payload:
                     outdict = OrderedDict()
 
-                    outdict['Policy ID'] = policy_record['policyId']
+                    outdict['Policy ID'] = str(policy_record['policyId'])
                     outdict['Active'] = str(policy_record['active'])
-                    outdict['Created'] = policy_record['created_at']
-                    outdict['Updated'] = policy_record['last_updated']
+                    outdict['Created'] = str(policy_record['created_at'])
+                    outdict['Updated'] = str(policy_record['last_updated'])
 
                     for k in outdict.keys():
                         obuf = obuf + k + ": " + outdict[k] + "\n"
@@ -357,22 +357,22 @@ def format_output(config, op, params, payload):
                     for imageDigest in eval_record.keys():
                         for fulltag in eval_record[imageDigest]:
                             if not eval_record[imageDigest][fulltag]:
-                                outdict['Image Digest'] = imageDigest
-                                outdict['Full Tag'] = fulltag
+                                outdict['Image Digest'] = str(imageDigest)
+                                outdict['Full Tag'] = str(fulltag)
                                 outdict['Status'] = 'no_eval_available'
                                 for k in outdict.keys():
                                     obuf = obuf + k + ": " + outdict[k] + "\n"
                                 obuf = obuf + "\n"
                             else:
                                 for evaldata in eval_record[imageDigest][fulltag]:
-                                    outdict['Image Digest'] = imageDigest
-                                    outdict['Full Tag'] = fulltag
+                                    outdict['Image Digest'] = str(imageDigest)
+                                    outdict['Full Tag'] = str(fulltag)
                                     if 'detail' in params and params['detail']:
                                         evaldetail = evaldata['detail']
-                                        outdict['Image ID'] = evaldetail['result']['image_id']
-                                    outdict['Status'] = evaldata['status']
-                                    outdict['Last Eval'] = evaldata['last_evaluation']
-                                    outdict['Policy ID'] = evaldata['policyId']
+                                        outdict['Image ID'] = str(evaldetail['result']['image_id'])
+                                    outdict['Status'] = str(evaldata['status'])
+                                    outdict['Last Eval'] = str(evaldata['last_evaluation'])
+                                    outdict['Policy ID'] = str(evaldata['policyId'])
 
                                     for k in outdict.keys():
                                         obuf = obuf + k + ": " + outdict[k] + "\n"
@@ -417,7 +417,7 @@ def format_output(config, op, params, payload):
                     else:
                         service_status = "down"
 
-                    outdict["Service "+service_record['servicename']+" ("+service_record['base_url']+")"] = service_status
+                    outdict["Service "+service_record['servicename']+" ("+service_record['base_url']+")"] = str(service_status)
                     if not service_record['status']:
                         all_status = "partial_down"
                     else:
