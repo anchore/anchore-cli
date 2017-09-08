@@ -23,8 +23,8 @@ Installing Anchore CLI on CentOS and Red Hat Enterprise Linux
 
 .. code::
 
-    yum install -y epel-release
-    yum install -y python-pip
+    yum install epel-release
+    yum install python-pip
     pip install anchorecli
 
 Installing Anchore CLI on Debian and Ubuntu
@@ -70,18 +70,30 @@ List images analyzed by the Anchore Engine
 .. code::
 
     anchore-cli image list 
-  
-List operating system packges present in an image
+
+Get a specific image and see when its status goes to ``analyzed``
 
 .. code::
 
-    anchore-cli image content docker.io/library/nginx:latest os 
+    anchore-cli image get docker.io/library/debian:latest
+
+Perform a vulnerability scan on an image
+
+.. code::
+
+   anchore-cli image vuln docker.io/library/debian:latest os
+
+List operating system packages present in an image
+
+.. code::
+
+    anchore-cli image content docker.io/library/debian:latest os 
   
 Subscribe to receive webhook notifications when new CVEs are added to an update
 
 .. code::
 
-    anchore-cli subscription activate vuln_update docker.io/library/ubuntu:latest
+    anchore-cli subscription activate vuln_update docker.io/library/debian:latest
 
 More Information
 ================
