@@ -44,7 +44,7 @@ You can use our pre-built binary for Mac:
 .. code::
 
     cd /usr/local/bin
-    curl -O https://raw.githubusercontent.com/anchore/anchore-cli/master/scripts/macos-bin/anchore-cli
+    curl -LJO https://raw.githubusercontent.com/anchore/anchore-cli/master/scripts/macos-bin/anchore-cli
     chmod 755 anchore-cli
 
 Or use pip if you already have it set up on your Mac:
