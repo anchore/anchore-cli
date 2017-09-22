@@ -36,6 +36,24 @@ Installing Anchore CLI on Debian and Ubuntu
     apt-get install python-pip
     pip install anchorecli 
 
+Installing Anchore CLI on Mac OS / OS X
+===========================================
+
+You can use our pre-built binary for Mac:
+
+.. code::
+
+    cd /usr/local/bin
+    curl -O https://raw.githubusercontent.com/anchore/anchore-cli/master/scripts/macos-bin/anchore-cli
+    chmod 755 anchore-cli
+
+Or use pip if you already have it set up on your Mac:
+
+.. code::
+
+    pip install anchorecli
+
+
 Configuring the Anchore CLI
 ===========================
 
