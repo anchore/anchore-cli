@@ -410,7 +410,8 @@ def format_output(config, op, params, payload):
                 outdict = OrderedDict()
                 all_status = "all_up"
                 any_up = False
-                for service_record in payload['detail']['service_states']:
+                #for service_record in payload['detail']['service_states']:
+                for service_record in payload['service_states']:
                     service_status = "N/A"
                     if service_record['status']:
                         service_status = "up"

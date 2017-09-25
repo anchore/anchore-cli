@@ -44,7 +44,7 @@ def system_status(config):
     ret = {}
 
     base_url = re.sub("/$", "", base_url)
-    url = '/'.join([base_url, "status"])
+    url = '/'.join([base_url, "system"])
 
     try:
         _logger.debug("GET url="+str(url))
