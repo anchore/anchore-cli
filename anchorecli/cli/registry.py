@@ -25,7 +25,8 @@ def registry(ctx_config):
 @click.argument('registry_user', nargs=1, required=True)
 @click.argument('registry_pass', nargs=1, required=True)
 @click.option('--insecure', is_flag=True, default=False, help="Allow connection to registry without SSL cert checks (ex: if registry uses a self-signed SSL certificate)")
-def add(registry, registry_user, registry_pass, insecure):
+@click.option('--registry-type', help="Specify the registry type (default='docker_v2')")
+def add(registry, registry_user, registry_pass, insecure, registry_type):
     """
     REGISTRY: Full hostname/port of registry. Eg. myrepo.example.com:5000
 
@@ -35,8 +36,21 @@ def add(registry, registry_user, registry_pass, insecure):
     """
     ecode = 0
 
+    registry_types = ['docker_v2', 'awsecr']
+
     try:
-        ret = anchorecli.clients.apiexternal.add_registry(config, registry=registry, registry_user=registry_user, registry_pass=registry_pass, insecure=insecure)
+        if registry_type and registry_type not in registry_types:
+            raise Exception ("input registry type not supported (supported registry_types: " + str(registry_types))
+
+        #try to detect awsecr registry of form <accid>.dkr.ecr.<region>.amazonaws.com
+        if not registry_type:
+            if re.match("[0-9]+\.dkr\.ecr\..*\.amazonaws\.com", registry):
+                print >>sys.stderr, "WARN: setting registry type to 'awsecr' based on form of input registry name, remove and re-add using '--registry-type docker_v2' to override"
+                registry_type = "awsecr"
+            else:
+                registry_type = "docker_v2"
+
+        ret = anchorecli.clients.apiexternal.add_registry(config, registry=registry, registry_user=registry_user, registry_pass=registry_pass, registry_type=registry_type, insecure=insecure)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret['success']:
             print anchorecli.cli.utils.format_output(config, 'registry_add', {}, ret['payload'])
@@ -47,6 +61,7 @@ def add(registry, registry_user, registry_pass, insecure):
         print anchorecli.cli.utils.format_error_output(config, 'registry_add', {}, err)
         if not ecode:
             ecode = 2
+
     anchorecli.cli.utils.doexit(ecode)
 
 @registry.command(name='update', short_help="Update an existing registry")
@@ -54,7 +69,8 @@ def add(registry, registry_user, registry_pass, insecure):
 @click.argument('registry_user', nargs=1, required=True)
 @click.argument('registry_pass', nargs=1, required=True)
 @click.option('--insecure', is_flag=True, default=False, help="Allow connection to registry without SSL cert checks (ex: if registry uses a self-signed SSL certificate)")
-def upd(registry, registry_user, registry_pass, insecure):
+@click.option('--registry-type', default='docker_v2', help="Specify the registry type (default='docker_v2')")
+def upd(registry, registry_user, registry_pass, insecure, registry_type):
     """
     REGISTRY: Full hostname/port of registry. Eg. myrepo.example.com:5000
 
@@ -65,7 +81,7 @@ def upd(registry, registry_user, registry_pass, insecure):
     ecode = 0
 
     try:
-        ret = anchorecli.clients.apiexternal.update_registry(config, registry=registry, registry_user=registry_user, registry_pass=registry_pass, insecure=insecure)
+        ret = anchorecli.clients.apiexternal.update_registry(config, registry=registry, registry_user=registry_user, registry_pass=registry_pass, registry_type=registry_type, insecure=insecure)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret['success']:
             print anchorecli.cli.utils.format_output(config, 'registry_update', {}, ret['payload'])

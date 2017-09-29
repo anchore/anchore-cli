@@ -504,7 +504,7 @@ def get_registry(config, registry=None):
     return(ret)
 
 
-def add_registry(config, registry=None, registry_user=None, registry_pass=None, insecure=False):
+def add_registry(config, registry=None, registry_user=None, registry_pass=None, registry_type=None, insecure=False):
     userId = config['user']
     password = config['pass']
     base_url = config['url']
@@ -516,7 +516,7 @@ def add_registry(config, registry=None, registry_user=None, registry_pass=None, 
 
     payload = {}
     verify = not insecure
-    payload.update({'registry': registry, 'registry_user': registry_user, 'registry_pass': registry_pass, 'registry_verify':verify})
+    payload.update({'registry': registry, 'registry_user': registry_user, 'registry_pass': registry_pass, 'registry_type': registry_type, 'registry_verify':verify})
 
     try:
         _logger.debug("POST url="+str(url))
@@ -527,7 +527,7 @@ def add_registry(config, registry=None, registry_user=None, registry_pass=None, 
 
     return(ret)
 
-def update_registry(config, registry=None, registry_user=None, registry_pass=None, insecure=False):
+def update_registry(config, registry=None, registry_user=None, registry_pass=None, registry_type=None, insecure=False):
     userId = config['user']
     password = config['pass']
     base_url = config['url']
@@ -539,7 +539,7 @@ def update_registry(config, registry=None, registry_user=None, registry_pass=Non
 
     payload = {}
     verify = not insecure
-    payload.update({'registry': registry, 'registry_user': registry_user, 'registry_pass': registry_pass, 'registry_verify':verify})
+    payload.update({'registry': registry, 'registry_user': registry_user, 'registry_pass': registry_pass, 'registry_type': registry_type, 'registry_verify':verify})
 
     try:
         _logger.debug("PUT url="+str(url))

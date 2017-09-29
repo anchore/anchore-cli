@@ -51,7 +51,7 @@ def format_error_output(config, op, params, payload):
     # error message overrides
     if op == 'image_add':
         if 'httpcode' in errdata and errdata['httpcode'] == 404:
-            errdata['message'] = "image cannot found/fetched from registry"
+            errdata['message'] = "image cannot be found/fetched from registry"
 
     obuf = ""
     try:
@@ -280,6 +280,7 @@ def format_output(config, op, params, payload):
 
                 outdict['Registry'] = str(registry_record['registry'])
                 outdict['User'] = str(registry_record['registry_user'])
+                outdict['Type'] = str(registry_record['registry_type'])
                 outdict['Verify TLS'] = str(registry_record['registry_verify'])
                 outdict['Created'] = str(registry_record['created_at'])
                 outdict['Updated'] = str(registry_record['last_updated'])
@@ -290,12 +291,12 @@ def format_output(config, op, params, payload):
 
             ret = obuf
         elif op == 'registry_list':
-            header = ['Registry', 'User']
+            header = ['Registry', 'Type', 'User']
             t = PrettyTable(header)
             t.set_style(PLAIN_COLUMNS)
             t.align = 'l'
             for registry_record in payload:
-                row = [registry_record['registry'], registry_record['registry_user']]
+                row = [registry_record['registry'], registry_record['registry_type'], registry_record['registry_user']]
                 t.add_row(row)
 
             ret = t.get_string(sortby='Registry')
