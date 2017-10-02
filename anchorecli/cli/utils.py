@@ -329,6 +329,7 @@ def format_output(config, op, params, payload):
 
                     outdict['Policy ID'] = str(policy_record['policyId'])
                     outdict['Active'] = str(policy_record['active'])
+                    outdict['Source'] = str(policy_record['policy_source'])
                     outdict['Created'] = str(policy_record['created_at'])
                     outdict['Updated'] = str(policy_record['last_updated'])
 
