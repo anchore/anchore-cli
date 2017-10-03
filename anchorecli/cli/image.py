@@ -60,7 +60,7 @@ def add(input_image, force, dockerfile):
     anchorecli.cli.utils.doexit(ecode)
 
 @image.command(name='import', short_help="Import an image from anchore scanner export")
-@click.option('--infile', type=click.Path(exists=True), metavar='<file.json>')
+@click.option('--infile', required=True, type=click.Path(exists=True), metavar='<file.json>')
 def import_image(infile):
     ecode = 0
 
