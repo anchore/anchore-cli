@@ -254,8 +254,16 @@ def format_output(config, op, params, payload):
                     dockerpresent = "Present"
 
                 imageId = image_detail.pop('imageId', "None") 
-                outdict['Dockerfile'] = str(dockerpresent)
                 outdict['Image ID'] = str(imageId)
+                #outdict['Dockerfile'] = str(dockerpresent)
+
+                if 'image_content_metadata' in image_record and image_record['image_content_metadata']:
+                    outdict['Dockerfile Mode'] = str(image_record['image_content_metadata']['dockerfile_mode'])
+                    outdict['Distro'] = str(image_record['image_content_metadata']['distro'])
+                    outdict['Distro Version'] = str(image_record['image_content_metadata']['distro_version'])
+                    outdict['Size'] = str(image_record['image_content_metadata']['image_size'])
+                    outdict['Architecture'] = str(image_record['image_content_metadata']['arch'])
+                    outdict['Layer Count'] = str(image_record['image_content_metadata']['layer_count'])
 
                 for k in outdict.keys():
                     obuf = obuf + k + ": " + outdict[k] + "\n"
