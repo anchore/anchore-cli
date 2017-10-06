@@ -395,7 +395,15 @@ def format_output(config, op, params, payload):
                                             else:
                                                 detailrow = row[5]
 
-                                            newrow = [row[3], row[4], detailrow, row[6]]
+                                            status_detail = row[6]
+                                            try:
+                                                if row[7]:
+                                                    eval_whitelist_detail = row[7]
+                                                    status_detail = "whitelisted("+eval_whitelist_detail['whitelist_name']+")"
+                                            except:
+                                                status_detail = row[6]
+                                                
+                                            newrow = [row[3], row[4], detailrow, status_detail]
                                             t.add_row(newrow)
                                         obuf = obuf + t.get_string() + "\n"
 
