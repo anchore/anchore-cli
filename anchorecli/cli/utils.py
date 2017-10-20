@@ -35,15 +35,24 @@ def setup_config(cli_opts):
         if os.path.exists(credential_file):
             ydata = {}
             with open(credential_file, 'r') as FH:
-                ydata = yaml.safe_load(FH)
-            default_creds = ydata.get('default', {})
-            
-            for e in ['ANCHORE_CLI_USER', 'ANCHORE_CLI_PASS', 'ANCHORE_CLI_URL', 'ANCHORE_CLI_SSL_VERIFY']:
-                if e in default_creds:
-                    settings[e] = default_creds[e]
+                try:
+                    ydata = yaml.safe_load(FH)
+                except Exception as err:
+                    raise Exception("YAML load failed: " + str(err))
+            if ydata:
+                try:
+                    if type(ydata) != type(dict()):
+                        raise Exception("invalid credentials file format")
+
+                    default_creds = ydata.get('default', {})
+                    for e in ['ANCHORE_CLI_USER', 'ANCHORE_CLI_PASS', 'ANCHORE_CLI_URL', 'ANCHORE_CLI_SSL_VERIFY']:
+                        if e in default_creds:
+                            settings[e] = default_creds[e]
+                except Exception as err:
+                    raise Exception("credentials file exists and has data, but cannot parse: " + str(err))
 
     except Exception as err:
-        raise err
+        raise Exception("error while processing credentials file, please check format and read permissions - exception: " + str(err))
     
     # load environment if present
     try:
