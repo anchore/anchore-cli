@@ -302,7 +302,7 @@ def format_output(config, op, params, payload):
                         row = [el['filename'], el['size']]
                         t.add_row(row)
                     obuf = obuf + t.get_string(sortby='Size', reversesort=True)
-                elif params['query_type'] in ['npm', 'gem']:
+                elif params['query_type'] in ['npm', 'gem', 'python']:
                     header = ['Package', 'Version', 'Location']
                     t = PrettyTable(header)
                     t.set_style(PLAIN_COLUMNS)
