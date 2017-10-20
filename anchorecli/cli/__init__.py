@@ -4,7 +4,7 @@ import subprocess
 import sys
 import logging
 
-import image, policy, evaluate, subscription, registry, system
+import image, policy, evaluate, subscription, registry, system, utils
 from anchorecli import version
 import anchorecli.clients
 
@@ -25,58 +25,19 @@ def main_entry(ctx, debug, u, p, url, insecure, json):
     if debug:
         logging.basicConfig(level=logging.DEBUG)
 
-    if insecure:
-        verify = 'n'
-    else:
-        verify = False
+    cli_opts = {
+        'u': u,
+        'p': p,
+        'url': url,
+        'insecure': insecure,
+        'json': json,
+        'debug': debug
+    }
+
+    config = utils.setup_config(cli_opts)
+    if config['debug']:
+        logging.basicConfig(level=logging.DEBUG)
         
-    if json:
-        jsonmode = 'y'
-    else:
-        jsonmode = False
-
-    #jsonmode = 'y'
-    #if niceoutput:
-    #    jsonmode = False
-
-    config_defaults = {
-        'ANCHORE_CLI_USER': None,
-        'ANCHORE_CLI_PASS': None,
-        'ANCHORE_CLI_URL': "http://localhost/v1/",
-        'ANCHORE_CLI_SSL_VERIFY': "y",
-        'ANCHORE_CLI_JSON': "n"
-    }
-    config_params = {
-        'ANCHORE_CLI_USER': u,
-        'ANCHORE_CLI_PASS': p,
-        'ANCHORE_CLI_URL': url,
-        'ANCHORE_CLI_SSL_VERIFY': verify,
-        'ANCHORE_CLI_JSON': jsonmode
-    }
-
-    for e in config_params.keys():
-        if not config_params[e]:
-            try:
-                config_params[e] = os.environ[e]
-            except:
-                config_params[e] = config_defaults[e]
-
-    for boolkey in ['ANCHORE_CLI_SSL_VERIFY', 'ANCHORE_CLI_JSON']:
-        if config_params[boolkey].lower() == 'y':
-            config_params[boolkey] = True
-        else:
-            config_params[boolkey] = False
-        
-    config = {
-        'user':config_params['ANCHORE_CLI_USER'],
-        'pass':config_params['ANCHORE_CLI_PASS'],
-        'url':config_params['ANCHORE_CLI_URL'],
-        'ssl_verify':config_params['ANCHORE_CLI_SSL_VERIFY'],
-        'jsonmode':config_params['ANCHORE_CLI_JSON'],
-        'debug':debug
-
-    }
-
     ctx.obj = config
 
 main_entry.add_command(image.image)

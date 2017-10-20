@@ -1,10 +1,13 @@
-import json
+import os
 import re
 import sys
 import copy
+import json
+import yaml
 import urllib
 import logging
 import dateutil.parser
+
 from prettytable import PrettyTable, PLAIN_COLUMNS
 from collections import OrderedDict
 #from textwrap import fill
@@ -12,6 +15,88 @@ from collections import OrderedDict
 import anchorecli.clients.apiexternal
 
 _logger = logging.getLogger(__name__)
+
+def setup_config(cli_opts):
+    ret = {
+        'user':None,
+        'pass':None,
+        'url':"http://localhost:8228/v1",
+        'ssl_verify':True,
+        'jsonmode':False,
+        'debug':False,
+    }
+
+    settings = {}
+
+    # load up credentials file if present
+    try:
+        home = os.environ.get('HOME', None)
+        credential_file = os.path.join(home, '.anchore', 'credentials.yaml')
+        if os.path.exists(credential_file):
+            ydata = {}
+            with open(credential_file, 'r') as FH:
+                ydata = yaml.safe_load(FH)
+            default_creds = ydata.get('default', {})
+            
+            for e in ['ANCHORE_CLI_USER', 'ANCHORE_CLI_PASS', 'ANCHORE_CLI_URL', 'ANCHORE_CLI_SSL_VERIFY']:
+                if e in default_creds:
+                    settings[e] = default_creds[e]
+
+    except Exception as err:
+        raise err
+    
+    # load environment if present
+    try:
+        for e in ['ANCHORE_CLI_USER', 'ANCHORE_CLI_PASS', 'ANCHORE_CLI_URL', 'ANCHORE_CLI_SSL_VERIFY', 'ANCHORE_CLI_JSON', 'ANCHORE_CLI_DEBUG']:
+            if e in os.environ:
+                settings[e] = os.environ[e]
+    except Exception as err:
+        raise err
+
+    # load cmdline options
+    try:
+        if cli_opts['u']:
+            settings['ANCHORE_CLI_USER'] = cli_opts['u']
+
+        if cli_opts['p']:
+            settings['ANCHORE_CLI_PASS'] = cli_opts['p']
+
+        if cli_opts['url']:
+            settings['ANCHORE_CLI_URL'] = cli_opts['url']
+
+        if cli_opts['insecure']:
+            settings['ANCHORE_CLI_SSL_VERIFY'] = "n"
+
+        if cli_opts['json']:
+            settings['ANCHORE_CLI_JSON'] = "y"
+        
+        if cli_opts['debug']:
+            settings['ANCHORE_CLI_DEBUG'] = "y"
+
+    except Exception as err:
+        raise err
+
+    try:
+        if 'ANCHORE_CLI_USER' in settings:
+            ret['user'] = settings['ANCHORE_CLI_USER']
+        if 'ANCHORE_CLI_PASS' in settings:
+            ret['pass'] = settings['ANCHORE_CLI_PASS']
+        if 'ANCHORE_CLI_URL' in settings:
+            ret['url'] = settings['ANCHORE_CLI_URL']
+
+        if 'ANCHORE_CLI_SSL_VERIFY' in settings:
+            if settings['ANCHORE_CLI_SSL_VERIFY'].lower() == 'n':
+                ret['ssl_verify'] = False
+        if 'ANCHORE_CLI_JSON' in settings:
+            if settings['ANCHORE_CLI_JSON'].lower() == 'y':
+                ret['jsonmode'] = True
+        if 'ANCHORE_CLI_DEBUG' in settings:
+            if settings['ANCHORE_CLI_DEBUG'].lower() == 'y':
+                ret['debug'] = True
+    except Exception as err:
+        raise err
+
+    return(ret)
 
 def doexit(ecode):
     try:
