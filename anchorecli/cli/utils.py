@@ -311,6 +311,15 @@ def format_output(config, op, params, payload):
                         row = [el['package'], el['version'], el['location']]
                         t.add_row(row)
                     obuf = obuf + t.get_string(sortby='Package')
+                elif params['query_type'] in ['java']:
+                    header = ['Package', 'Specification-Version', 'Implementation-Version', 'Location']
+                    t = PrettyTable(header)
+                    t.set_style(PLAIN_COLUMNS)
+                    t.align = 'l'
+                    for el in payload['content']:
+                        row = [el['package'], el['specification-version'], el['implementation-version'], el['location']]
+                        t.add_row(row)
+                    obuf = obuf + t.get_string(sortby='Package')
                 else:
                     try:
                         if payload['content']:
