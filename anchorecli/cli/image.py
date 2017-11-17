@@ -225,7 +225,8 @@ def query_vuln(input_image, vuln_type):
 
 @image.command(name='del', short_help="Delete an image")
 @click.argument('input_image', nargs=1)
-def delete(input_image):
+@click.option('--force', is_flag=True, help="Force deletion of image by cancelling any subscription/notification settings prior to image delete")
+def delete(input_image, force):
     """
     INPUT_IMAGE: Input image can be in the following formats: Image Digest, ImageID or registry/repo:tag
     """
@@ -235,7 +236,7 @@ def delete(input_image):
         itype, image, imageDigest = anchorecli.cli.utils.discover_inputimage(config, input_image)
 
         if imageDigest:
-            ret = anchorecli.clients.apiexternal.delete_image(config, imageDigest=imageDigest)
+            ret = anchorecli.clients.apiexternal.delete_image(config, imageDigest=imageDigest, force=force)
             ecode = anchorecli.cli.utils.get_ecode(ret)
         else:
             ecode = 1

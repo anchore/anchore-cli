@@ -197,7 +197,7 @@ def query_image(config, imageDigest=None, query_group=None, query_type=None):
 
     return(ret)
 
-def delete_image(config, imageDigest=None):
+def delete_image(config, imageDigest=None, force=False):
     userId = config['user']
     password = config['pass']
     base_url = config['url']
@@ -207,6 +207,9 @@ def delete_image(config, imageDigest=None):
 
     base_url = re.sub("/$", "", base_url)
     url = '/'.join([base_url, "images", imageDigest])
+
+    if force:
+        url = url+"?force=True"
 
     try:
         _logger.debug("DELETE url="+str(url))
