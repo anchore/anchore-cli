@@ -679,16 +679,25 @@ def discover_inputimage(config, input_string):
         pass
 
     urldigest = None
+    ret_type = "tag"
     try:
         ret = anchorecli.clients.apiexternal.get_image(config, tag=input_string)
         if ret['success']:
             urldigest = ret['payload'][0]['imageDigest']
+            try:
+                image_record = ret['payload'][0]
+                for image_detail in image_record['image_detail']:
+                    if input_string == image_detail['imageId']:
+                        ret_type = "imageid"
+                        break
+            except Exception as err:
+                pass
         else:
             pass
     except Exception as err:
         urldigest = None
 
-    return("tag", input_string, urldigest)
+    return(ret_type, input_string, urldigest)
 
 
             

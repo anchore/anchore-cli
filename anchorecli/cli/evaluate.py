@@ -35,7 +35,7 @@ def check(input_image, show_history, detail, tag):
 
     try:
         itype, image, imageDigest = anchorecli.cli.utils.discover_inputimage(config, input_image)
-        
+
         if imageDigest:
             thetag = input_image
             if tag:
