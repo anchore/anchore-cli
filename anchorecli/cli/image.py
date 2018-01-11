@@ -34,7 +34,8 @@ def add(input_image, force, dockerfile):
     ecode = 0
 
     try:
-        itype, image, urldigest = anchorecli.cli.utils.discover_inputimage(config, input_image)
+        #itype, image, urldigest = anchorecli.cli.utils.discover_inputimage(config, input_image)
+        itype = anchorecli.cli.utils.discover_inputimage_format(config, input_image)
 
         dockerfile_contents = None
         if dockerfile:
@@ -92,12 +93,14 @@ def get(input_image, show_history):
     ecode = 0
     
     try:
-        itype, image, imageDigest = anchorecli.cli.utils.discover_inputimage(config, input_image)
-        _logger.debug("discovery from input: " + str(itype) + " : " + str(image) + " : " + str(imageDigest))
+        itype = anchorecli.cli.utils.discover_inputimage_format(config, input_image)
+        image = input_image
+
+        _logger.debug("discovery from input: " + str(itype) + " : " + str(image))
         if itype == 'tag':
             ret = anchorecli.clients.apiexternal.get_image(config, tag=image, history=show_history)
-        elif itype == 'digest':
-            ret = anchorecli.clients.apiexternal.get_image(config, digest=image, imageDigest=imageDigest, history=False)
+        elif itype == 'imageid':
+            ret = anchorecli.clients.apiexternal.get_image(config, digest=image, history=False)
         elif itype == 'imageDigest':
             ret = anchorecli.clients.apiexternal.get_image(config, imageDigest=image, history=False)
         else:

@@ -657,6 +657,17 @@ def check_access(config):
 
     return(True)
 
+def discover_inputimage_format(config, input_string):
+    itype = None
+
+    if re.match("^sha256:[0-9a-fA-F]{64}", input_string):
+        itype = 'imageDigest'
+    elif re.match("[0-9a-fA-F]{64}", input_string):
+        itype = 'imageid'
+    else:
+        itype = 'tag'
+
+    return(itype)
 
 def discover_inputimage(config, input_string):
     type = None
