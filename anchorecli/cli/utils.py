@@ -531,10 +531,10 @@ def format_output(config, op, params, payload):
             try:
                 obuf = ""
                 
-                outdict = OrderedDict()
+                #outdict = OrderedDict()
+                outlist = []
                 all_status = "all_up"
                 any_up = False
-                #for service_record in payload['detail']['service_states']:
                 for service_record in payload['service_states']:
                     service_status = "N/A"
                     if service_record['status']:
@@ -542,15 +542,17 @@ def format_output(config, op, params, payload):
                     else:
                         service_status = "down"
 
-                    outdict["Service "+service_record['servicename']+" ("+service_record['base_url']+")"] = str(service_status)
+                    #outdict["Service "+service_record['servicename']+" ("+service_record['hostid']+", " +service_record['base_url'] +")"] = str(service_status)
+                    outlist.append("Service "+service_record['servicename']+" ("+service_record['hostid']+", " +service_record['base_url'] +"): " + str(service_status))
                     if not service_record['status']:
                         all_status = "partial_down"
                     else:
                         any_up = True
                     
-
-                for k in outdict.keys():
-                    obuf = obuf + k + ": " + outdict[k] + "\n"
+                for k in outlist:
+                    obuf = obuf + k + "\n"
+                #for k in outdict.keys():
+                #    obuf = obuf + k + ": " + outdict[k] + "\n"
 
                 if not any_up:
                     all_status = "all_down"
