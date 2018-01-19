@@ -342,7 +342,7 @@ def delete_policy(config, policyId):
 
 # eval clients
 
-def check_eval(config, imageDigest=None, history=False, detail=False, tag=None):
+def check_eval(config, imageDigest=None, history=False, detail=False, tag=None, policyId=None):
     userId = config['user']
     password = config['pass']
     base_url = config['url']
@@ -362,6 +362,9 @@ def check_eval(config, imageDigest=None, history=False, detail=False, tag=None):
 
     if tag:
         url = url + "&tag="+str(tag)
+
+    if policyId:
+        url = url + "&policyId="+str(policyId)
 
     try:
         _logger.debug("GET url="+str(url))
