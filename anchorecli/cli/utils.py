@@ -198,9 +198,11 @@ def format_output(config, op, params, payload):
                             if tagts >= lasttagts:
                                 latest_tag_details[fulltag] = image_detail
                                 latest_records[fulltag] = image_record
-                filtered_records = []
-                for fulltag in latest_records.keys():
-                    filtered_records.append(latest_records[fulltag])
+
+                filtered_records = latest_records.values()
+                #filtered_records = []
+                #for fulltag in latest_records.keys():
+                #    filtered_records.append(latest_records[fulltag])
 
             if params['full']:
                 header = ['Full Tag', 'Image ID', 'Analysis Status', 'Image Digest']
