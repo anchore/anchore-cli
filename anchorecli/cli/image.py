@@ -130,31 +130,17 @@ def imagelist(full, show_all):
     ecode = 0
 
     try:
-        ret = anchorecli.clients.apiexternal.get_images(config)
-        ecode = anchorecli.cli.utils.get_ecode(ret)
-        if ret['success']:
-            print anchorecli.cli.utils.format_output(config, 'image_list', {'full':full, 'show_all':show_all}, ret['payload'])
-        else:
-            raise Exception(json.dumps(ret['error'], indent=4))
 
-    except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'image_list', {}, err)
-        if not ecode:
-            ecode = 2
-
-    anchorecli.cli.utils.doexit(ecode)
-
-@image.command(name='lista', short_help="List all images")
-@click.option('--full', is_flag=True, help="Show full row output for each image")
-@click.option('--show-all', is_flag=True, help="Show all images in the system instead of just the latest for a given tag")
-def imagelista(full, show_all):
-    ecode = 0
-
-    try:
         ret = anchorecli.clients.apiexternal.get_imagetagsummary(config)
+        format_id = 'imagetagsummary_list'
+        if not ret['success']:
+            if 'error' in ret and 'status' in ret['error'] and ret['error']['status'] == 404:
+                ret = anchorecli.clients.apiexternal.get_images(config)
+                format_id = 'image_list'
+
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret['success']:
-            print anchorecli.cli.utils.format_output(config, 'imagetagsummary_list', {'full':full, 'show_all':show_all}, ret['payload'])
+            print anchorecli.cli.utils.format_output(config, format_id, {'full':full, 'show_all':show_all}, ret['payload'])
         else:
             raise Exception(json.dumps(ret['error'], indent=4))
 
