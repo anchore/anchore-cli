@@ -638,3 +638,22 @@ def perform_prune(config, resourcetype, prune_candidates):
         raise err
 
     return(ret)
+
+def describe_policy_spec(config):
+    userId = config['user']
+    password = config['pass']
+    base_url = config['url']
+
+    ret = {}
+
+    base_url = re.sub('/$','', base_url)
+    url = '/'.join([base_url, 'system', 'policy_spec'])
+    try:
+        _logger.debug("GET url="+str(url))
+        r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
+        ret = anchorecli.clients.common.make_client_result(r, raw=False)
+    except Exception as err:
+        raise err
+
+    return(ret)
+
