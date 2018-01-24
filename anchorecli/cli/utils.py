@@ -178,7 +178,44 @@ def format_output(config, op, params, payload):
 
     ret = ""
     try:
-        if op == 'image_list':
+        if op == 'imagetagsummary_list':
+            if params['show_all']:
+                filtered_records = payload
+            else:
+                latest_records = {}
+                for image_record in payload:
+                    fulltag = image_record['fulltag']
+                    if fulltag not in latest_records:
+                        latest_records[fulltag] = image_record
+                    else:
+                        if image_record['created_at'] > latest_records[fulltag]['created_at']:
+                            latest_records[fulltag] = image_record
+
+                filtered_records = latest_records.values()
+
+            if params['full']:
+                header = ['Full Tag', 'Image ID', 'Analysis Status', 'Image Digest']
+            else:
+                header = ['Full Tag', 'Image ID', 'Analysis Status']
+
+            t = PrettyTable(header)
+            t.set_style(PLAIN_COLUMNS)
+            t.align = 'l'
+
+            for image_record in filtered_records:
+                fulltag = image_record['fulltag']
+                imageId = image_record['imageId']
+                imageDigest = image_record['imageDigest']
+                analysis_status = image_record['analysis_status']
+
+                if params['full']:
+                    row = [fulltag, imageId, analysis_status, imageDigest]
+                else:
+                    row = [fulltag, imageId, analysis_status]
+                t.add_row(row)
+            ret = t.get_string(sortby='Full Tag')
+                        
+        elif op == 'image_list':
 
             if params['show_all']:
                 filtered_records = payload

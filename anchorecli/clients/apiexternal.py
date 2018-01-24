@@ -127,6 +127,25 @@ def get_image(config, tag=None, digest=None, imageDigest=None, history=False):
 
     return(ret)
 
+def get_imagetagsummary(config):
+    userId = config['user']
+    password = config['pass']
+    base_url = config['url']
+
+    ret = {}
+
+    base_url = re.sub("/$", "", base_url)
+    _logger.info("Base = " + base_url)
+    url = '/'.join([base_url, "/summary/imagetags"])
+    _logger.info("Url = " + url)
+    try:
+        _logger.debug("GET url="+str(url))
+        r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
+        ret = anchorecli.clients.common.make_client_result(r, raw=False)
+    except Exception as err:
+        raise err
+
+    return(ret)
 
 def get_images(config):
     userId = config['user']

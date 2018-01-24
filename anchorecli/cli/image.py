@@ -144,6 +144,27 @@ def imagelist(full, show_all):
 
     anchorecli.cli.utils.doexit(ecode)
 
+@image.command(name='lista', short_help="List all images")
+@click.option('--full', is_flag=True, help="Show full row output for each image")
+@click.option('--show-all', is_flag=True, help="Show all images in the system instead of just the latest for a given tag")
+def imagelista(full, show_all):
+    ecode = 0
+
+    try:
+        ret = anchorecli.clients.apiexternal.get_imagetagsummary(config)
+        ecode = anchorecli.cli.utils.get_ecode(ret)
+        if ret['success']:
+            print anchorecli.cli.utils.format_output(config, 'imagetagsummary_list', {'full':full, 'show_all':show_all}, ret['payload'])
+        else:
+            raise Exception(json.dumps(ret['error'], indent=4))
+
+    except Exception as err:
+        print anchorecli.cli.utils.format_error_output(config, 'image_list', {}, err)
+        if not ecode:
+            ecode = 2
+
+    anchorecli.cli.utils.doexit(ecode)
+
 @image.command(name='content', short_help="Get contents of image")
 @click.argument('input_image', nargs=1)
 @click.argument('content_type', nargs=1, required=False)
