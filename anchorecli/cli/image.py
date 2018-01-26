@@ -34,7 +34,6 @@ def add(input_image, force, dockerfile):
     ecode = 0
 
     try:
-        #itype, image, urldigest = anchorecli.cli.utils.discover_inputimage(config, input_image)
         itype = anchorecli.cli.utils.discover_inputimage_format(config, input_image)
 
         dockerfile_contents = None

@@ -421,6 +421,47 @@ def deactivate_subscription(config, subscription_type, subscription_key):
 
     return(ret)
 
+def add_subscription(config, subscription_type, subscription_key, active=True):
+    userId = config['user']
+    password = config['pass']
+    base_url = config['url']
+
+    ret = {}
+
+    base_url = re.sub("/$", "", base_url)
+    url = '/'.join([base_url, "subscriptions"])
+
+    payload = {'active':active, 'subscription_key': subscription_key, 'subscription_type': subscription_type}
+    try:
+        _logger.debug("POST url="+str(url))
+        r = requests.post(url, data=json.dumps(payload), auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
+        ret = anchorecli.clients.common.make_client_result(r, raw=False)
+    except Exception as err:
+        raise err
+
+    return(ret)
+
+def delete_subscription(config, subscription_type=None, subscription_key=None):
+    userId = config['user']
+    password = config['pass']
+    base_url = config['url']
+
+    ret = {}
+
+    subscription_id = hashlib.md5('+'.join([userId, subscription_key, subscription_type])).hexdigest()
+
+    base_url = re.sub("/$", "", base_url)
+    url = '/'.join([base_url, "subscriptions", subscription_id])
+
+    try:
+        _logger.debug("DELETE url="+str(url))
+        r = requests.delete(url, auth=(userId, password), verify=config['ssl_verify'])
+        ret = anchorecli.clients.common.make_client_result(r, raw=False)
+    except Exception as err:
+        raise err
+
+    return(ret)    
+
 def get_subscription(config, subscription_type=None, subscription_key=None):
     userId = config['user']
     password = config['pass']
@@ -456,6 +497,57 @@ def get_subscription_types(config):
         raise err
 
     return(ret)
+
+# repo clients
+
+def add_repo(config, input_repo, autosubscribe=False):
+    userId = config['user']
+    password = config['pass']
+    base_url = config['url']
+
+    ret = {}
+
+    base_url = re.sub("/$", "", base_url)
+    url = '/'.join([base_url, "repositories?repository="+input_repo+"&autosubscribe="+str(autosubscribe)])
+
+    try:
+        _logger.debug("POST url="+str(url))
+        r = requests.post(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
+        ret = anchorecli.clients.common.make_client_result(r, raw=False)
+    except Exception as err:
+        raise err
+
+    return(ret)
+    #return(add_subscription(config, 'repo_update', input_repo))
+
+def get_repo(config, input_repo=None):
+    userId = config['user']
+    password = config['pass']
+    base_url = config['url']
+
+    ret = {}
+
+    filtered_records = []
+    subscriptions = get_subscription(config)
+    subscription_records = subscriptions['payload']
+    for i in range(0, len(subscription_records)):
+        subscription_record = subscription_records[i]
+        if subscription_record['subscription_type'] == 'repo_update':
+            if not input_repo or subscription_record['subscription_key'] == input_repo:
+                filtered_records.append(subscription_record)
+
+    subscriptions['payload'] = filtered_records
+
+    return(subscriptions)
+
+def delete_repo(config, input_repo, force=False):
+    return(delete_subscription(config, 'repo_update', input_repo))
+
+def watch_repo(config, input_repo):
+    return(activate_subscription(config, 'repo_update', input_repo))
+
+def unwatch_repo(config, input_repo):
+    return(deactivate_subscription(config, 'repo_update', input_repo))
 
 # interactive clients
 
