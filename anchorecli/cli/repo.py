@@ -24,8 +24,9 @@ def repo(ctx_config):
         sys.exit(2)
 
 @repo.command(name='add', short_help="Add a repository")
+@click.option('--autosubscribe', is_flag=True, help="If set, instruct the engine to enable the tag_update subscription for any discovered tags.")
 @click.argument('input_repo', nargs=1)
-def add(input_repo):
+def add(input_repo, autosubscribe):
     """
     INPUT_REPO: Input repository can be in the following formats: registry/repo
     """
@@ -35,7 +36,7 @@ def add(input_repo):
     input_repo = image_info['registry'] + "/" + image_info['repo']
 
     try:
-        ret = anchorecli.clients.apiexternal.add_repo(config, input_repo)
+        ret = anchorecli.clients.apiexternal.add_repo(config, input_repo, autosubscribe=autosubscribe)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret['success']:
             print anchorecli.cli.utils.format_output(config, 'repo_add', {}, ret['payload'])
@@ -99,7 +100,7 @@ def get(input_repo):
 
 @repo.command(name='del', short_help="Delete a repository from the watch list (does not delete already analyzed images)")
 @click.argument('input_repo', nargs=1)
-def delete(input_repo, force):
+def delete(input_repo):
     """
     INPUT_REPO: Input repo can be in the following formats: registry/repo
     """
@@ -109,7 +110,7 @@ def delete(input_repo, force):
     input_repo = image_info['registry'] + "/" + image_info['repo']
     
     try:
-        ret = anchorecli.clients.apiexternal.delete_repo(config, input_repo, force=force)
+        ret = anchorecli.clients.apiexternal.delete_repo(config, input_repo)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret:
             if ret['success']:
