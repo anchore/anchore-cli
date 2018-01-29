@@ -1,10 +1,9 @@
 import sys
-import os
-import re
 import json
 import click
 
 import anchorecli.clients.apiexternal
+import anchorecli.cli
 
 config = {}
 
@@ -142,6 +141,34 @@ def delete(policyid):
 
     except Exception as err:
         print anchorecli.cli.utils.format_error_output(config, 'policy_delete', {}, err)
+        if not ecode:
+            ecode = 2
+
+    anchorecli.cli.utils.doexit(ecode)
+
+@policy.command(name='describe', short_help='Describes the policy gates and triggers available')
+@click.option('--gate', help='Pick a specific gate to describe instead of all')
+@click.option('--trigger', help='Pick a specific trigger to describe instead of all, requires the --gate option to be specified')
+def describe(gate=None, trigger=None):
+    ecode = 0
+    try:
+        ret = anchorecli.clients.apiexternal.describe_policy_spec(config)
+
+        if ret['success']:
+            render_payload = ret['payload']
+
+            if not gate:
+                print anchorecli.cli.utils.format_output(config, 'describe_policy', {}, render_payload)
+            else:
+                if trigger:
+                    print anchorecli.cli.utils.format_output(config, 'describe_policy_gate_trigger_params', {'gate': gate, 'trigger': trigger}, render_payload)
+                else:
+                    print anchorecli.cli.utils.format_output(config, 'describe_policy_gate', {'gate': gate}, render_payload)
+        else:
+            raise Exception(json.dumps(ret['error'], indent=4))
+
+    except Exception as err:
+        print anchorecli.cli.utils.format_error_output(config, 'describe_policy', {}, err)
         if not ecode:
             ecode = 2
 
