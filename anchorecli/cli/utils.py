@@ -434,7 +434,7 @@ def format_output(config, op, params, payload):
             for subscription_record in payload:
                 sval = json.loads(subscription_record['subscription_value'])
                 try:
-                    tagcount = str(len(sval['repotags']))
+                    tagcount = str(sval['tagcount'])
                 except:
                     tagcount = 'N/A'
                 row = [subscription_record['subscription_key'], str(subscription_record['active']), str(tagcount)]
@@ -449,7 +449,7 @@ def format_output(config, op, params, payload):
             for subscription_record in payload:
                 sval = json.loads(subscription_record['subscription_value'])
                 try:
-                    tagcount = str(len(sval['repotags']))
+                    tagcount = str(sval['tagcount'])
                 except:
                     tagcount = 'N/A'
                 row = [subscription_record['subscription_key'], str(subscription_record['active']), str(tagcount)]
