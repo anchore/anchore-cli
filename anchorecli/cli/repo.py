@@ -24,14 +24,15 @@ def repo(ctx_config):
         sys.exit(2)
 
 @repo.command(name='add', short_help="Add a repository")
-@click.option('--autosubscribe', is_flag=True, help="If set, instruct the engine to enable the tag_update subscription for any discovered tags.")
+@click.option('--noautosubscribe', is_flag=True, help="If set, instruct the engine to disable subscriptions for any discovered tags.")
 @click.argument('input_repo', nargs=1)
-def add(input_repo, autosubscribe):
+def add(input_repo, noautosubscribe):
     """
     INPUT_REPO: Input repository can be in the following formats: registry/repo
     """
     ecode = 0
 
+    autosubscribe = not noautosubscribe
     image_info = anchorecli.cli.utils.parse_dockerimage_string(input_repo)
     input_repo = image_info['registry'] + "/" + image_info['repo']
 
