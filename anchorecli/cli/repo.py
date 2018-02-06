@@ -25,8 +25,9 @@ def repo(ctx_config):
 
 @repo.command(name='add', short_help="Add a repository")
 @click.option('--noautosubscribe', is_flag=True, help="If set, instruct the engine to disable subscriptions for any discovered tags.")
+@click.option('--lookuptag', help="Specify a tag to use for repo tag scan if 'latest' tag does not exist in the repo.")
 @click.argument('input_repo', nargs=1)
-def add(input_repo, noautosubscribe):
+def add(input_repo, noautosubscribe, lookuptag):
     """
     INPUT_REPO: Input repository can be in the following formats: registry/repo
     """
@@ -37,7 +38,7 @@ def add(input_repo, noautosubscribe):
     input_repo = image_info['registry'] + "/" + image_info['repo']
 
     try:
-        ret = anchorecli.clients.apiexternal.add_repo(config, input_repo, autosubscribe=autosubscribe)
+        ret = anchorecli.clients.apiexternal.add_repo(config, input_repo, autosubscribe=autosubscribe, lookuptag=lookuptag)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret['success']:
             print anchorecli.cli.utils.format_output(config, 'repo_add', {}, ret['payload'])

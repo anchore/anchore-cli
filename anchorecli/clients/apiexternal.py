@@ -500,7 +500,7 @@ def get_subscription_types(config):
 
 # repo clients
 
-def add_repo(config, input_repo, autosubscribe=False):
+def add_repo(config, input_repo, autosubscribe=False, lookuptag=None):
     userId = config['user']
     password = config['pass']
     base_url = config['url']
@@ -509,6 +509,8 @@ def add_repo(config, input_repo, autosubscribe=False):
 
     base_url = re.sub("/$", "", base_url)
     url = '/'.join([base_url, "repositories?repository="+input_repo+"&autosubscribe="+str(autosubscribe)])
+    if lookuptag:
+        url = url + "&lookuptag="+str(lookuptag)
 
     try:
         _logger.debug("POST url="+str(url))
