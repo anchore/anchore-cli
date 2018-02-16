@@ -58,7 +58,7 @@ def system_status(config):
 
 # image clients
 
-def add_image(config, tag=None, digest=None, dockerfile=None, force=False):
+def add_image(config, tag=None, digest=None, dockerfile=None, force=False, annotations={}):
     userId = config['user']
     password = config['pass']
     base_url = config['url']
@@ -75,6 +75,9 @@ def add_image(config, tag=None, digest=None, dockerfile=None, force=False):
         payload['tag'] = tag
     else:
         return(False)
+
+    if annotations:
+        payload['annotations'] = annotations
 
     base_url = re.sub("/$", "", base_url)
     url = '/'.join([base_url, "images"])

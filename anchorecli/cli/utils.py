@@ -373,6 +373,9 @@ def format_output(config, op, params, payload):
                         outdict['Architecture'] = str(image_content_metadata['arch'])
                         outdict['Layer Count'] = str(image_content_metadata['layer_count'])
 
+                if 'annotations' in image_record and image_record['annotations']:
+                    outdict['Annotations'] = ', '.join([str(x)+"="+str(y) for x,y in image_record['annotations'].items()])
+
                 for k in outdict.keys():
                     obuf = obuf + k + ": " + outdict[k] + "\n"
                 obuf = obuf + "\n"

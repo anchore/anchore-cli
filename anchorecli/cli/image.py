@@ -27,7 +27,8 @@ def image(ctx_config):
 @click.argument('input_image', nargs=1)
 @click.option('--force', is_flag=True, help="Force reanalysis of image")
 @click.option('--dockerfile', type=click.Path(exists=True), metavar='<Dockerfile>', help="Submit image's dockerfile for analysis")
-def add(input_image, force, dockerfile):
+@click.option('--annotation', nargs=1, multiple=True)
+def add(input_image, force, dockerfile, annotation):
     """
     INPUT_IMAGE: Input image can be in the following formats: registry/repo:tag
     """
@@ -42,7 +43,19 @@ def add(input_image, force, dockerfile):
                 dockerfile_contents = FH.read().encode('base64')
 
         if itype == 'tag':
-            ret = anchorecli.clients.apiexternal.add_image(config, tag=input_image, force=force, dockerfile=dockerfile_contents)
+            annotations = {}
+            if annotation:
+                for a in annotation:
+                    try:
+                        (k,v) = a.split('=', 1)
+                        if k and v:
+                            annotations[k] = v
+                        else:
+                            raise
+                    except Exception as err:
+                        raise Exception("annotation format error - annotations must be of the form (--annotation key=value)")
+
+            ret = anchorecli.clients.apiexternal.add_image(config, tag=input_image, force=force, dockerfile=dockerfile_contents, annotations=annotations)
             ecode = anchorecli.cli.utils.get_ecode(ret)
             if ret['success']:
                 print anchorecli.cli.utils.format_output(config, 'image_add', {}, ret['payload'])
