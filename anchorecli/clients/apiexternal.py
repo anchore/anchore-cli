@@ -79,6 +79,11 @@ def add_image(config, tag=None, digest=None, dockerfile=None, force=False, annot
     if annotations:
         payload['annotations'] = annotations
 
+    payload['subscriptions'] = {
+        'tag_update': True,
+        'analysis_update': True,
+    }
+
     base_url = re.sub("/$", "", base_url)
     url = '/'.join([base_url, "images"])
 
