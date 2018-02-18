@@ -58,7 +58,7 @@ def system_status(config):
 
 # image clients
 
-def add_image(config, tag=None, digest=None, dockerfile=None, force=False, annotations={}):
+def add_image(config, tag=None, digest=None, dockerfile=None, force=False, annotations={}, autosubscribe=True):
     userId = config['user']
     password = config['pass']
     base_url = config['url']
@@ -79,16 +79,12 @@ def add_image(config, tag=None, digest=None, dockerfile=None, force=False, annot
     if annotations:
         payload['annotations'] = annotations
 
-    payload['subscriptions'] = {
-        'tag_update': True,
-        'analysis_update': True,
-    }
-
     base_url = re.sub("/$", "", base_url)
     url = '/'.join([base_url, "images"])
 
+    url = url + "?autosubscribe="+str(autosubscribe)
     if force:
-        url = url + "?force=true"
+        url = url + "&force=true"
 
     try:
         _logger.debug("POST url="+str(url))

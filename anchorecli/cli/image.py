@@ -28,7 +28,8 @@ def image(ctx_config):
 @click.option('--force', is_flag=True, help="Force reanalysis of image")
 @click.option('--dockerfile', type=click.Path(exists=True), metavar='<Dockerfile>', help="Submit image's dockerfile for analysis")
 @click.option('--annotation', nargs=1, multiple=True)
-def add(input_image, force, dockerfile, annotation):
+@click.option('--noautosubscribe', is_flag=True, help="If set, instruct the engine to disable tag_update subscription for the added tag.")
+def add(input_image, force, dockerfile, annotation, noautosubscribe):
     """
     INPUT_IMAGE: Input image can be in the following formats: registry/repo:tag
     """
@@ -41,6 +42,8 @@ def add(input_image, force, dockerfile, annotation):
         if dockerfile:
             with open(dockerfile, 'r') as FH:
                 dockerfile_contents = FH.read().encode('base64')
+
+        autosubscribe = not noautosubscribe
 
         if itype == 'tag':
             annotations = {}
@@ -55,7 +58,7 @@ def add(input_image, force, dockerfile, annotation):
                     except Exception as err:
                         raise Exception("annotation format error - annotations must be of the form (--annotation key=value)")
 
-            ret = anchorecli.clients.apiexternal.add_image(config, tag=input_image, force=force, dockerfile=dockerfile_contents, annotations=annotations)
+            ret = anchorecli.clients.apiexternal.add_image(config, tag=input_image, force=force, dockerfile=dockerfile_contents, annotations=annotations, autosubscribe=autosubscribe)
             ecode = anchorecli.cli.utils.get_ecode(ret)
             if ret['success']:
                 print anchorecli.cli.utils.format_output(config, 'image_add', {}, ret['payload'])
