@@ -50,6 +50,10 @@ def add(registry, registry_user, registry_pass, insecure, registry_type):
             else:
                 registry_type = "docker_v2"
 
+        # do some input string checking
+        if re.match(".*\/.*", registry):
+            raise Exception("input registry name cannot contain '/' characters - valid registry names are of the form <host>:<port> where :<port> is optional")
+        
         ret = anchorecli.clients.apiexternal.add_registry(config, registry=registry, registry_user=registry_user, registry_pass=registry_pass, registry_type=registry_type, insecure=insecure)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret['success']:
@@ -81,6 +85,10 @@ def upd(registry, registry_user, registry_pass, insecure, registry_type):
     ecode = 0
 
     try:
+        # do some input string checking
+        if re.match(".*\/.*", registry):
+            raise Exception("input registry name cannot contain '/' characters - valid registry names are of the form <host>:<port> where :<port> is optional")
+
         ret = anchorecli.clients.apiexternal.update_registry(config, registry=registry, registry_user=registry_user, registry_pass=registry_pass, registry_type=registry_type, insecure=insecure)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret['success']:
@@ -103,6 +111,10 @@ def delete(registry):
     ecode = 0
 
     try:
+        # do some input string checking
+        if re.match(".*\/.*", registry):
+            raise Exception("input registry name cannot contain '/' characters - valid registry names are of the form <host>:<port> where :<port> is optional")
+
         ret = anchorecli.clients.apiexternal.delete_registry(config, registry)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret['success']:
@@ -143,6 +155,10 @@ def get(registry):
     ecode = 0
 
     try:
+        # do some input string checking
+        if re.match(".*\/.*", registry):
+            raise Exception("input registry name cannot contain '/' characters - valid registry names are of the form <host>:<port> where :<port> is optional")
+
         ret = anchorecli.clients.apiexternal.get_registry(config, registry=registry)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret['success']:
