@@ -475,6 +475,13 @@ def get_subscription(config, subscription_type=None, subscription_key=None):
 
     base_url = re.sub("/$", "", base_url)
     url = '/'.join([base_url, "subscriptions"])
+    if subscription_key or subscription_type:
+        url = url + "?"
+        if subscription_key:
+            url = url + "subscription_key="+subscription_key+"&"
+        if subscription_type:
+            url = url + "subscription_type="+subscription_type+"&"
+
     try:
         _logger.debug("GET url="+str(url))
         r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'])
@@ -534,7 +541,7 @@ def get_repo(config, input_repo=None):
     ret = {}
 
     filtered_records = []
-    subscriptions = get_subscription(config)
+    subscriptions = get_subscription(config, subscription_type='repo_update')
     subscription_records = subscriptions['payload']
     for i in range(0, len(subscription_records)):
         subscription_record = subscription_records[i]
