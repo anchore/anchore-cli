@@ -56,6 +56,28 @@ def system_status(config):
 
     return(ret)
 
+def delete_system_service(config, host_id, servicename):
+    userId = config['user']
+    password = config['pass']
+    base_url = config['url']
+
+    if not host_id or not servicename:
+        raise Exception("invalid host_id or servicename given")
+
+    ret = {}    
+
+    base_url = re.sub("/$", "", base_url)
+    url = '/'.join([base_url, "system", "services", servicename, host_id])
+
+    try:
+        _logger.debug("DELETE url="+str(url))
+        r = requests.delete(url, auth=(userId, password), verify=config['ssl_verify'])
+        ret = anchorecli.clients.common.make_client_result(r, raw=False)
+    except Exception as err:
+        raise err
+
+    return(ret)
+
 # image clients
 
 def add_image(config, tag=None, digest=None, dockerfile=None, force=False, annotations={}, autosubscribe=True):

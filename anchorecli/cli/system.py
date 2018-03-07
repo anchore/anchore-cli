@@ -40,6 +40,26 @@ def status():
 
     anchorecli.cli.utils.doexit(ecode)
 
+@system.command(name='del', short_help="Delete a non-active service from anchore-engine")
+@click.argument('host_id', nargs=1)
+@click.argument('servicename', nargs=1)
+def delete(host_id, servicename):
+    ecode = 0
+
+    try:
+        ret = anchorecli.clients.apiexternal.delete_system_service(config, host_id, servicename)
+        ecode = anchorecli.cli.utils.get_ecode(ret)
+        if ret['success']:
+            print anchorecli.cli.utils.format_output(config, 'delete_system_service', {}, ret['payload'])
+        else:
+            raise Exception(json.dumps(ret['error'], indent=4))
+    except Exception as err:
+        print anchorecli.cli.utils.format_error_output(config, 'delete_system_service', {}, err)
+        if not ecode:
+            ecode = 2
+
+    anchorecli.cli.utils.doexit(ecode)
+
 @system.command(name='prune', short_help="Use to remove unused/old data")
 @click.option("--filter-notdangling", is_flag=True, help="Include resources even if they are not orphaned")
 @click.option("--filter-olderthan", default=None, help="Filter resources to those older than specified number of hours")
