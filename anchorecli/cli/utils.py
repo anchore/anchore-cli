@@ -526,15 +526,18 @@ def format_output(config, op, params, payload):
                                     outdict['Last Eval'] = str(evaldata['last_evaluation'])
                                     outdict['Policy ID'] = str(evaldata['policyId'])
 
-                                    for k in outdict.keys():
-                                        obuf = obuf + k + ": " + outdict[k] + "\n"
-                                    obuf = obuf + "\n"
-
+                                    t = None
                                     if 'detail' in params and params['detail']:
                                         evaldetail = evaldata['detail']
                                         imageId = evaldetail['result']['image_id']
-                                        evalresults = evaldetail['result']['result'][imageId]['result']
 
+                                        try:
+                                            outdict['Final Action'] = str(evaldetail['result']['final_action'])
+                                            outdict['Final Action Reason'] = str(evaldetail['result']['final_action_reason'])
+                                        except:
+                                            pass
+
+                                        evalresults = evaldetail['result']['result'][imageId]['result']
                                         header = ['Gate', 'Trigger', 'Detail', 'Status']
                                         t = PrettyTable(header)
                                         t.set_style(PLAIN_COLUMNS)
@@ -555,6 +558,12 @@ def format_output(config, op, params, payload):
                                                 
                                             newrow = [row[3], row[4], detailrow, status_detail]
                                             t.add_row(newrow)
+
+
+                                    for k in outdict.keys():
+                                        obuf = obuf + k + ": " + outdict[k] + "\n"
+                                    if t:
+                                        obuf = obuf + "\n"
                                         obuf = obuf + t.get_string() + "\n"
 
                 ret = obuf
