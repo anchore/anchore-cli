@@ -576,10 +576,8 @@ def format_output(config, op, params, payload):
             try:
                 obuf = ""
                 
-                #outdict = OrderedDict()
                 outlist = []
-                #all_status = "all_up"
-                #any_up = False
+
                 db_version = code_version = None
                 for service_record in payload['service_states']:
                     service_status = "N/A"
@@ -588,7 +586,6 @@ def format_output(config, op, params, payload):
                     else:
                         service_status = "down"
                         
-                    #outdict["Service "+service_record['servicename']+" ("+service_record['hostid']+", " +service_record['base_url'] +")"] = str(service_status)
                     outlist.append("Service "+service_record['servicename']+" ("+service_record['hostid']+", " +service_record['base_url'] +"): " + str(service_status))
                     if not db_version:
                         try:
@@ -602,26 +599,12 @@ def format_output(config, op, params, payload):
                         except:
                             pass
                     
-                    #if not service_record['status']:
-                    #    all_status = "partial_down"
-                    #else:
-                    #    any_up = True
-                    
                 for k in outlist:
                     obuf = obuf + k + "\n"
                 obuf = obuf + "\n"
 
                 obuf = obuf + "Engine DB Version: {}\n".format(db_version)
                 obuf = obuf + "Engine Code Version: {}\n".format(code_version)
-                #for k in outdict.keys():
-                #    obuf = obuf + k + ": " + outdict[k] + "\n"
-
-                #if not any_up:
-                #    all_status = "all_down"
-                #obuf = obuf + "\nEngine Status: " + all_status
-
-                #if 'error_event' in payload['detail'] and payload['detail']['error_event']:
-                #    obuf = obuf + "\nError Event Count: " + str(len(payload['detail']['error_event']))
 
                 ret = obuf
             except Exception as err:
