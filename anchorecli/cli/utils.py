@@ -246,7 +246,7 @@ def format_output(config, op, params, payload):
                     obuf = obuf + k + ": " + outdict[k] + "\n"
                 obuf = obuf + "\n"
             else:
-                if params['query_type'] == 'os':
+                if params['query_type'] in ['os', 'non-os']:
                     header = ['Vulnerability ID', 'Package', 'Severity', 'Fix', 'Vulnerability URL']
                     t = PrettyTable(header)
                     t.set_style(PLAIN_COLUMNS)
