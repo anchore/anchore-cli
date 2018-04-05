@@ -7,8 +7,9 @@ import yaml
 import urllib
 import logging
 import dateutil.parser
+import struct
 
-from prettytable import PrettyTable, PLAIN_COLUMNS
+from prettytable import PrettyTable, PLAIN_COLUMNS, ALL
 from collections import OrderedDict
 #from textwrap import fill
 
@@ -649,6 +650,31 @@ def format_output(config, op, params, payload):
             ret = str(payload)
     return(ret)
 
+
+def string_splitter(input_str, max_length=40):
+    """
+    Returns a string that is the input string but with \n inserted every max_length chars
+
+    :param input_str:
+    :param max_length: int num of chars between \n
+    :return: string
+    """
+
+    chunks = []
+    chunk = ''
+    pieces = input_str.split(' ')
+
+    for piece in pieces:
+        if len(chunk) + len(piece) < max_length:
+            chunk = ' '.join([chunk, piece])
+        else:
+            chunks.append(chunk)
+            chunk = piece
+    chunks.append(chunk)
+
+    return '\n'.join(chunks).strip()
+
+
 def _format_gates(payload, all=False):
     try:
         if not all:
@@ -656,16 +682,16 @@ def _format_gates(payload, all=False):
         else:
             header = ['Gate', 'Description', 'State', 'Superceded By']
 
-        t = PrettyTable(header)
-        #t.set_style(PLAIN_COLUMNS)
+        t = PrettyTable(header, hrules=ALL)
         t.align = 'l'
 
         if payload:
             for gate in payload:
+                desc = string_splitter(gate.get('description', ''), 60)
                 if all:
-                    t.add_row([gate['name'].lower(), gate.get('description'), gate.get('state', ''), gate.get('superceded_by', '')])
+                    t.add_row([gate['name'].lower(), desc, gate.get('state', ''), gate.get('superceded_by', '')])
                 elif gate.get('state') in [None, 'active']:
-                    t.add_row([gate['name'].lower(), gate.get('description')])
+                    t.add_row([gate['name'].lower(), desc])
 
             return t.get_string(sortby='Gate', print_empty=True)
         else:
@@ -674,25 +700,25 @@ def _format_gates(payload, all=False):
     except Exception as err:
         raise err
 
+
 def _format_triggers(payload, gate, all=False):
     try:
         if not all:
             header = ['Trigger', 'Description', 'Parameters']
         else:
             header = ['Trigger', 'Description', 'Parameters', 'State', 'Superceded By']
-        t = PrettyTable(header)
-        #t.set_style(PLAIN_COLUMNS)
+        t = PrettyTable(header, hrules=ALL)
         t.align = 'l'
 
         if payload:
             for gate in filter(lambda x: x['name'].lower() == gate, payload):
                 for trigger_entry in gate.get('triggers', []):
+                    desc = string_splitter(trigger_entry.get('description', ''))
+                    param_str = string_splitter(', '.join([x['name'].lower() for x in trigger_entry.get('parameters', [])]), max_length=20)
                     if all:
-                        t.add_row([trigger_entry['name'].lower(), trigger_entry['description'],
-                                   ','.join([x['name'].lower() for x in trigger_entry.get('parameters', [])]), trigger_entry.get('state', ''), trigger_entry.get('superceded_by', '')])
+                        t.add_row([trigger_entry['name'].lower(), desc, param_str, trigger_entry.get('state', ''), trigger_entry.get('superceded_by', '')])
                     elif trigger_entry.get('state') in [None, 'active']:
-                        t.add_row([trigger_entry['name'].lower(), trigger_entry['description'],
-                                   ','.join([x['name'].lower() for x in trigger_entry.get('parameters', [])])])
+                        t.add_row([trigger_entry['name'].lower(), desc, param_str])
 
             return t.get_string(sortby='Trigger', print_empty=True)
         else:
@@ -708,7 +734,7 @@ def _format_trigger_params(payload, gate, trigger, all=False):
             header = ['Parameter', 'Description', 'Required', 'Example', 'State', 'Supereceded By']
         else:
             header = ['Parameter', 'Description', 'Required', 'Example']
-        t = PrettyTable(header)
+        t = PrettyTable(header, hrules=ALL)
         #t.set_style(PLAIN_COLUMNS)
         t.align = 'l'
 
@@ -716,10 +742,11 @@ def _format_trigger_params(payload, gate, trigger, all=False):
             for gate in filter(lambda x: x['name'].lower() == gate, payload):
                 for trigger_entry in filter(lambda x: x['name'].lower() == trigger, gate.get('triggers', [])):
                     for p in trigger_entry.get('parameters', []):
+                        desc = string_splitter(p.get('description', ''))
                         if all:
-                            t.add_row([p['name'].lower(), p['description'], p.get('required', True), p.get('example',''), p.get('state', ''), p.get('superceded_by', '')])
+                            t.add_row([p['name'].lower(), desc, p.get('required', True), p.get('example',''), p.get('state', ''), p.get('superceded_by', '')])
                         elif p.get('state') in [None, 'active']:
-                            t.add_row([p['name'].lower(), p['description'], p.get('required', True), p.get('example', '')])
+                            t.add_row([p['name'].lower(), desc, p.get('required', True), p.get('example', '')])
 
 
             return t.get_string(sortby='Parameter', print_empty=True)
