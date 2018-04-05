@@ -635,71 +635,12 @@ def format_output(config, op, params, payload):
                         ret = "Nothing to do"
             except Exception as err:
                 raise err
-        elif op in ['describe_policy']:
-            obuf = ""
-            try:
-                header = ['Gate', 'Trigger', 'TriggerDescription']
-                t = PrettyTable(header)
-                t.set_style(PLAIN_COLUMNS)
-                t.align = 'l'
-
-                if payload:
-                    for gate in payload:
-                        for trigger_entry in gate.get('triggers',[]):
-                            t.add_row([gate['name'].lower(), trigger_entry['name'].lower(), trigger_entry['description']])
-                    ret = t.get_string(sortby='Gate')
-                else:
-                    ret = 'No policy spec to parse'
-
-            except Exception as err:
-                raise err
-        elif op in ['describe_policy_gate']:
-            obuf = ""
-            gate = params.get('gate').lower()
-            try:
-                header = ['Trigger', 'Description', 'Parameters']
-                t = PrettyTable(header)
-                t.set_style(PLAIN_COLUMNS)
-                t.align = 'l'
-
-                if payload:
-                    for gate in filter(lambda x: x['name'].lower() == gate, payload):
-                        for trigger_entry in gate.get('triggers', []):
-                            t.add_row([trigger_entry['name'].lower(), trigger_entry['description'], ','.join([x['name'].lower() for x in trigger_entry.get('parameters',[])])])
-
-                    ret = t.get_string(sortby='Trigger')
-                else:
-                    ret = 'No policy spec to parse'
-
-            except Exception as err:
-                raise err
-        elif op in ['describe_policy_gate_trigger_params']:
-            obuf = ""
-            gate = params.get('gate').lower()
-            trigger = params.get('trigger').lower()
-            try:
-                header = ['ParameterName', 'ParameterDescription', 'ValidatorDescription']
-                t = PrettyTable(header)
-                t.set_style(PLAIN_COLUMNS)
-                t.align = 'l'
-
-                if payload:
-                    for gate in filter(lambda x: x['name'].lower() == gate, payload):
-                        for trigger_entry in filter(lambda x: x['name'].lower() == trigger, gate.get('triggers', [])):
-                            for p in trigger_entry.get('parameters',[]):
-                                t.add_row([p['name'].lower(), p['description'], p['validator'].get('description', '')])
-
-                    ret = t.get_string(sortby='ParameterName')
-                else:
-                    ret = 'No policy spec to parse'
-
-            except Exception as err:
-                raise err
-        else:
-            try:
-                ret = json.dumps(payload, indent=4, sort_keys=True)
-            except:
-                ret = str(payload)
+        elif op in ['describe_gates']:
+            ret = _format_gates(payload, all=params.get('all', False))
+        elif op in ['describe_gate_triggers']:
+            ret = _format_triggers(payload, params.get('gate', '').lower(), all=params.get('all', False))
+        elif op in ['describe_gate_trigger_params']:
+            ret = _format_trigger_params(payload, params.get('gate', '').lower(), params.get('trigger', '').lower(), all=params.get('all', False))
     except Exception as err:
         print "WARNING: failed to format output (returning raw output) - exception: " + str(err)
         try:
@@ -707,6 +648,87 @@ def format_output(config, op, params, payload):
         except:
             ret = str(payload)
     return(ret)
+
+def _format_gates(payload, all=False):
+    try:
+        if not all:
+            header = ['Gate', 'Description']
+        else:
+            header = ['Gate', 'Description', 'State', 'Superceded By']
+
+        t = PrettyTable(header)
+        #t.set_style(PLAIN_COLUMNS)
+        t.align = 'l'
+
+        if payload:
+            for gate in payload:
+                if all:
+                    t.add_row([gate['name'].lower(), gate.get('description'), gate.get('state', ''), gate.get('superceded_by', '')])
+                elif gate.get('state') in [None, 'active']:
+                    t.add_row([gate['name'].lower(), gate.get('description')])
+
+            return t.get_string(sortby='Gate', print_empty=True)
+        else:
+            return  'No policy spec to parse'
+
+    except Exception as err:
+        raise err
+
+def _format_triggers(payload, gate, all=False):
+    try:
+        if not all:
+            header = ['Trigger', 'Description', 'Parameters']
+        else:
+            header = ['Trigger', 'Description', 'Parameters', 'State', 'Superceded By']
+        t = PrettyTable(header)
+        #t.set_style(PLAIN_COLUMNS)
+        t.align = 'l'
+
+        if payload:
+            for gate in filter(lambda x: x['name'].lower() == gate, payload):
+                for trigger_entry in gate.get('triggers', []):
+                    if all:
+                        t.add_row([trigger_entry['name'].lower(), trigger_entry['description'],
+                                   ','.join([x['name'].lower() for x in trigger_entry.get('parameters', [])]), trigger_entry.get('state', ''), trigger_entry.get('superceded_by', '')])
+                    elif trigger_entry.get('state') in [None, 'active']:
+                        t.add_row([trigger_entry['name'].lower(), trigger_entry['description'],
+                                   ','.join([x['name'].lower() for x in trigger_entry.get('parameters', [])])])
+
+            return t.get_string(sortby='Trigger', print_empty=True)
+        else:
+            return 'No policy spec to parse'
+
+    except Exception as err:
+        raise err
+
+
+def _format_trigger_params(payload, gate, trigger, all=False):
+    try:
+        if all:
+            header = ['Parameter', 'Description', 'Required', 'Example', 'State', 'Supereceded By']
+        else:
+            header = ['Parameter', 'Description', 'Required', 'Example']
+        t = PrettyTable(header)
+        #t.set_style(PLAIN_COLUMNS)
+        t.align = 'l'
+
+        if payload:
+            for gate in filter(lambda x: x['name'].lower() == gate, payload):
+                for trigger_entry in filter(lambda x: x['name'].lower() == trigger, gate.get('triggers', [])):
+                    for p in trigger_entry.get('parameters', []):
+                        if all:
+                            t.add_row([p['name'].lower(), p['description'], p.get('required', True), p.get('example',''), p.get('state', ''), p.get('superceded_by', '')])
+                        elif p.get('state') in [None, 'active']:
+                            t.add_row([p['name'].lower(), p['description'], p.get('required', True), p.get('example', '')])
+
+
+            return t.get_string(sortby='Parameter', print_empty=True)
+        else:
+            return 'No policy spec to parse'
+
+    except Exception as err:
+        raise err
+
         
 def get_eval_ecode(evaldata, imageDigest):
     #0 aid tag 0 status
