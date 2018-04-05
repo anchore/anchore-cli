@@ -147,9 +147,10 @@ def delete(policyid):
     anchorecli.cli.utils.doexit(ecode)
 
 @policy.command(name='describe', short_help='Describes the policy gates and triggers available')
+@click.option('--all', help='Display deprecated and end-of-lifed entries, which are filtered out by default', is_flag=True, default=False)
 @click.option('--gate', help='Pick a specific gate to describe instead of all')
 @click.option('--trigger', help='Pick a specific trigger to describe instead of all, requires the --gate option to be specified')
-def describe(gate=None, trigger=None):
+def describe(all=False, gate=None, trigger=None):
     ecode = 0
     try:
         ret = anchorecli.clients.apiexternal.describe_policy_spec(config)
@@ -157,13 +158,14 @@ def describe(gate=None, trigger=None):
         if ret['success']:
             render_payload = ret['payload']
 
-            if not gate:
-                print anchorecli.cli.utils.format_output(config, 'describe_policy', {}, render_payload)
+            if not gate and not trigger:
+                print anchorecli.cli.utils.format_output(config, 'describe_gates', {'all': all}, render_payload)
+            elif gate and not trigger:
+                print anchorecli.cli.utils.format_output(config, 'describe_gate_triggers', {'gate': gate, 'all': all}, render_payload)
+            elif gate and trigger:
+                print anchorecli.cli.utils.format_output(config, 'describe_gate_trigger_params', {'gate': gate, 'trigger': trigger, 'all': all}, render_payload)
             else:
-                if trigger:
-                    print anchorecli.cli.utils.format_output(config, 'describe_policy_gate_trigger_params', {'gate': gate, 'trigger': trigger}, render_payload)
-                else:
-                    print anchorecli.cli.utils.format_output(config, 'describe_policy_gate', {'gate': gate}, render_payload)
+                raise click.Abort('Trigger can only be specified with --gate as well')
         else:
             raise Exception(json.dumps(ret['error'], indent=4))
 
