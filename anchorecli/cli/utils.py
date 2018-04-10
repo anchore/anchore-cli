@@ -144,9 +144,9 @@ def format_error_output(config, op, params, payload):
         return(ret)
 
     # error message overrides
-    if op == 'image_add':
-        if 'httpcode' in errdata and errdata['httpcode'] == 404:
-            errdata['message'] = "image cannot be found/fetched from registry"
+    #if op == 'image_add':
+        #if 'httpcode' in errdata and errdata['httpcode'] == 404:
+        #    errdata['message'] = "image cannot be found/fetched from registry"
 
     obuf = ""
     try:
