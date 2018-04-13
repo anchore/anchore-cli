@@ -35,6 +35,45 @@ def get_base_routes(config):
     return(ret)
 
 # system clients
+def system_feeds_list(config):
+    userId = config['user']
+    password = config['pass']
+    base_url = config['url']
+
+    ret = {}
+
+    base_url = re.sub("/$", "", base_url)
+    url = '/'.join([base_url, "system/feeds"])
+
+    try:
+        _logger.debug("GET url="+str(url))
+        _logger.debug("GET insecure="+str(config['ssl_verify']))
+        r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
+        ret = anchorecli.clients.common.make_client_result(r, raw=False)
+    except Exception as err:
+        raise err
+
+    return(ret)
+
+def system_feeds_flush(config, resync=False):
+    userId = config['user']
+    password = config['pass']
+    base_url = config['url']
+
+    ret = {}
+
+    base_url = re.sub("/$", "", base_url)
+    url = '/'.join([base_url, "system/feeds?flush=true&sync={}".format(resync)])
+
+    try:
+        _logger.debug("POST url="+str(url))
+        _logger.debug("POST insecure="+str(config['ssl_verify']))
+        r = requests.post(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
+        ret = anchorecli.clients.common.make_client_result(r, raw=False)
+    except Exception as err:
+        raise err
+
+    return(ret)    
 
 def system_status(config):
     userId = config['user']

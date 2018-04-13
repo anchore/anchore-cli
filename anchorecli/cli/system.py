@@ -64,7 +64,6 @@ def delete(host_id, servicename):
 @click.option("--filter-notdangling", is_flag=True, help="Include resources even if they are not orphaned")
 @click.option("--filter-olderthan", default=None, help="Filter resources to those older than specified number of hours")
 @click.option("--dontask", is_flag=True, help="Do not ask for confirmation")
-
 def prune(filter_notdangling, filter_olderthan, dontask):
     ecode = 0
 
@@ -108,6 +107,47 @@ def prune(filter_notdangling, filter_olderthan, dontask):
 
     except Exception as err:
         print anchorecli.cli.utils.format_error_output(config, 'prune', {}, err)
+        if not ecode:
+            ecode = 2
+
+    anchorecli.cli.utils.doexit(ecode)
+
+@system.group(name="feeds", short_help="Feed data operations")
+def feeds():
+    pass
+
+@feeds.command(name="list", short_help="Get a list of loaded data feeds.")
+def list():
+    ecode = 0
+
+    try:
+        ret = anchorecli.clients.apiexternal.system_feeds_list(config)
+        ecode = anchorecli.cli.utils.get_ecode(ret)
+        if ret['success']:
+            print anchorecli.cli.utils.format_output(config, 'system_feeds_list', {}, ret['payload'])
+        else:
+            raise Exception(json.dumps(ret['error'], indent=4))
+    except Exception as err:
+        print anchorecli.cli.utils.format_error_output(config, 'system_feeds_list', {}, err)
+        if not ecode:
+            ecode = 2
+
+    anchorecli.cli.utils.doexit(ecode)
+
+@feeds.command(name="flush", short_help="Flush data feeds from running anchore-engine.")
+@click.option("--resync", is_flag=True, help="Perform a re-sync immediately after flush.")
+def flush(resync):
+    ecode = 0
+
+    try:
+        ret = anchorecli.clients.apiexternal.system_feeds_flush(config, resync=resync)
+        ecode = anchorecli.cli.utils.get_ecode(ret)
+        if ret['success']:
+            print anchorecli.cli.utils.format_output(config, 'system_feeds_flush', {}, ret['payload'])
+        else:
+            raise Exception(json.dumps(ret['error'], indent=4))
+    except Exception as err:
+        print anchorecli.cli.utils.format_error_output(config, 'system_feeds_flush', {}, err)
         if not ecode:
             ecode = 2
 
