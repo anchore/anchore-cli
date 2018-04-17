@@ -585,7 +585,7 @@ def format_output(config, op, params, payload):
                     if service_record['status']:
                         service_status = "up"
                     else:
-                        service_status = "down"
+                        service_status = "down ({})".format(service_record['status_message'])
                         
                     outlist.append("Service "+service_record['servicename']+" ("+service_record['hostid']+", " +service_record['base_url'] +"): " + str(service_status))
                     if not db_version:
