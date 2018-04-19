@@ -585,7 +585,7 @@ def format_output(config, op, params, payload):
                     if service_record['status']:
                         service_status = "up"
                     else:
-                        service_status = "down"
+                        service_status = "down ({})".format(service_record['status_message'])
                         
                     outlist.append("Service "+service_record['servicename']+" ("+service_record['hostid']+", " +service_record['base_url'] +"): " + str(service_status))
                     if not db_version:
@@ -651,6 +651,12 @@ def format_output(config, op, params, payload):
             ret = _format_triggers(payload, params.get('gate', '').lower(), all=params.get('all', False))
         elif op in ['describe_gate_trigger_params']:
             ret = _format_trigger_params(payload, params.get('gate', '').lower(), params.get('trigger', '').lower(), all=params.get('all', False))
+        elif op in ['system_feeds_list', 'system_feeds_flush']:
+            try:
+                ret = json.dumps(payload, indent=4, sort_keys=True)
+            except:
+                ret = json.dumps({'payload': str(payload)}, indent=4, sort_keys=True)
+            
     except Exception as err:
         print "WARNING: failed to format output (returning raw output) - exception: " + str(err)
         try:
