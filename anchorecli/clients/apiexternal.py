@@ -55,7 +55,7 @@ def system_feeds_list(config):
 
     return(ret)
 
-def system_feeds_flush(config, resync=False):
+def system_feeds_sync(config, flush=False):
     userId = config['user']
     password = config['pass']
     base_url = config['url']
@@ -63,7 +63,7 @@ def system_feeds_flush(config, resync=False):
     ret = {}
 
     base_url = re.sub("/$", "", base_url)
-    url = '/'.join([base_url, "system/feeds?flush=true&sync={}".format(resync)])
+    url = '/'.join([base_url, "system/feeds?flush={}".format(flush)])
 
     try:
         _logger.debug("POST url="+str(url))

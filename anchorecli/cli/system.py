@@ -134,13 +134,13 @@ def list():
 
     anchorecli.cli.utils.doexit(ecode)
 
-@feeds.command(name="flush", short_help="Flush data feeds from running anchore-engine.")
-@click.option("--resync", is_flag=True, help="Perform a re-sync immediately after flush.")
-def flush(resync):
+@feeds.command(name="sync", short_help="Fetch latest updates from the feed service")
+@click.option("--flush", is_flag=True, help="Flush all previous data, including CVE matches, and resync from scratch")
+def flush(flush):
     ecode = 0
 
     try:
-        ret = anchorecli.clients.apiexternal.system_feeds_flush(config, resync=resync)
+        ret = anchorecli.clients.apiexternal.system_feeds_sync(config, flush)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret['success']:
             print anchorecli.cli.utils.format_output(config, 'system_feeds_flush', {}, ret['payload'])
