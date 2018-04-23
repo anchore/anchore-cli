@@ -206,7 +206,8 @@ def query_content(input_image, content_type):
 @image.command(name='vuln', short_help="Get image vulnerabilities")
 @click.argument('input_image', nargs=1)
 @click.argument('vuln_type', nargs=1, required=False)
-def query_vuln(input_image, vuln_type):
+@click.option('--vendor-only', default=True, type=bool, help="Show only vulnerabilities marked by upstream vendor as applicable (default=True)")
+def query_vuln(input_image, vuln_type, vendor_only):
     """
     INPUT_IMAGE: Input image can be in the following formats: Image Digest, ImageID or registry/repo:tag
     
@@ -215,7 +216,6 @@ def query_vuln(input_image, vuln_type):
       - os: CVE/distro vulnerabilities against operating system packages
     """
     ecode = 0
-    
     try:
         itype, image, imageDigest = anchorecli.cli.utils.discover_inputimage(config, input_image)
 
@@ -223,7 +223,7 @@ def query_vuln(input_image, vuln_type):
             ecode = 1
             raise Exception("cannot use input image string (no discovered imageDigest)")
         else:
-            ret = anchorecli.clients.apiexternal.query_image(config, imageDigest=imageDigest, query_group='vuln', query_type=vuln_type)
+            ret = anchorecli.clients.apiexternal.query_image(config, imageDigest=imageDigest, query_group='vuln', query_type=vuln_type, vendor_only=vendor_only)
             ecode = anchorecli.cli.utils.get_ecode(ret)
 
             if ret:
