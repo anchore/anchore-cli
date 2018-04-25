@@ -140,12 +140,23 @@ def flush(flush):
     ecode = 0
 
     try:
-        ret = anchorecli.clients.apiexternal.system_feeds_sync(config, flush)
-        ecode = anchorecli.cli.utils.get_ecode(ret)
-        if ret['success']:
-            print anchorecli.cli.utils.format_output(config, 'system_feeds_flush', {}, ret['payload'])
-        else:
-            raise Exception(json.dumps(ret['error'], indent=4))
+        answer = "n"
+        try:
+
+            print "\nWARNING: This operation should not normally need to be performed except when the anchore-engine operator is certain that it is required - the operation will take a long time (hours) to complete, and there may be an impact on anchore-engine performance during the re-sync/flush.\n"
+            answer = raw_input("Really perform a manual feed data sync/flush? (y/N)")
+        except:
+            answer = "n"
+
+        if 'y' == answer.lower():
+            ret = anchorecli.clients.apiexternal.system_feeds_sync(config, flush)
+            ecode = anchorecli.cli.utils.get_ecode(ret)
+
+            if ret['success']:
+                print anchorecli.cli.utils.format_output(config, 'system_feeds_flush', {}, ret['payload'])
+            else:
+                raise Exception(json.dumps(ret['error'], indent=4))
+
     except Exception as err:
         print anchorecli.cli.utils.format_error_output(config, 'system_feeds_flush', {}, err)
         if not ecode:

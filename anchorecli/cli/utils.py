@@ -664,12 +664,8 @@ def format_output(config, op, params, payload):
                 ret = t.get_string(sortby='Feed')+"\n"
             except Exception as err:
                 raise err
-
         elif op in ['system_feeds_flush']:
-            try:
-                ret = json.dumps(payload, indent=4, sort_keys=True)
-            except:
-                ret = json.dumps({'payload': str(payload)}, indent=4, sort_keys=True)
+            ret = 'Success'
             
     except Exception as err:
         print "WARNING: failed to format output (returning raw output) - exception: " + str(err)
