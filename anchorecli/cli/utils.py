@@ -651,11 +651,21 @@ def format_output(config, op, params, payload):
             ret = _format_triggers(payload, params.get('gate', '').lower(), all=params.get('all', False))
         elif op in ['describe_gate_trigger_params']:
             ret = _format_trigger_params(payload, params.get('gate', '').lower(), params.get('trigger', '').lower(), all=params.get('all', False))
-        elif op in ['system_feeds_list', 'system_feeds_flush']:
+        elif op in ['system_feeds_list']:
             try:
-                ret = json.dumps(payload, indent=4, sort_keys=True)
-            except:
-                ret = json.dumps({'payload': str(payload)}, indent=4, sort_keys=True)
+                header = ['Feed', 'Group', 'LastSync', 'RecordCount']
+                t = PrettyTable(header)
+                t.set_style(PLAIN_COLUMNS)
+                t.align = 'l'                        
+                for el in payload:
+                    feed = el.get('name', "N/A")
+                    for gel in el['groups']:
+                        t.add_row([feed, gel.get('name', "N/A"), gel.get('last_sync', "N/A"), gel.get('record_count', "N/A")])
+                ret = t.get_string(sortby='Feed')+"\n"
+            except Exception as err:
+                raise err
+        elif op in ['system_feeds_flush']:
+            ret = 'Success'
             
     except Exception as err:
         print "WARNING: failed to format output (returning raw output) - exception: " + str(err)

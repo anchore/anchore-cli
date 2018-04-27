@@ -235,7 +235,7 @@ def import_image(config, anchore_data=[]):
 
     return(ret)
 
-def query_image(config, imageDigest=None, query_group=None, query_type=None):
+def query_image(config, imageDigest=None, query_group=None, query_type=None, vendor_only=True):
     userId = config['user']
     password = config['pass']
     base_url = config['url']
@@ -252,7 +252,10 @@ def query_image(config, imageDigest=None, query_group=None, query_type=None):
 
     if query_type:
         url = '/'.join([url, query_type])
-    
+
+    if query_group == 'vuln':
+        url = url + "?vendor_only={}".format(vendor_only)
+
     try:
         _logger.debug("GET url="+str(url))
         r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'])
