@@ -115,7 +115,7 @@ def get(input_image, show_history):
         if itype == 'tag':
             ret = anchorecli.clients.apiexternal.get_image(config, tag=image, history=show_history)
         elif itype == 'imageid':
-            ret = anchorecli.clients.apiexternal.get_image(config, digest=image, history=False)
+            ret = anchorecli.clients.apiexternal.get_image(config, image_id=image, history=False)
         elif itype == 'imageDigest':
             ret = anchorecli.clients.apiexternal.get_image(config, imageDigest=image, history=False)
         else:

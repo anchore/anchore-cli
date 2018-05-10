@@ -156,36 +156,72 @@ def add_image(config, tag=None, digest=None, dockerfile=None, force=False, annot
 
     return(ret)
 
-def get_image(config, tag=None, digest=None, imageDigest=None, history=False):
+def detect_api_version(config):
+    """
+    Returns the api version for the service as a tuple of ints. E.g '0.1.1' -> (0, 1, 1)
+    :param config:
+    :return: tuple of ints
+    """
+
+    url = config['url'].rsplit('/', 1)[0] + "/swagger.json"
+    userId = config['user']
+    password = config['pass']
+
+    # Detect if we can use query params or must use the GET body
+    resp = requests.get(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
+    if not resp or not resp.json().get('info').get('version'):
+        return None
+    else:
+        version = tuple([int(x) for x in resp.json().get('info').get('version').split('.')])
+        return version
+
+
+def get_image(config, tag=None, image_id=None, imageDigest=None, history=False):
     userId = config['user']
     password = config['pass']
     base_url = config['url']
+    api_version_query_support = (0, 1, 6)
 
     ret = {}
-
-    payload = {}
-    if imageDigest:
-        payload['imageDigest'] = imageDigest
-    elif digest:
-        payload['digest'] = digest
-    elif tag:
-        payload['tag'] = tag
-    else:
-        return(False)
+    params = {}
+    api_version = detect_api_version(config)
 
     base_url = re.sub("/$", "", base_url)
     url = '/'.join([base_url, "images"])
 
-    if history:
-        url = url + "?history=true"
+    if imageDigest:
+        url += '/{}'.format(imageDigest)
+    elif image_id:
+        url += '/by_id/{}'.format(image_id)
+    elif tag:
+        params['fulltag'] = tag
     else:
-        url = url + "?history=false"
-    
+        return(False)
+
+    if history:
+        params['history'] = 'true'
+    else:
+        params['history'] = 'false'
+
+
+    if api_version < api_version_query_support and tag:
+        payload = {'tag': params.pop('fulltag')}
+    else:
+        payload = None
+
     try:
         _logger.debug("GET url="+str(url))
-        _logger.debug("GET payload="+json.dumps(payload))
+        _logger.debug("GET params="+str(params))
+        _logger.debug("Use get body because api version < 1.1.6? API version: {}".format(api_version))
         _logger.debug("GET insecure="+str(config['ssl_verify']))
-        r = requests.get(url, data=json.dumps(payload), auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
+        if payload:
+            r = requests.get(url, data=json.dumps(payload), params=params, auth=(userId, password), verify=config['ssl_verify'],
+                             headers=header_overrides)
+        else:
+
+            r = requests.get(url, params=params, auth=(userId, password), verify=config['ssl_verify'],
+                             headers=header_overrides)
+
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
         raise err
