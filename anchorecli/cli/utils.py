@@ -277,7 +277,7 @@ def format_output(config, op, params, payload):
 
             ret = obuf
 
-        elif op == 'image_content':
+        elif op in ['image_content', 'image_metadata']:
             obuf = ""
             if 'query_type' not in params or not params['query_type']:
                 outdict = OrderedDict()
@@ -323,6 +323,11 @@ def format_output(config, op, params, payload):
                         row = [el['package'], el['specification-version'], el['implementation-version'], el['location']]
                         t.add_row(row)
                     obuf = obuf + t.get_string(sortby='Package')
+                elif params['query_type'] in ['manifest', 'dockerfile', 'docker_history']:
+                    try:
+                        obuf = payload.get('metadata', "").decode('base64')
+                    except Exception as err:
+                        obuf = ""
                 else:
                     try:
                         if payload['content']:

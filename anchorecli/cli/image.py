@@ -203,6 +203,43 @@ def query_content(input_image, content_type):
 
     anchorecli.cli.utils.doexit(ecode)
 
+@image.command(name='metadata', short_help="Get metadata about an image")
+@click.argument('input_image', nargs=1)
+@click.argument('metadata_type', nargs=1, required=False)
+def query_metadata(input_image, metadata_type):
+    """
+    INPUT_IMAGE: Input image can be in the following formats: Image Digest, ImageID or registry/repo:tag
+
+    METADATA_TYPE: The metadata type can be one of the types returned by running without a type specified
+
+    """
+    ecode = 0
+    
+    try:
+        itype, image, imageDigest = anchorecli.cli.utils.discover_inputimage(config, input_image)
+        _logger.debug("discovery from input: " + str(itype) + " : " + str(image) + " : " + str(imageDigest))
+
+        if not imageDigest:
+            ecode = 1
+            raise Exception("cannot use input image string (no discovered imageDigest)")
+        else:
+            ret = anchorecli.clients.apiexternal.query_image(config, imageDigest=imageDigest, query_group='metadata', query_type=metadata_type)
+            ecode = anchorecli.cli.utils.get_ecode(ret)
+            if ret:
+                if ret['success']:
+                    print anchorecli.cli.utils.format_output(config, 'image_metadata', {'query_type':metadata_type}, ret['payload'])
+                else:
+                    raise Exception (json.dumps(ret['error'], indent=4))
+            else:
+                raise Exception("operation failed with empty response")
+
+    except Exception as err:
+        print anchorecli.cli.utils.format_error_output(config, 'image_metadata', {}, err)
+        if not ecode:
+            ecode = 2
+
+    anchorecli.cli.utils.doexit(ecode)
+
 @image.command(name='vuln', short_help="Get image vulnerabilities")
 @click.argument('input_image', nargs=1)
 @click.argument('vuln_type', nargs=1, required=False)
