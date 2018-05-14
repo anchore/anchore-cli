@@ -54,9 +54,9 @@ def add(input_image, force, dockerfile, annotation, noautosubscribe):
                         if k and v:
                             annotations[k] = v
                         else:
-                            raise
+                            raise Exception("found null in key or value")
                     except Exception as err:
-                        raise Exception("annotation format error - annotations must be of the form (--annotation key=value)")
+                        raise Exception("annotation format error - annotations must be of the form (--annotation key=value), found: {}".format(a))
 
             ret = anchorecli.clients.apiexternal.add_image(config, tag=input_image, force=force, dockerfile=dockerfile_contents, annotations=annotations, autosubscribe=autosubscribe)
             ecode = anchorecli.cli.utils.get_ecode(ret)
@@ -115,7 +115,7 @@ def get(input_image, show_history):
         if itype == 'tag':
             ret = anchorecli.clients.apiexternal.get_image(config, tag=image, history=show_history)
         elif itype == 'imageid':
-            ret = anchorecli.clients.apiexternal.get_image(config, digest=image, history=False)
+            ret = anchorecli.clients.apiexternal.get_image(config, image_id=image, history=False)
         elif itype == 'imageDigest':
             ret = anchorecli.clients.apiexternal.get_image(config, imageDigest=image, history=False)
         else:
