@@ -715,7 +715,7 @@ def get_registry(config, registry=None):
     return(ret)
 
 
-def add_registry(config, registry=None, registry_user=None, registry_pass=None, registry_type=None, insecure=False):
+def add_registry(config, registry=None, registry_user=None, registry_pass=None, registry_type=None, insecure=False, validate=True):
     userId = config['user']
     password = config['pass']
     base_url = config['url']
@@ -724,6 +724,7 @@ def add_registry(config, registry=None, registry_user=None, registry_pass=None, 
 
     base_url = re.sub("/$", "", base_url)
     url = '/'.join([base_url, "registries"])
+    url = "{}?validate={}".format(url, validate)
 
     payload = {}
     verify = not insecure
@@ -738,7 +739,7 @@ def add_registry(config, registry=None, registry_user=None, registry_pass=None, 
 
     return(ret)
 
-def update_registry(config, registry=None, registry_user=None, registry_pass=None, registry_type=None, insecure=False):
+def update_registry(config, registry=None, registry_user=None, registry_pass=None, registry_type=None, insecure=False, validate=True):
     userId = config['user']
     password = config['pass']
     base_url = config['url']
@@ -747,6 +748,7 @@ def update_registry(config, registry=None, registry_user=None, registry_pass=Non
 
     base_url = re.sub("/$", "", base_url)
     url = '/'.join([base_url, "registries", registry])
+    url = "{}?validate={}".format(url, validate)
 
     payload = {}
     verify = not insecure

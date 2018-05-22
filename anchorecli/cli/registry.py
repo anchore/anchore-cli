@@ -26,7 +26,8 @@ def registry(ctx_config):
 @click.argument('registry_pass', nargs=1, required=True)
 @click.option('--insecure', is_flag=True, default=False, help="Allow connection to registry without SSL cert checks (ex: if registry uses a self-signed SSL certificate)")
 @click.option('--registry-type', help="Specify the registry type (default='docker_v2')")
-def add(registry, registry_user, registry_pass, insecure, registry_type):
+@click.option('--skip-validate', is_flag=True, help="Do not attempt to validate registry/creds on registry add")
+def add(registry, registry_user, registry_pass, insecure, registry_type, skip_validate):
     """
     REGISTRY: Full hostname/port of registry. Eg. myrepo.example.com:5000
 
@@ -54,7 +55,7 @@ def add(registry, registry_user, registry_pass, insecure, registry_type):
         if re.match(".*\/.*", registry):
             raise Exception("input registry name cannot contain '/' characters - valid registry names are of the form <host>:<port> where :<port> is optional")
         
-        ret = anchorecli.clients.apiexternal.add_registry(config, registry=registry, registry_user=registry_user, registry_pass=registry_pass, registry_type=registry_type, insecure=insecure)
+        ret = anchorecli.clients.apiexternal.add_registry(config, registry=registry, registry_user=registry_user, registry_pass=registry_pass, registry_type=registry_type, insecure=insecure, validate=(not skip_validate))
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret['success']:
             print anchorecli.cli.utils.format_output(config, 'registry_add', {}, ret['payload'])
@@ -74,7 +75,8 @@ def add(registry, registry_user, registry_pass, insecure, registry_type):
 @click.argument('registry_pass', nargs=1, required=True)
 @click.option('--insecure', is_flag=True, default=False, help="Allow connection to registry without SSL cert checks (ex: if registry uses a self-signed SSL certificate)")
 @click.option('--registry-type', default='docker_v2', help="Specify the registry type (default='docker_v2')")
-def upd(registry, registry_user, registry_pass, insecure, registry_type):
+@click.option('--skip-validate', is_flag=True, help="Do not attempt to validate registry/creds on registry add")
+def upd(registry, registry_user, registry_pass, insecure, registry_type, skip_validate):
     """
     REGISTRY: Full hostname/port of registry. Eg. myrepo.example.com:5000
 
@@ -89,7 +91,7 @@ def upd(registry, registry_user, registry_pass, insecure, registry_type):
         if re.match(".*\/.*", registry):
             raise Exception("input registry name cannot contain '/' characters - valid registry names are of the form <host>:<port> where :<port> is optional")
 
-        ret = anchorecli.clients.apiexternal.update_registry(config, registry=registry, registry_user=registry_user, registry_pass=registry_pass, registry_type=registry_type, insecure=insecure)
+        ret = anchorecli.clients.apiexternal.update_registry(config, registry=registry, registry_user=registry_user, registry_pass=registry_pass, registry_type=registry_type, insecure=insecure, validate=(not skip_validate))
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret['success']:
             print anchorecli.cli.utils.format_output(config, 'registry_update', {}, ret['payload'])
