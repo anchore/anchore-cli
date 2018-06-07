@@ -4,7 +4,7 @@ import sys
 import copy
 import json
 import yaml
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import logging
 import dateutil.parser
 import struct
@@ -127,7 +127,7 @@ def group_list_of_dicts(indict, bykey):
         if elkey not in gdict:
             gdict[elkey] = []
         gdict[elkey].append(el)
-    for k in gdict.keys():
+    for k in list(gdict.keys()):
         for el in gdict[k]:
             ret.append(el)
     return(ret)
@@ -158,7 +158,7 @@ def format_error_output(config, op, params, payload):
         if 'detail' in errdata and errdata['detail']:
             outdict['Detail'] = str(errdata['detail'])
 
-        for k in outdict.keys():
+        for k in list(outdict.keys()):
             obuf = obuf + k + ": " + outdict[k] + "\n"
         #obuf = obuf + "\n"
     except Exception as err:
@@ -200,7 +200,7 @@ def format_output(config, op, params, payload):
                                 latest_tag_details[fulltag] = image_detail
                                 latest_records[fulltag] = image_record
 
-                filtered_records = latest_records.values()
+                filtered_records = list(latest_records.values())
                 #filtered_records = []
                 #for fulltag in latest_records.keys():
                 #    filtered_records.append(latest_records[fulltag])
@@ -243,7 +243,7 @@ def format_output(config, op, params, payload):
                 outdict = OrderedDict()
                 for t in payload:
                     outdict[t] = "available"
-                for k in outdict.keys():
+                for k in list(outdict.keys()):
                     obuf = obuf + k + ": " + outdict[k] + "\n"
                 obuf = obuf + "\n"
             else:
@@ -260,7 +260,7 @@ def format_output(config, op, params, payload):
                     try:
                         if payload['vulnerabilities']:
                             el = payload['vulnerabilities'][0]
-                            header = el.keys()
+                            header = list(el.keys())
                             t = PrettyTable(header)
                             t.set_style(PLAIN_COLUMNS)
                             t.align = 'l'
@@ -283,7 +283,7 @@ def format_output(config, op, params, payload):
                 outdict = OrderedDict()
                 for t in payload:
                     outdict[t] = "available"
-                for k in outdict.keys():
+                for k in list(outdict.keys()):
                     obuf = obuf + k + ": " + outdict[k] + "\n"
                 obuf = obuf + "\n"
             else:
@@ -332,7 +332,7 @@ def format_output(config, op, params, payload):
                     try:
                         if payload['content']:
                             el = payload['content'][0]
-                            header = el.keys()
+                            header = list(el.keys())
                             t = PrettyTable(header)
                             t.set_style(PLAIN_COLUMNS)
                             t.align = 'l'
@@ -380,9 +380,9 @@ def format_output(config, op, params, payload):
                         outdict['Layer Count'] = str(image_content_metadata['layer_count'])
 
                 if 'annotations' in image_record and image_record['annotations']:
-                    outdict['Annotations'] = ', '.join([str(x)+"="+str(y) for x,y in image_record['annotations'].items()])
+                    outdict['Annotations'] = ', '.join([str(x)+"="+str(y) for x,y in list(image_record['annotations'].items())])
 
-                for k in outdict.keys():
+                for k in list(outdict.keys()):
                     obuf = obuf + k + ": " + outdict[k] + "\n"
                 obuf = obuf + "\n"
 
@@ -393,7 +393,7 @@ def format_output(config, op, params, payload):
                     outdict['Full Tag'] = str(image_detail.pop('fulltag', "None"))
                     #outdict['Registry'] = image_detail.pop('registry', "None")
 
-                    for k in outdict.keys():
+                    for k in list(outdict.keys()):
                         obuf = obuf + k + ": " + outdict[k] + "\n"
                     obuf = obuf + "\n"
 
@@ -410,7 +410,7 @@ def format_output(config, op, params, payload):
                 outdict['Created'] = str(registry_record['created_at'])
                 outdict['Updated'] = str(registry_record['last_updated'])
 
-                for k in outdict.keys():
+                for k in list(outdict.keys()):
                     obuf = obuf + k + ": " + outdict[k] + "\n"
                 obuf = obuf + "\n"
 
@@ -489,7 +489,7 @@ def format_output(config, op, params, payload):
                     outdict['Created'] = str(policy_record['created_at'])
                     outdict['Updated'] = str(policy_record['last_updated'])
 
-                    for k in outdict.keys():
+                    for k in list(outdict.keys()):
                         obuf = obuf + k + ": " + outdict[k] + "\n"
                     obuf = obuf + "\n"
 
@@ -512,13 +512,13 @@ def format_output(config, op, params, payload):
                 for eval_record in payload:
                     outdict = OrderedDict()
 
-                    for imageDigest in eval_record.keys():
+                    for imageDigest in list(eval_record.keys()):
                         for fulltag in eval_record[imageDigest]:
                             if not eval_record[imageDigest][fulltag]:
                                 outdict['Image Digest'] = str(imageDigest)
                                 outdict['Full Tag'] = str(fulltag)
                                 outdict['Status'] = 'no_eval_available'
-                                for k in outdict.keys():
+                                for k in list(outdict.keys()):
                                     obuf = obuf + k + ": " + outdict[k] + "\n"
                                 obuf = obuf + "\n"
                             else:
@@ -566,7 +566,7 @@ def format_output(config, op, params, payload):
                                             t.add_row(newrow)
 
 
-                                    for k in outdict.keys():
+                                    for k in list(outdict.keys()):
                                         obuf = obuf + k + ": " + outdict[k] + "\n"
                                     if t:
                                         obuf = obuf + "\n"
@@ -640,7 +640,7 @@ def format_output(config, op, params, payload):
                             elif resource['resourcetype'] == 'evaluations':
                                 idstr = resource['resource_ids']['evalId']
                             else:
-                                idstr = '/'.join(resource['resource_ids'].values())
+                                idstr = '/'.join(list(resource['resource_ids'].values()))
                             t.add_row([resource['resourcetype'], resource['userId'], idstr, str(resource['created_at'])])
                         except Exception as err:
                             raise err
@@ -690,7 +690,7 @@ def format_output(config, op, params, payload):
             ret = yaml.safe_dump(payload['event'], default_flow_style=False)
 
     except Exception as err:
-        print "WARNING: failed to format output (returning raw output) - exception: " + str(err)
+        print("WARNING: failed to format output (returning raw output) - exception: " + str(err))
         try:
             ret = json.dumps(payload, indent=4, sort_keys=True)
         except:
@@ -758,7 +758,7 @@ def _format_triggers(payload, gate, all=False):
         t.align = 'l'
 
         if payload:
-            for gate in filter(lambda x: x['name'].lower() == gate, payload):
+            for gate in [x for x in payload if x['name'].lower() == gate]:
                 for trigger_entry in gate.get('triggers', []):
                     desc = string_splitter(trigger_entry.get('description', ''))
                     param_str = string_splitter(', '.join([x['name'].lower() for x in trigger_entry.get('parameters', [])]), max_length=20)
@@ -786,8 +786,8 @@ def _format_trigger_params(payload, gate, trigger, all=False):
         t.align = 'l'
 
         if payload:
-            for gate in filter(lambda x: x['name'].lower() == gate, payload):
-                for trigger_entry in filter(lambda x: x['name'].lower() == trigger, gate.get('triggers', [])):
+            for gate in [x for x in payload if x['name'].lower() == gate]:
+                for trigger_entry in [x for x in gate.get('triggers', []) if x['name'].lower() == trigger]:
                     for p in trigger_entry.get('parameters', []):
                         desc = string_splitter(p.get('description', ''))
                         if all:
@@ -808,7 +808,7 @@ def get_eval_ecode(evaldata, imageDigest):
     #0 aid tag 0 status
     ret = 2
     try:
-        fulltag = evaldata[0][imageDigest].keys()[0]
+        fulltag = list(evaldata[0][imageDigest].keys())[0]
         status = evaldata[0][imageDigest][fulltag][0]['status'].lower()
         if status == 'pass':
             ret = 0
@@ -868,11 +868,11 @@ def discover_inputimage(config, input_string):
 
     patt = re.match(".*(sha256:.*)", input_string)
     if patt:
-        urldigest = urllib.quote_plus(patt.group(1))
+        urldigest = urllib.parse.quote_plus(patt.group(1))
         return("digest", input_string, urldigest)
 
     try:
-        digest = urllib.unquote_plus(str(input_string))
+        digest = urllib.parse.unquote_plus(str(input_string))
         patt = re.match(".*(sha256:.*)", digest)
         if patt:
             return("imageDigest", input_string, input_string)

@@ -18,7 +18,7 @@ def event(ctx_config):
     try:
         anchorecli.cli.utils.check_access(config)
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'event', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'event', {}, err))
         sys.exit(2)
 
 
@@ -45,12 +45,12 @@ def list(since=None, before=None, level=None, service=None, host=None, resource=
         ret = anchorecli.clients.apiexternal.list_events(config, since=since, before=before, level=level, service=service, host=host, resource=resource, all=all)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret['success']:
-            print anchorecli.cli.utils.format_output(config, 'event_list', {}, ret['payload'])
+            print(anchorecli.cli.utils.format_output(config, 'event_list', {}, ret['payload']))
         else:
             raise Exception(json.dumps(ret['error'], indent=4))
 
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'event_list', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'event_list', {}, err))
         if not ecode:
             ecode = 2
 
@@ -69,12 +69,12 @@ def get(event_id):
         ret = anchorecli.clients.apiexternal.get_event(config, event_id=event_id)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret['success']:
-            print anchorecli.cli.utils.format_output(config, 'event_get', {}, ret['payload'])
+            print(anchorecli.cli.utils.format_output(config, 'event_get', {}, ret['payload']))
         else:
             raise Exception(json.dumps(ret['error'], indent=4))
 
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'event_get', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'event_get', {}, err))
         if not ecode:
             ecode = 2
 
@@ -103,7 +103,7 @@ def delete(since=None, before=None, dontask=False, event_id=None):
                     answer = "y"
                 else:
                     try:
-                        answer = raw_input("Really delete (clear) all events? (y/N)")
+                        answer = input("Really delete (clear) all events? (y/N)")
                     except:
                         answer = "n"
             else:
@@ -114,12 +114,12 @@ def delete(since=None, before=None, dontask=False, event_id=None):
 
                 ecode = anchorecli.cli.utils.get_ecode(ret)
                 if ret['success']:
-                    print anchorecli.cli.utils.format_output(config, 'event_delete', {}, ret['payload'])
+                    print(anchorecli.cli.utils.format_output(config, 'event_delete', {}, ret['payload']))
                 else:
                     raise Exception(json.dumps(ret['error'], indent=4))
 
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'event_delete', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'event_delete', {}, err))
         if not ecode:
             ecode = 2
 

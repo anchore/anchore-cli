@@ -3,7 +3,7 @@ import os
 import re
 import json
 import click
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 import anchorecli.clients.apiexternal
 import anchorecli.cli.utils
@@ -19,7 +19,7 @@ def evaluate(ctx_config):
     try:
         anchorecli.cli.utils.check_access(config)
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'evaluate', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'evaluate', {}, err))
         sys.exit(2)
 
 @evaluate.command(name='check', short_help="Check latest policy evaluation for an image")
@@ -49,7 +49,7 @@ def check(input_image, show_history, detail, tag, policy):
             ret = anchorecli.clients.apiexternal.check_eval(config, imageDigest=imageDigest, history=show_history, detail=detail, tag=thetag, policyId=policy)
             ecode = anchorecli.cli.utils.get_ecode(ret)
             if ret['success']:
-                print anchorecli.cli.utils.format_output(config, 'evaluate_check', {'detail': detail, 'history': show_history, 'tag': thetag}, ret['payload'])
+                print(anchorecli.cli.utils.format_output(config, 'evaluate_check', {'detail': detail, 'history': show_history, 'tag': thetag}, ret['payload']))
                 ecode = anchorecli.cli.utils.get_eval_ecode(ret['payload'], imageDigest)
             else:
                 raise Exception(json.dumps(ret['error'], indent=4))
@@ -57,7 +57,7 @@ def check(input_image, show_history, detail, tag, policy):
             raise Exception("could not get image record from anchore")
 
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'evaluate_check', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'evaluate_check', {}, err))
         if not ecode:
             ecode = 2
 
