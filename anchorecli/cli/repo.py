@@ -20,7 +20,7 @@ def repo(ctx_config):
     try:
         anchorecli.cli.utils.check_access(config)
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'repo', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'repo', {}, err))
         sys.exit(2)
 
 @repo.command(name='add', short_help="Add a repository")
@@ -41,12 +41,12 @@ def add(input_repo, noautosubscribe, lookuptag):
         ret = anchorecli.clients.apiexternal.add_repo(config, input_repo, autosubscribe=autosubscribe, lookuptag=lookuptag)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret['success']:
-            print anchorecli.cli.utils.format_output(config, 'repo_add', {}, ret['payload'])
+            print(anchorecli.cli.utils.format_output(config, 'repo_add', {}, ret['payload']))
         else:
             raise Exception( json.dumps(ret['error'], indent=4))
 
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'repo_add', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'repo_add', {}, err))
         if not ecode:
             ecode = 2
 
@@ -60,12 +60,12 @@ def listrepos():
         ret = anchorecli.clients.apiexternal.get_repo(config)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret['success']:
-            print anchorecli.cli.utils.format_output(config, 'repo_list', {}, ret['payload'])
+            print(anchorecli.cli.utils.format_output(config, 'repo_list', {}, ret['payload']))
         else:
             raise Exception(json.dumps(ret['error'], indent=4))
 
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'repo_list', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'repo_list', {}, err))
         if not ecode:
             ecode = 2
 
@@ -87,14 +87,14 @@ def get(input_repo):
         if ret:
             ecode = anchorecli.cli.utils.get_ecode(ret)
             if ret['success']:
-                print anchorecli.cli.utils.format_output(config, 'repo_get', {}, ret['payload'])
+                print(anchorecli.cli.utils.format_output(config, 'repo_get', {}, ret['payload']))
             else:
                 raise Exception(json.dumps(ret['error'], indent=4))
         else:
             raise Exception("operation failed with empty response")
 
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'repo_get', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'repo_get', {}, err))
         if not ecode:
             ecode = 2
 
@@ -116,14 +116,14 @@ def delete(input_repo):
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret:
             if ret['success']:
-                print anchorecli.cli.utils.format_output(config, 'repo_delete', {}, ret['payload'])
+                print(anchorecli.cli.utils.format_output(config, 'repo_delete', {}, ret['payload']))
             else:
                 raise Exception(json.dumps(ret['error'], indent=4))
         else:
             raise Exception("operation failed with empty response")
 
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'repo_delete', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'repo_delete', {}, err))
         if not ecode:
             ecode = 2
 
@@ -145,14 +145,14 @@ def unwatch(input_repo):
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret:
             if ret['success']:
-                print anchorecli.cli.utils.format_output(config, 'repo_unwatch', {}, ret['payload'])
+                print(anchorecli.cli.utils.format_output(config, 'repo_unwatch', {}, ret['payload']))
             else:
                 raise Exception(json.dumps(ret['error'], indent=4))
         else:
             raise Exception("operation failed with empty response")
 
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'repo_unwatch', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'repo_unwatch', {}, err))
         if not ecode:
             ecode = 2
 
@@ -174,14 +174,14 @@ def watch(input_repo):
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret:
             if ret['success']:
-                print anchorecli.cli.utils.format_output(config, 'repo_watch', {}, ret['payload'])
+                print(anchorecli.cli.utils.format_output(config, 'repo_watch', {}, ret['payload']))
             else:
                 raise Exception(json.dumps(ret['error'], indent=4))
         else:
             raise Exception("operation failed with empty response")
 
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'repo_watch', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'repo_watch', {}, err))
         if not ecode:
             ecode = 2
 

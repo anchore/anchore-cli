@@ -17,7 +17,7 @@ def subscription(ctx_config):
     try:
         anchorecli.cli.utils.check_access(config)
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'subscription', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'subscription', {}, err))
         sys.exit(2)
 
 @subscription.command(name='activate', short_help="Activate a subscription")
@@ -41,12 +41,12 @@ def activate(subscription_type, subscription_key):
         ret = anchorecli.clients.apiexternal.activate_subscription(config, subscription_type, subscription_key)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret['success']:
-            print anchorecli.cli.utils.format_output(config, 'subscription_activate', {}, ret['payload'])
+            print(anchorecli.cli.utils.format_output(config, 'subscription_activate', {}, ret['payload']))
         else:
             raise Exception( json.dumps(ret['error'], indent=4))
 
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'subscription_activate', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'subscription_activate', {}, err))
         if not ecode:
             ecode = 2
 
@@ -73,12 +73,12 @@ def deactivate(subscription_type, subscription_key):
         ret = anchorecli.clients.apiexternal.deactivate_subscription(config, subscription_type, subscription_key)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret['success']:
-            print anchorecli.cli.utils.format_output(config, 'subscription_deactivate', {}, ret['payload'])
+            print(anchorecli.cli.utils.format_output(config, 'subscription_deactivate', {}, ret['payload']))
         else:
             raise Exception( json.dumps(ret['error'], indent=4))
 
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'subscription_deactivate', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'subscription_deactivate', {}, err))
         if not ecode:
             ecode = 2
 
@@ -91,12 +91,12 @@ def subscriptionlist():
         ret = anchorecli.clients.apiexternal.get_subscription(config)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret['success']:
-            print anchorecli.cli.utils.format_output(config, 'subscription_list', {}, ret['payload'])
+            print(anchorecli.cli.utils.format_output(config, 'subscription_list', {}, ret['payload']))
         else:
             raise Exception( json.dumps(ret['error'], indent=4))
 
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'subscription_list', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'subscription_list', {}, err))
         if not ecode:
             ecode = 2
 

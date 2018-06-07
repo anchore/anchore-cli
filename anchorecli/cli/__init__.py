@@ -4,7 +4,7 @@ import subprocess
 import sys
 import logging
 
-import image, policy, evaluate, subscription, registry, system, utils, repo
+from . import image, policy, evaluate, subscription, registry, system, utils, repo
 from anchorecli import version
 import anchorecli.clients
 

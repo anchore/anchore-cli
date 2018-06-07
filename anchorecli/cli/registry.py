@@ -17,7 +17,7 @@ def registry(ctx_config):
     try:
         anchorecli.cli.utils.check_access(config)
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'registry', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'registry', {}, err))
         sys.exit(2)
 
 @registry.command(name='add', short_help="Add a registry")
@@ -46,7 +46,7 @@ def add(registry, registry_user, registry_pass, insecure, registry_type, skip_va
         #try to detect awsecr registry of form <accid>.dkr.ecr.<region>.amazonaws.com
         if not registry_type:
             if re.match("[0-9]+\.dkr\.ecr\..*\.amazonaws\.com", registry):
-                print >>sys.stderr, "WARN: setting registry type to 'awsecr' based on form of input registry name, remove and re-add using '--registry-type docker_v2' to override"
+                print("WARN: setting registry type to 'awsecr' based on form of input registry name, remove and re-add using '--registry-type docker_v2' to override", file=sys.stderr)
                 registry_type = "awsecr"
             else:
                 registry_type = "docker_v2"
@@ -58,12 +58,12 @@ def add(registry, registry_user, registry_pass, insecure, registry_type, skip_va
         ret = anchorecli.clients.apiexternal.add_registry(config, registry=registry, registry_user=registry_user, registry_pass=registry_pass, registry_type=registry_type, insecure=insecure, validate=(not skip_validate))
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret['success']:
-            print anchorecli.cli.utils.format_output(config, 'registry_add', {}, ret['payload'])
+            print(anchorecli.cli.utils.format_output(config, 'registry_add', {}, ret['payload']))
         else:
             raise Exception( json.dumps(ret['error'], indent=4))
 
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'registry_add', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'registry_add', {}, err))
         if not ecode:
             ecode = 2
 
@@ -94,12 +94,12 @@ def upd(registry, registry_user, registry_pass, insecure, registry_type, skip_va
         ret = anchorecli.clients.apiexternal.update_registry(config, registry=registry, registry_user=registry_user, registry_pass=registry_pass, registry_type=registry_type, insecure=insecure, validate=(not skip_validate))
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret['success']:
-            print anchorecli.cli.utils.format_output(config, 'registry_update', {}, ret['payload'])
+            print(anchorecli.cli.utils.format_output(config, 'registry_update', {}, ret['payload']))
         else:
             raise Exception( json.dumps(ret['error'], indent=4))
 
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'registry_update', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'registry_update', {}, err))
         if not ecode:
             ecode = 2
     anchorecli.cli.utils.doexit(ecode)
@@ -120,12 +120,12 @@ def delete(registry):
         ret = anchorecli.clients.apiexternal.delete_registry(config, registry)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret['success']:
-            print anchorecli.cli.utils.format_output(config, 'registry_delete', {}, ret['payload'])
+            print(anchorecli.cli.utils.format_output(config, 'registry_delete', {}, ret['payload']))
         else:
             raise Exception( json.dumps(ret['error'], indent=4))
 
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'registry_delete', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'registry_delete', {}, err))
         if not ecode:
             ecode = 2
     anchorecli.cli.utils.doexit(ecode)
@@ -138,12 +138,12 @@ def registrylist():
         ret = anchorecli.clients.apiexternal.get_registry(config)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret['success']:
-            print anchorecli.cli.utils.format_output(config, 'registry_list', {}, ret['payload'])
+            print(anchorecli.cli.utils.format_output(config, 'registry_list', {}, ret['payload']))
         else:
             raise Exception( json.dumps(ret['error'], indent=4))
 
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'registry_list', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'registry_list', {}, err))
         if not ecode:
             ecode = 2
     anchorecli.cli.utils.doexit(ecode)
@@ -164,12 +164,12 @@ def get(registry):
         ret = anchorecli.clients.apiexternal.get_registry(config, registry=registry)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret['success']:
-            print anchorecli.cli.utils.format_output(config, 'registry_get', {}, ret['payload'])
+            print(anchorecli.cli.utils.format_output(config, 'registry_get', {}, ret['payload']))
         else:
             raise Exception( json.dumps(ret['error'], indent=4))
 
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'registry_get', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'registry_get', {}, err))
         if not ecode:
             ecode = 2
     anchorecli.cli.utils.doexit(ecode)
