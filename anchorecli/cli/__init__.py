@@ -4,7 +4,7 @@ import subprocess
 import sys
 import logging
 
-import image, policy, evaluate, subscription, registry, system, utils, repo
+import image, policy, evaluate, subscription, registry, system, utils, repo, event
 from anchorecli import version
 import anchorecli.clients
 
@@ -47,4 +47,5 @@ main_entry.add_command(subscription.subscription)
 main_entry.add_command(registry.registry)
 main_entry.add_command(repo.repo)
 main_entry.add_command(system.system)
+main_entry.add_command(event.event)
 #main_entry.add_command(interactive.interactive)

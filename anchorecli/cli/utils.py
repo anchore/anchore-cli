@@ -615,6 +615,11 @@ def format_output(config, op, params, payload):
                 ret = obuf
             except Exception as err:
                 raise err
+        elif op == 'event_delete':
+            if payload is not None and isinstance(payload, list):
+                ret = 'Deleted {} events'.format(len(payload)) if payload else 'No matching events found'
+            else:
+                ret = 'Success'
         elif re.match(".*_delete$", op) or re.match(".*_activate$", op) or re.match(".*_deactivate$", op):
             ret = 'Success'
         elif op in ['prune_candidates', 'pruned_resources']:
@@ -671,7 +676,19 @@ def format_output(config, op, params, payload):
                 raise err
         elif op in ['system_feeds_flush']:
             ret = 'Success'
-            
+        elif op == 'event_list':
+            header = ['Timestamp', 'Level', 'Service', 'Host', 'Event', 'ID']
+            t = PrettyTable(header)
+            t.set_style(PLAIN_COLUMNS)
+            t.align = 'l'
+            for event_res in payload['results']:
+                event = event_res['event']
+                row = [event['timestamp'], event['level'], event['source']['servicename'], event['source']['hostid'], event['type'], event_res['generated_uuid']]
+                t.add_row(row)
+            ret = t.get_string()
+        elif op == 'event_get':
+            ret = yaml.safe_dump(payload['event'], default_flow_style=False)
+
     except Exception as err:
         print "WARNING: failed to format output (returning raw output) - exception: " + str(err)
         try:
