@@ -84,10 +84,13 @@ def get(event_id):
 @event.command(name='delete', short_help='Delete one or more events')
 @click.option('--since', default=None, required=False, help='Specify an ISO8601 formatted UTC timestamp to delete events that occurred after the timestamp')
 @click.option('--before', default=None, required=False, help='Specify an ISO8601 formatted UTC timestamp to delete events that occurred before the timestamp')
+@click.option("--dontask", is_flag=True, help="Do not ask for confirmation when omitting event_id, since and before (i.e. delete all events)")
 @click.argument('event_id', nargs=1, required=False)
-def delete(since=None, before=None, event_id=None):
+def delete(since=None, before=None, dontask=False, event_id=None):
     """
     EVENT_ID: ID of the event to be deleted. --since and --before options will be ignored if this is specified
+
+    NOTE: if no options are provided, delete (clear) all events in the engine.  To skip the prompt in this case, use the --dontask flag.
     """
     ecode = 0
 
@@ -95,13 +98,25 @@ def delete(since=None, before=None, event_id=None):
         if event_id:
             ret = anchorecli.clients.apiexternal.delete_event(config, event_id=event_id)
         else:
-            ret = anchorecli.clients.apiexternal.delete_events(config, since=since, before=before)
+            if not since and not before:
+                if dontask:
+                    answer = "y"
+                else:
+                    try:
+                        answer = raw_input("Really delete (clear) all events? (y/N)")
+                    except:
+                        answer = "n"
+            else:
+                answer = "y"
 
-        ecode = anchorecli.cli.utils.get_ecode(ret)
-        if ret['success']:
-            print anchorecli.cli.utils.format_output(config, 'event_delete', {}, ret['payload'])
-        else:
-            raise Exception(json.dumps(ret['error'], indent=4))
+            if 'y' == answer.lower():
+                ret = anchorecli.clients.apiexternal.delete_events(config, since=since, before=before)
+
+                ecode = anchorecli.cli.utils.get_ecode(ret)
+                if ret['success']:
+                    print anchorecli.cli.utils.format_output(config, 'event_delete', {}, ret['payload'])
+                else:
+                    raise Exception(json.dumps(ret['error'], indent=4))
 
     except Exception as err:
         print anchorecli.cli.utils.format_error_output(config, 'event_delete', {}, err)
