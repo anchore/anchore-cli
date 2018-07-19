@@ -7,11 +7,9 @@ import hashlib
 import logging
 import urllib3
 import requests.packages.urllib3
-#from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-#urllib.disable_warnings(urllib.exceptions.InsecureRequestWarning)
 
 import anchorecli.clients.common
 
@@ -32,7 +30,7 @@ def get_base_routes(config):
     except Exception as err:
         raise err
 
-    return(ret)
+    return ret
 
 # system clients
 def system_feeds_list(config):
@@ -53,7 +51,7 @@ def system_feeds_list(config):
     except Exception as err:
         raise err
 
-    return(ret)
+    return ret
 
 def system_feeds_sync(config, flush=False):
     userId = config['user']
@@ -73,7 +71,7 @@ def system_feeds_sync(config, flush=False):
     except Exception as err:
         raise err
 
-    return(ret)    
+    return ret
 
 def system_status(config):
     userId = config['user']
@@ -93,7 +91,7 @@ def system_status(config):
     except Exception as err:
         raise err
 
-    return(ret)
+    return ret
 
 def delete_system_service(config, host_id, servicename):
     userId = config['user']
@@ -115,7 +113,7 @@ def delete_system_service(config, host_id, servicename):
     except Exception as err:
         raise err
 
-    return(ret)
+    return ret
 
 # image clients
 
@@ -135,7 +133,7 @@ def add_image(config, tag=None, digest=None, dockerfile=None, force=False, annot
     elif tag:
         payload['tag'] = tag
     else:
-        return(False)
+        return False
 
     if annotations:
         payload['annotations'] = annotations
@@ -154,7 +152,7 @@ def add_image(config, tag=None, digest=None, dockerfile=None, force=False, annot
     except Exception as err:
         raise err
 
-    return(ret)
+    return ret
 
 def detect_api_version(config):
     """
@@ -196,7 +194,7 @@ def get_image(config, tag=None, image_id=None, imageDigest=None, history=False):
     elif tag:
         params['fulltag'] = tag
     else:
-        return(False)
+        return False
 
     if history:
         params['history'] = 'true'
@@ -226,7 +224,7 @@ def get_image(config, tag=None, image_id=None, imageDigest=None, history=False):
     except Exception as err:
         raise err
 
-    return(ret)
+    return ret
 
 
 def get_images(config):
@@ -247,7 +245,7 @@ def get_images(config):
     except Exception as err:
         raise err
 
-    return(ret)
+    return ret
 
 def import_image(config, anchore_data=[]):
     userId = config['user']
@@ -269,7 +267,7 @@ def import_image(config, anchore_data=[]):
     except Exception as err:
         raise err
 
-    return(ret)
+    return ret
 
 def query_image(config, imageDigest=None, query_group=None, query_type=None, vendor_only=True):
     userId = config['user']
@@ -299,7 +297,7 @@ def query_image(config, imageDigest=None, query_group=None, query_type=None, ven
     except Exception as err:
         raise err
 
-    return(ret)
+    return ret
 
 def delete_image(config, imageDigest=None, force=False):
     userId = config['user']
@@ -322,7 +320,7 @@ def delete_image(config, imageDigest=None, force=False):
     except Exception as err:
         raise err
 
-    return(ret)
+    return ret
 
 # policy clients
 
@@ -350,7 +348,7 @@ def add_policy(config, policybundle={}, detail=False):
     except Exception as err:
         raise err
 
-    return(ret)
+    return ret
 
 def get_policy(config, policyId=None, detail=False):
     userId = config['user']
@@ -378,7 +376,7 @@ def get_policy(config, policyId=None, detail=False):
     except Exception as err:
         raise err
 
-    return(ret)
+    return ret
 
 def get_policies(config, detail=False):
     userId = config['user']
@@ -402,7 +400,7 @@ def get_policies(config, detail=False):
     except Exception as err:
         raise err
 
-    return(ret)
+    return ret
 
 def update_policy(config, policyId, policy_record={}):
     userId = config['user']
@@ -423,7 +421,7 @@ def update_policy(config, policyId, policy_record={}):
     except Exception as err:
         raise err
 
-    return(ret)
+    return ret
 
 def delete_policy(config, policyId):
     userId = config['user']
@@ -442,7 +440,7 @@ def delete_policy(config, policyId):
     except Exception as err:
         raise err
 
-    return(ret)
+    return ret
 
 # eval clients
 
@@ -477,7 +475,7 @@ def check_eval(config, imageDigest=None, history=False, detail=False, tag=None, 
     except Exception as err:
         raise err
 
-    return(ret)
+    return ret
 
 # subscription clients
 
@@ -501,7 +499,7 @@ def activate_subscription(config, subscription_type, subscription_key):
     except Exception as err:
         raise err
 
-    return(ret)
+    return ret
 
 def deactivate_subscription(config, subscription_type, subscription_key):
     userId = config['user']
@@ -543,7 +541,7 @@ def add_subscription(config, subscription_type, subscription_key, active=True):
     except Exception as err:
         raise err
 
-    return(ret)
+    return ret
 
 def delete_subscription(config, subscription_type=None, subscription_key=None):
     userId = config['user']
@@ -564,7 +562,7 @@ def delete_subscription(config, subscription_type=None, subscription_key=None):
     except Exception as err:
         raise err
 
-    return(ret)    
+    return ret
 
 def get_subscription(config, subscription_type=None, subscription_key=None):
     userId = config['user']
@@ -589,7 +587,7 @@ def get_subscription(config, subscription_type=None, subscription_key=None):
     except Exception as err:
         raise err
 
-    return(ret)
+    return ret
 
 def get_subscription_types(config):
     userId = config['user']
@@ -607,7 +605,7 @@ def get_subscription_types(config):
     except Exception as err:
         raise err
 
-    return(ret)
+    return ret
 
 # repo clients
 
@@ -630,8 +628,7 @@ def add_repo(config, input_repo, autosubscribe=False, lookuptag=None):
     except Exception as err:
         raise err
 
-    return(ret)
-    #return(add_subscription(config, 'repo_update', input_repo))
+    return ret
 
 def get_repo(config, input_repo=None):
     userId = config['user']
@@ -651,27 +648,27 @@ def get_repo(config, input_repo=None):
 
     subscriptions['payload'] = filtered_records
 
-    return(subscriptions)
+    return subscriptions
 
 def delete_repo(config, input_repo, force=False):
-    return(delete_subscription(config, 'repo_update', input_repo))
+    return delete_subscription(config, 'repo_update', input_repo)
 
 def watch_repo(config, input_repo):
-    return(activate_subscription(config, 'repo_update', input_repo))
+    return activate_subscription(config, 'repo_update', input_repo)
 
 def unwatch_repo(config, input_repo):
-    return(deactivate_subscription(config, 'repo_update', input_repo))
+    return deactivate_subscription(config, 'repo_update', input_repo)
 
 # interactive clients
 
 def interactive_query(config, payload={}):
-    return(interactive(config, "query", payload=payload))
+    return interactive(config, "query", payload=payload)
 
 def interactive_analyze(config, payload={}):
-    return(interactive(config, "analyze", payload=payload))
+    return interactive(config, "analyze", payload=payload)
 
 def interactive_evaluate(config, payload={}):
-    return(interactive(config, "evaluate", payload=payload))
+    return interactive(config, "evaluate", payload=payload)
 
 def interactive(config, op_type, payload={}):
     userId = config['user']
@@ -689,7 +686,7 @@ def interactive(config, op_type, payload={}):
     except Exception as err:
         raise err
 
-    return(ret)
+    return ret
 
 # registry clients
 
@@ -712,7 +709,7 @@ def get_registry(config, registry=None):
     except Exception as err:
         raise err
 
-    return(ret)
+    return ret
 
 
 def add_registry(config, registry=None, registry_user=None, registry_pass=None, registry_type=None, insecure=False, validate=True):
@@ -737,7 +734,7 @@ def add_registry(config, registry=None, registry_user=None, registry_pass=None, 
     except Exception as err:
         raise err
 
-    return(ret)
+    return ret
 
 def update_registry(config, registry=None, registry_user=None, registry_pass=None, registry_type=None, insecure=False, validate=True):
     userId = config['user']
@@ -761,7 +758,7 @@ def update_registry(config, registry=None, registry_user=None, registry_pass=Non
     except Exception as err:
         raise err
 
-    return(ret)
+    return ret
 
 def delete_registry(config, registry=None):
     userId = config['user']
@@ -780,7 +777,7 @@ def delete_registry(config, registry=None):
     except Exception as err:
         raise err
 
-    return(ret)
+    return ret
 
 # prune interface
 
@@ -801,7 +798,7 @@ def get_prune_resourcetypes(config):
     except Exception as err:
         raise err
 
-    return(ret)
+    return ret
 
 def get_prune_candidates(config, resourcetype, dangling=True, olderthan=None):
     userId = config['user']
@@ -822,7 +819,7 @@ def get_prune_candidates(config, resourcetype, dangling=True, olderthan=None):
     except Exception as err:
         raise err
 
-    return(ret)
+    return ret
 
 def perform_prune(config, resourcetype, prune_candidates):
     userId = config['user']
@@ -844,7 +841,7 @@ def perform_prune(config, resourcetype, prune_candidates):
     except Exception as err:
         raise err
 
-    return(ret)
+    return ret
 
 def describe_policy_spec(config):
     userId = config['user']
@@ -862,5 +859,4 @@ def describe_policy_spec(config):
     except Exception as err:
         raise err
 
-    return(ret)
-
+    return ret

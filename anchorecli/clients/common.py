@@ -16,18 +16,17 @@ def make_client_result(response, raw=False):
 
         if response.status_code == 200:
             ret['success'] = True
-            if raw == True:
+            if raw:
                 ret['payload'] = response.text
             else:
                 try:
                     ret['payload'] = json.loads(response.text)
                 except:
                     ret['payload'] = response.text
-
         else:
             ret['success'] = False
 
-            if raw == True:
+            if raw:
                 ret['error'] = response.text
             else:
                 try:
@@ -37,4 +36,4 @@ def make_client_result(response, raw=False):
     except Exception as err:
         raise err
 
-    return(ret)
+    return ret
