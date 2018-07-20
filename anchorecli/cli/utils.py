@@ -441,8 +441,8 @@ def format_output(config, op, params, payload):
             t.set_style(PLAIN_COLUMNS)
             t.align = 'l'
             for subscription_record in payload:
-                sval = json.loads(subscription_record['subscription_value'])
                 try:
+                    sval = json.loads(subscription_record['subscription_value'])
                     tagcount = str(sval['tagcount'])
                 except:
                     tagcount = 'N/A'
