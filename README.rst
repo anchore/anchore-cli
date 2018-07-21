@@ -115,6 +115,25 @@ Subscribe to receive webhook notifications when new CVEs are added to an update
 
     anchore-cli subscription activate vuln_update docker.io/library/debian:latest
 
+Development
+===========
+
+For best practices, ensure you develop using a python3 virtual environment. One such way is:
+
+```
+virtualenv venv -p python3
+source ./venv/bin/activate
+```
+
+At the conclusion of development you can exit your environment using `deactivate`.
+
+Testing
+-------
+
+To install the development requirements: `pip install -r dev_requirements`
+
+To run the tests: `py.test`
+
 More Information
 ================
 
