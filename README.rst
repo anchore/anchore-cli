@@ -130,7 +130,7 @@ At the conclusion of development you can exit your environment using `deactivate
 Testing
 -------
 
-To install the development requirements: `pip install -r dev_requirements`
+To install the development requirements: `pip install -r dev_requirements.txt`
 
 To run the tests: `py.test`
 
