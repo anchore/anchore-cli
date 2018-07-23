@@ -6,6 +6,7 @@ import requests
 import hashlib
 import logging
 import urllib3
+import urlparse
 import requests.packages.urllib3
 #from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
@@ -163,7 +164,9 @@ def detect_api_version(config):
     :return: tuple of ints
     """
 
-    url = config['url'].rsplit('/', 1)[0] + "/swagger.json"
+    url = urlparse.urlparse(config['url'])
+    url = urlparse.urlunparse((url.scheme, url.netloc, '/swagger.json', url.params, url.query, url.fragment))
+
     userId = config['user']
     password = config['pass']
 
@@ -212,7 +215,7 @@ def get_image(config, tag=None, image_id=None, imageDigest=None, history=False):
     try:
         _logger.debug("GET url="+str(url))
         _logger.debug("GET params="+str(params))
-        _logger.debug("Use get body because api version < 1.1.6? API version: {}".format(api_version))
+        _logger.debug("Use get body because detected api version {} < {}? {}".format(api_version, api_version_query_support, (payload is not None)))
         _logger.debug("GET insecure="+str(config['ssl_verify']))
         if payload:
             r = requests.get(url, data=json.dumps(payload), params=params, auth=(userId, password), verify=config['ssl_verify'],
