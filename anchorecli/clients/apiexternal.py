@@ -6,6 +6,7 @@ import requests
 import hashlib
 import logging
 import urllib3
+import urlparse
 import requests.packages.urllib3
 
 requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
@@ -161,7 +162,9 @@ def detect_api_version(config):
     :return: tuple of ints
     """
 
-    url = config['url'].rsplit('/', 1)[0] + "/swagger.json"
+    url = urlparse.urlparse(config['url'])
+    url = urlparse.urlunparse((url.scheme, url.netloc, '/swagger.json', url.params, url.query, url.fragment))
+
     userId = config['user']
     password = config['pass']
 
@@ -210,7 +213,7 @@ def get_image(config, tag=None, image_id=None, imageDigest=None, history=False):
     try:
         _logger.debug("GET url="+str(url))
         _logger.debug("GET params="+str(params))
-        _logger.debug("Use get body because api version < 1.1.6? API version: {}".format(api_version))
+        _logger.debug("Use get body because detected api version {} < {}? {}".format(api_version, api_version_query_support, (payload is not None)))
         _logger.debug("GET insecure="+str(config['ssl_verify']))
         if payload:
             r = requests.get(url, data=json.dumps(payload), params=params, auth=(userId, password), verify=config['ssl_verify'],
@@ -855,6 +858,155 @@ def describe_policy_spec(config):
     try:
         _logger.debug("GET url="+str(url))
         r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
+        ret = anchorecli.clients.common.make_client_result(r, raw=False)
+    except Exception as err:
+        raise err
+
+    return ret
+
+def list_events(config, since=None, before=None, level=None, service=None, host=None, resource=None, all=False):
+    userId = config['user']
+    password = config['pass']
+    base_url = config['url']
+    # api_version_query_support = (0, 1, 6)
+
+    ret = {}
+    params = {}
+    # api_version = detect_api_version(config)
+
+    base_url = re.sub("/$", "", base_url)
+    url = '/'.join([base_url, "events"])
+
+    if since:
+        params['since'] = since
+
+    if before:
+        params['before'] = before
+
+    if level:
+        params['level'] = level
+
+    if service:
+        params['source_servicename'] = service
+
+    if host:
+        params['source_hostid'] = host
+
+    if resource:
+        params['resource_id'] = resource
+
+    try:
+        if all:
+            # Results might be paginated here, so loop
+            events = []
+            while True:
+                if ret and ret['payload']['next_page'] is True:
+                    params['page'] = int(ret['payload']['page']) + 1
+
+                _logger.debug("GET url=" + str(url))
+                _logger.debug("GET params=" + str(params))
+                _logger.debug("GET insecure=" + str(config['ssl_verify']))
+
+                r = requests.get(url, params=params, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
+                ret = anchorecli.clients.common.make_client_result(r, raw=False)
+
+                if ret['success']:
+                    events += ret['payload']['results']
+                    ret['payload']['results'] = events
+                else:
+                    break
+
+                if ret['payload']['next_page'] is False:
+                    break
+        else:
+            _logger.debug("GET url=" + str(url))
+            _logger.debug("GET params=" + str(params))
+            _logger.debug("GET insecure=" + str(config['ssl_verify']))
+
+            r = requests.get(url, params=params, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
+            ret = anchorecli.clients.common.make_client_result(r, raw=False)
+
+    except Exception as err:
+        raise err
+
+    return ret
+
+
+def get_event(config, event_id):
+    userId = config['user']
+    password = config['pass']
+    base_url = config['url']
+    # api_version_query_support = (0, 1, 6)
+
+    ret = {}
+    params = {}
+    # api_version = detect_api_version(config)
+
+    base_url = re.sub("/$", "", base_url)
+    url = '/'.join([base_url, "events", event_id])
+
+    try:
+        _logger.debug("GET url="+str(url))
+        _logger.debug("GET insecure="+str(config['ssl_verify']))
+
+        r = requests.get(url, params=params, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
+        ret = anchorecli.clients.common.make_client_result(r, raw=False)
+    except Exception as err:
+        raise err
+
+    return ret
+
+
+def delete_events(config, since=None, before=None):
+    userId = config['user']
+    password = config['pass']
+    base_url = config['url']
+    # api_version_query_support = (0, 1, 6)
+
+    ret = {}
+    params = {}
+    # api_version = detect_api_version(config)
+
+    base_url = re.sub("/$", "", base_url)
+    url = '/'.join([base_url, "events"])
+
+    if since:
+        params['since'] = since
+
+    if before:
+        params['before'] = before
+
+    try:
+        _logger.debug("DELETE url="+str(url))
+        _logger.debug("DELETE params="+str(params))
+        _logger.debug("DELETE insecure="+str(config['ssl_verify']))
+
+        r = requests.delete(url, params=params, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
+        ret = anchorecli.clients.common.make_client_result(r, raw=False)
+    except Exception as err:
+        raise err
+
+    return ret
+
+
+def delete_event(config, event_id):
+    userId = config['user']
+    password = config['pass']
+    base_url = config['url']
+    # api_version_query_support = (0, 1, 6)
+
+    ret = {}
+    params = {}
+    # api_version = detect_api_version(config)
+
+    base_url = re.sub("/$", "", base_url)
+    url = '/'.join([base_url, "events", event_id])
+
+    try:
+        _logger.debug("DELETE url="+str(url))
+        _logger.debug("DELETE insecure="+str(config['ssl_verify']))
+
+        r = requests.delete(url, params=params, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
         raise err
