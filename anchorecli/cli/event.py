@@ -86,7 +86,8 @@ def get(event_id):
 @click.option('--before', default=None, required=False, help='Specify an ISO8601 formatted UTC timestamp to delete events that occurred before the timestamp')
 @click.option("--dontask", is_flag=True, help="Do not ask for confirmation when omitting event_id, since and before (i.e. delete all events)")
 @click.argument('event_id', nargs=1, required=False)
-def delete(since=None, before=None, dontask=False, event_id=None):
+@click.option('--all', help='Delete all events', is_flag=True, default=False)
+def delete(since=None, before=None, dontask=False, event_id=None, all=False):
     """
     EVENT_ID: ID of the event to be deleted. --since and --before options will be ignored if this is specified
 
@@ -98,7 +99,7 @@ def delete(since=None, before=None, dontask=False, event_id=None):
         if event_id:
             ret = anchorecli.clients.apiexternal.delete_event(config, event_id=event_id)
         else:
-            if not since and not before:
+            if all:
                 if dontask:
                     answer = "y"
                 else:
@@ -106,8 +107,10 @@ def delete(since=None, before=None, dontask=False, event_id=None):
                         answer = input("Really delete (clear) all events? (y/N)")
                     except:
                         answer = "n"
-            else:
+            elif before or since:
                 answer = "y"
+            else:
+                raise click.exceptions.BadArgumentUsage('Must include either an event_id, --all, --since, or --before')
 
             if 'y' == answer.lower():
                 ret = anchorecli.clients.apiexternal.delete_events(config, since=since, before=before)

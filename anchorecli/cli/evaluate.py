@@ -1,9 +1,6 @@
 import sys
-import os
-import re
 import json
 import click
-import urllib.request, urllib.parse, urllib.error
 
 import anchorecli.clients.apiexternal
 import anchorecli.cli.utils

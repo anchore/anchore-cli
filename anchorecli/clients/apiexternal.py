@@ -1,18 +1,13 @@
 import json
 import re
-import os
-import sys
 import requests
 import hashlib
 import logging
 import urllib3
-import urlparse
 import requests.packages.urllib3
-#from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-#urllib.disable_warnings(urllib.exceptions.InsecureRequestWarning)
 
 import anchorecli.clients.common
 
