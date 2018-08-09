@@ -5,6 +5,7 @@ import hashlib
 import logging
 import urllib3
 import requests.packages.urllib3
+from urllib.parse import urlparse, urlunparse
 
 requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -159,8 +160,8 @@ def detect_api_version(config):
     :return: tuple of ints
     """
 
-    url = urlparse.urlparse(config['url'])
-    url = urlparse.urlunparse((url.scheme, url.netloc, '/swagger.json', url.params, url.query, url.fragment))
+    url = urlparse(config['url'])
+    url = urlunparse((url.scheme, url.netloc, '/swagger.json', url.params, url.query, url.fragment))
 
     userId = config['user']
     password = config['pass']
