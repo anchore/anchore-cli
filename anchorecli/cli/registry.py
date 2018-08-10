@@ -46,7 +46,7 @@ def add(registry, registry_user, registry_pass, insecure, registry_type, skip_va
         #try to detect awsecr registry of form <accid>.dkr.ecr.<region>.amazonaws.com
         if not registry_type:
             if re.match("[0-9]+\.dkr\.ecr\..*\.amazonaws\.com", registry):
-                print("WARN: setting registry type to 'awsecr' based on form of input registry name, remove and re-add using '--registry-type docker_v2' to override", file=sys.stderr)
+                sys.stderr.write("WARN: setting registry type to 'awsecr' based on form of input registry name, remove and re-add using '--registry-type docker_v2' to override\n")
                 registry_type = "awsecr"
             else:
                 registry_type = "docker_v2"

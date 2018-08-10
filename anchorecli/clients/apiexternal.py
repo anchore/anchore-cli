@@ -5,7 +5,10 @@ import hashlib
 import logging
 import urllib3
 import requests.packages.urllib3
-from urllib.parse import urlparse, urlunparse
+try:
+    from urllib.parse import urlparse, urlunparse
+except:
+    from urlparse import urlparse,urlunparse
 
 requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
