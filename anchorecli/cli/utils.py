@@ -4,11 +4,15 @@ import sys
 import copy
 import json
 import yaml
-import urllib.request, urllib.parse, urllib.error
 import logging
 import dateutil.parser
 import struct
 
+try:
+    from urllib.parse import quote_plus,unquote_plus
+except:
+    from urllib import quote_plus,unquote_plus
+    
 from prettytable import PrettyTable, PLAIN_COLUMNS, ALL
 from collections import OrderedDict
 #from textwrap import fill
@@ -868,11 +872,11 @@ def discover_inputimage(config, input_string):
 
     patt = re.match(".*(sha256:.*)", input_string)
     if patt:
-        urldigest = urllib.parse.quote_plus(patt.group(1))
+        urldigest = quote_plus(patt.group(1))
         return("digest", input_string, urldigest)
 
     try:
-        digest = urllib.parse.unquote_plus(str(input_string))
+        digest = unquote_plus(str(input_string))
         patt = re.match(".*(sha256:.*)", digest)
         if patt:
             return("imageDigest", input_string, input_string)
