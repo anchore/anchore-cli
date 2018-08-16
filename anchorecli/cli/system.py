@@ -3,7 +3,6 @@ import os
 import re
 import json
 import click
-import urllib
 
 import anchorecli.clients.apiexternal
 import anchorecli.cli.utils
@@ -19,7 +18,7 @@ def system(ctx_config):
     try:
         anchorecli.cli.utils.check_access(config)
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'system', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'system', {}, err))
         sys.exit(2)
 
 @system.command(name='status', short_help="Check current anchore-engine system status")
@@ -30,11 +29,11 @@ def status():
         ret = anchorecli.clients.apiexternal.system_status(config)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret['success']:
-            print anchorecli.cli.utils.format_output(config, 'system_status', {}, ret['payload'])
+            print(anchorecli.cli.utils.format_output(config, 'system_status', {}, ret['payload']))
         else:
             raise Exception(json.dumps(ret['error'], indent=4))
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'system_status', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'system_status', {}, err))
         if not ecode:
             ecode = 2
 
@@ -50,11 +49,11 @@ def delete(host_id, servicename):
         ret = anchorecli.clients.apiexternal.delete_system_service(config, host_id, servicename)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret['success']:
-            print anchorecli.cli.utils.format_output(config, 'delete_system_service', {}, ret['payload'])
+            print(anchorecli.cli.utils.format_output(config, 'delete_system_service', {}, ret['payload']))
         else:
             raise Exception(json.dumps(ret['error'], indent=4))
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'delete_system_service', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'delete_system_service', {}, err))
         if not ecode:
             ecode = 2
 
@@ -79,7 +78,7 @@ def prune(filter_notdangling, filter_olderthan, dontask):
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret['success']:
             prune_candidates = ret['payload']
-            print anchorecli.cli.utils.format_output(config, 'prune_candidates', {}, ret['payload'])
+            print(anchorecli.cli.utils.format_output(config, 'prune_candidates', {}, ret['payload']))
         else:
             raise Exception(json.dumps(ret['error'], indent=4))
 
@@ -89,7 +88,7 @@ def prune(filter_notdangling, filter_olderthan, dontask):
                 answer = "y"
             else:
                 try:
-                    answer = raw_input("Really prune all above resources? (y/N)")
+                    answer = input("Really prune all above resources? (y/N)")
                 except:
                     answer = "n"
 
@@ -98,7 +97,7 @@ def prune(filter_notdangling, filter_olderthan, dontask):
                     ret = anchorecli.clients.apiexternal.perform_prune(config, 'all', prune_candidates)
                     ecode = anchorecli.cli.utils.get_ecode(ret)
                     if ret['success']:
-                        print anchorecli.cli.utils.format_output(config, 'pruned_resources', {}, ret['payload'])
+                        print(anchorecli.cli.utils.format_output(config, 'pruned_resources', {}, ret['payload']))
                     else:
                         raise Exception(json.dumps(ret['error'], indent=4))
                 except Exception as err:
@@ -106,7 +105,7 @@ def prune(filter_notdangling, filter_olderthan, dontask):
         
 
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'prune', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'prune', {}, err))
         if not ecode:
             ecode = 2
 
@@ -124,11 +123,11 @@ def list():
         ret = anchorecli.clients.apiexternal.system_feeds_list(config)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret['success']:
-            print anchorecli.cli.utils.format_output(config, 'system_feeds_list', {}, ret['payload'])
+            print(anchorecli.cli.utils.format_output(config, 'system_feeds_list', {}, ret['payload']))
         else:
             raise Exception(json.dumps(ret['error'], indent=4))
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'system_feeds_list', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'system_feeds_list', {}, err))
         if not ecode:
             ecode = 2
 
@@ -143,8 +142,8 @@ def flush(flush):
         answer = "n"
         try:
 
-            print "\nWARNING: This operation should not normally need to be performed except when the anchore-engine operator is certain that it is required - the operation will take a long time (hours) to complete, and there may be an impact on anchore-engine performance during the re-sync/flush.\n"
-            answer = raw_input("Really perform a manual feed data sync/flush? (y/N)")
+            print("\nWARNING: This operation should not normally need to be performed except when the anchore-engine operator is certain that it is required - the operation will take a long time (hours) to complete, and there may be an impact on anchore-engine performance during the re-sync/flush.\n")
+            answer = input("Really perform a manual feed data sync/flush? (y/N)")
         except:
             answer = "n"
 
@@ -153,12 +152,12 @@ def flush(flush):
             ecode = anchorecli.cli.utils.get_ecode(ret)
 
             if ret['success']:
-                print anchorecli.cli.utils.format_output(config, 'system_feeds_flush', {}, ret['payload'])
+                print(anchorecli.cli.utils.format_output(config, 'system_feeds_flush', {}, ret['payload']))
             else:
                 raise Exception(json.dumps(ret['error'], indent=4))
 
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'system_feeds_flush', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'system_feeds_flush', {}, err))
         if not ecode:
             ecode = 2
 

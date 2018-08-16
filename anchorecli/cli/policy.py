@@ -16,7 +16,7 @@ def policy(ctx_config):
     try:
         anchorecli.cli.utils.check_access(config)
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'policy', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'policy', {}, err))
         sys.exit(2)
 
 @policy.command(name='add', short_help="Add a policy bundle")
@@ -31,12 +31,12 @@ def add(input_policy):
         ret = anchorecli.clients.apiexternal.add_policy(config, policybundle=policybundle, detail=True)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret['success']:
-            print anchorecli.cli.utils.format_output(config, 'policy_add', {}, ret['payload'])
+            print(anchorecli.cli.utils.format_output(config, 'policy_add', {}, ret['payload']))
         else:
             raise Exception(json.dumps(ret['error'], indent=4))
 
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'policy_add', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'policy_add', {}, err))
         if not ecode:
             ecode = 2
 
@@ -55,12 +55,12 @@ def get(policyid, detail):
         ret = anchorecli.clients.apiexternal.get_policy(config, policyId=policyid, detail=detail)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret['success']:
-            print anchorecli.cli.utils.format_output(config, 'policy_get', {'detail':detail}, ret['payload'])
+            print(anchorecli.cli.utils.format_output(config, 'policy_get', {'detail':detail}, ret['payload']))
         else:
             raise Exception(json.dumps(ret['error'], indent=4))
 
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'policy_get', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'policy_get', {}, err))
         if not ecode:
             ecode = 2
 
@@ -74,12 +74,12 @@ def policylist():
         ret = anchorecli.clients.apiexternal.get_policies(config, detail=False)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret['success']:
-            print anchorecli.cli.utils.format_output(config, 'policy_list', {'detail':False}, ret['payload'])
+            print(anchorecli.cli.utils.format_output(config, 'policy_list', {'detail':False}, ret['payload']))
         else:
             raise Exception( json.dumps(ret['error'], indent=4))
 
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'policy_list', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'policy_list', {}, err))
         if not ecode:
             ecode = 2
 
@@ -112,12 +112,12 @@ def activate(policyid):
         ret = anchorecli.clients.apiexternal.update_policy(config, policyid, policy_record=policy_record)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret['success']:
-            print anchorecli.cli.utils.format_output(config, 'policy_activate', {'policyId': policyid}, ret['payload'])
+            print(anchorecli.cli.utils.format_output(config, 'policy_activate', {'policyId': policyid}, ret['payload']))
         else:
             raise Exception(json.dumps(ret['error'], indent=4))
 
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'policy_activate', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'policy_activate', {}, err))
         if not ecode:
             ecode = 2
 
@@ -135,12 +135,12 @@ def delete(policyid):
         ret = anchorecli.clients.apiexternal.delete_policy(config, policyId=policyid)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret['success']:
-            print anchorecli.cli.utils.format_output(config, 'policy_delete', {}, ret['payload'])
+            print(anchorecli.cli.utils.format_output(config, 'policy_delete', {}, ret['payload']))
         else:
             raise Exception(json.dumps(ret['error'], indent=4))
 
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'policy_delete', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'policy_delete', {}, err))
         if not ecode:
             ecode = 2
 
@@ -159,18 +159,18 @@ def describe(all=False, gate=None, trigger=None):
             render_payload = ret['payload']
 
             if not gate and not trigger:
-                print anchorecli.cli.utils.format_output(config, 'describe_gates', {'all': all}, render_payload)
+                print(anchorecli.cli.utils.format_output(config, 'describe_gates', {'all': all}, render_payload))
             elif gate and not trigger:
-                print anchorecli.cli.utils.format_output(config, 'describe_gate_triggers', {'gate': gate, 'all': all}, render_payload)
+                print(anchorecli.cli.utils.format_output(config, 'describe_gate_triggers', {'gate': gate, 'all': all}, render_payload))
             elif gate and trigger:
-                print anchorecli.cli.utils.format_output(config, 'describe_gate_trigger_params', {'gate': gate, 'trigger': trigger, 'all': all}, render_payload)
+                print(anchorecli.cli.utils.format_output(config, 'describe_gate_trigger_params', {'gate': gate, 'trigger': trigger, 'all': all}, render_payload))
             else:
                 raise click.Abort('Trigger can only be specified with --gate as well')
         else:
             raise Exception(json.dumps(ret['error'], indent=4))
 
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'describe_policy', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'describe_policy', {}, err))
         if not ecode:
             ecode = 2
 

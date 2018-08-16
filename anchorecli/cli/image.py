@@ -20,7 +20,7 @@ def image(ctx_config):
     try:
         anchorecli.cli.utils.check_access(config)
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'image', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'image', {}, err))
         sys.exit(2)
 
 @image.command(name='add', short_help="Add an image")
@@ -61,7 +61,7 @@ def add(input_image, force, dockerfile, annotation, noautosubscribe):
             ret = anchorecli.clients.apiexternal.add_image(config, tag=input_image, force=force, dockerfile=dockerfile_contents, annotations=annotations, autosubscribe=autosubscribe)
             ecode = anchorecli.cli.utils.get_ecode(ret)
             if ret['success']:
-                print anchorecli.cli.utils.format_output(config, 'image_add', {}, ret['payload'])
+                print(anchorecli.cli.utils.format_output(config, 'image_add', {}, ret['payload']))
             else:
                 raise Exception( json.dumps(ret['error'], indent=4))
         else:
@@ -69,7 +69,7 @@ def add(input_image, force, dockerfile, annotation, noautosubscribe):
 
 
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'image_add', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'image_add', {}, err))
         if not ecode:
             ecode = 2
 
@@ -87,12 +87,12 @@ def import_image(infile):
         ret = anchorecli.clients.apiexternal.import_image(config, anchore_data=anchore_data)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret['success']:
-            print anchorecli.cli.utils.format_output(config, 'image_import', {}, ret['payload'])
+            print(anchorecli.cli.utils.format_output(config, 'image_import', {}, ret['payload']))
         else:
             raise Exception(json.dumps(ret['error'], indent=4))
 
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'image_import', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'image_import', {}, err))
         if not ecode:
             ecode = 2
 
@@ -125,14 +125,14 @@ def get(input_image, show_history):
         if ret:
             ecode = anchorecli.cli.utils.get_ecode(ret)
             if ret['success']:
-                print anchorecli.cli.utils.format_output(config, 'image_get', {}, ret['payload'])
+                print(anchorecli.cli.utils.format_output(config, 'image_get', {}, ret['payload']))
             else:
                 raise Exception(json.dumps(ret['error'], indent=4))
         else:
             raise Exception("operation failed with empty response")
 
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'image_get', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'image_get', {}, err))
         if not ecode:
             ecode = 2
 
@@ -148,12 +148,12 @@ def imagelist(full, show_all):
         ret = anchorecli.clients.apiexternal.get_images(config)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret['success']:
-            print anchorecli.cli.utils.format_output(config, 'image_list', {'full':full, 'show_all':show_all}, ret['payload'])
+            print(anchorecli.cli.utils.format_output(config, 'image_list', {'full':full, 'show_all':show_all}, ret['payload']))
         else:
             raise Exception(json.dumps(ret['error'], indent=4))
 
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'image_list', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'image_list', {}, err))
         if not ecode:
             ecode = 2
 
@@ -190,14 +190,14 @@ def query_content(input_image, content_type):
             ecode = anchorecli.cli.utils.get_ecode(ret)
             if ret:
                 if ret['success']:
-                    print anchorecli.cli.utils.format_output(config, 'image_content', {'query_type':content_type}, ret['payload'])
+                    print(anchorecli.cli.utils.format_output(config, 'image_content', {'query_type':content_type}, ret['payload']))
                 else:
                     raise Exception (json.dumps(ret['error'], indent=4))
             else:
                 raise Exception("operation failed with empty response")
 
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'image_content', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'image_content', {}, err))
         if not ecode:
             ecode = 2
 
@@ -227,14 +227,14 @@ def query_metadata(input_image, metadata_type):
             ecode = anchorecli.cli.utils.get_ecode(ret)
             if ret:
                 if ret['success']:
-                    print anchorecli.cli.utils.format_output(config, 'image_metadata', {'query_type':metadata_type}, ret['payload'])
+                    print(anchorecli.cli.utils.format_output(config, 'image_metadata', {'query_type':metadata_type}, ret['payload']))
                 else:
                     raise Exception (json.dumps(ret['error'], indent=4))
             else:
                 raise Exception("operation failed with empty response")
 
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'image_metadata', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'image_metadata', {}, err))
         if not ecode:
             ecode = 2
 
@@ -265,14 +265,14 @@ def query_vuln(input_image, vuln_type, vendor_only):
 
             if ret:
                 if ret['success']:
-                    print anchorecli.cli.utils.format_output(config, 'image_vuln', {'query_type':vuln_type}, ret['payload'])
+                    print(anchorecli.cli.utils.format_output(config, 'image_vuln', {'query_type':vuln_type}, ret['payload']))
                 else:
                     raise Exception (json.dumps(ret['error'], indent=4))
             else:
                 raise Exception("operation failed with empty response")
 
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'image_vuln', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'image_vuln', {}, err))
         if not ecode:
             ecode = 2
 
@@ -299,14 +299,14 @@ def delete(input_image, force):
 
         if ret:
             if ret['success']:
-                print anchorecli.cli.utils.format_output(config, 'image_delete', {}, ret['payload'])
+                print(anchorecli.cli.utils.format_output(config, 'image_delete', {}, ret['payload']))
             else:
                 raise Exception(json.dumps(ret['error'], indent=4))
         else:
             raise Exception("operation failed with empty response")
 
     except Exception as err:
-        print anchorecli.cli.utils.format_error_output(config, 'image_delete', {}, err)
+        print(anchorecli.cli.utils.format_error_output(config, 'image_delete', {}, err))
         if not ecode:
             ecode = 2
 

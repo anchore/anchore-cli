@@ -1,18 +1,17 @@
 import json
 import re
-import os
-import sys
 import requests
 import hashlib
 import logging
 import urllib3
-import urlparse
 import requests.packages.urllib3
-#from requests.packages.urllib3.exceptions import InsecureRequestWarning
+try:
+    from urllib.parse import urlparse, urlunparse
+except:
+    from urlparse import urlparse,urlunparse
 
 requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-#urllib.disable_warnings(urllib.exceptions.InsecureRequestWarning)
 
 import anchorecli.clients.common
 
@@ -164,8 +163,8 @@ def detect_api_version(config):
     :return: tuple of ints
     """
 
-    url = urlparse.urlparse(config['url'])
-    url = urlparse.urlunparse((url.scheme, url.netloc, '/swagger.json', url.params, url.query, url.fragment))
+    url = urlparse(config['url'])
+    url = urlunparse((url.scheme, url.netloc, '/swagger.json', url.params, url.query, url.fragment))
 
     userId = config['user']
     password = config['pass']
@@ -491,7 +490,9 @@ def activate_subscription(config, subscription_type, subscription_key):
 
     ret = {}
 
-    subscription_id = hashlib.md5('+'.join([userId, subscription_key, subscription_type])).hexdigest()
+    hashstr = '+'.join([userId, subscription_key, subscription_type]).encode('utf-8')
+    #subscription_id = hashlib.md5('+'.join([userId, subscription_key, subscription_type])).hexdigest()
+    subscription_id = hashlib.md5(hashstr).hexdigest()
 
     base_url = re.sub("/$", "", base_url)
     url = '/'.join([base_url, "subscriptions", subscription_id])
@@ -513,7 +514,9 @@ def deactivate_subscription(config, subscription_type, subscription_key):
 
     ret = {}
 
-    subscription_id = hashlib.md5('+'.join([userId, subscription_key, subscription_type])).hexdigest()
+    hashstr = '+'.join([userId, subscription_key, subscription_type]).encode('utf-8')
+    #subscription_id = hashlib.md5('+'.join([userId, subscription_key, subscription_type])).hexdigest()
+    subscription_id = hashlib.md5(hashstr).hexdigest()
 
     base_url = re.sub("/$", "", base_url)
     url = '/'.join([base_url, "subscriptions", subscription_id])
@@ -555,7 +558,9 @@ def delete_subscription(config, subscription_type=None, subscription_key=None):
 
     ret = {}
 
-    subscription_id = hashlib.md5('+'.join([userId, subscription_key, subscription_type])).hexdigest()
+    hashstr = '+'.join([userId, subscription_key, subscription_type]).encode('utf-8')
+    #subscription_id = hashlib.md5('+'.join([userId, subscription_key, subscription_type])).hexdigest()
+    subscription_id = hashlib.md5(hashstr).hexdigest()
 
     base_url = re.sub("/$", "", base_url)
     url = '/'.join([base_url, "subscriptions", subscription_id])
