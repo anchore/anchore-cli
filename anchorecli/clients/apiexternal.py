@@ -6,8 +6,9 @@ import logging
 import urllib3
 import requests.packages.urllib3
 try:
-    from urllib.parse import urlparse, urlunparse
+    from urllib.parse import urlparse, urlunparse, urlencode
 except:
+    from urllib import urlencode
     from urlparse import urlparse,urlunparse
 
 requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
@@ -1016,6 +1017,76 @@ def delete_event(config, event_id):
         _logger.debug("DELETE insecure="+str(config['ssl_verify']))
 
         r = requests.delete(url, params=params, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
+        ret = anchorecli.clients.common.make_client_result(r, raw=False)
+    except Exception as err:
+        raise err
+
+    return(ret)
+
+def query_images_by_vulnerability(config, vulnerability_id, namespace=None, affected_package=None, severity=None, vendor_only=True):
+    userId = config['user']
+    password = config['pass']
+    base_url = config['url']
+    # api_version_query_support = (0, 1, 6)
+
+    ret = {}
+    params = {}
+    # api_version = detect_api_version(config)
+
+    base_url = re.sub("/$", "", base_url)
+    url = '/'.join([base_url, "query/images/by_vulnerability?vulnerability_id={}".format(vulnerability_id)])
+
+    query_params = {}
+    if namespace:
+        query_params['namespace'] = namespace
+    if affected_package:
+        query_params['affected_package'] = affected_package
+    if severity:
+        query_params['severity'] = severity
+    if vendor_only:
+        query_params['vendor_only'] = vendor_only
+    
+    if query_params:
+        url = "{}&{}".format(url, urlencode(query_params))
+
+    try:
+        _logger.debug("GET url="+str(url))
+        _logger.debug("GET insecure="+str(config['ssl_verify']))
+
+        r = requests.get(url, params=params, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
+        ret = anchorecli.clients.common.make_client_result(r, raw=False)
+    except Exception as err:
+        raise err
+
+    return(ret)
+
+def query_images_by_package(config, name, version=None, package_type=None):
+    userId = config['user']
+    password = config['pass']
+    base_url = config['url']
+    # api_version_query_support = (0, 1, 6)
+
+    ret = {}
+    params = {}
+    # api_version = detect_api_version(config)
+
+    base_url = re.sub("/$", "", base_url)
+    url = '/'.join([base_url, "query/images/by_package?name={}".format(name)])
+
+    query_params = {}
+    if version:
+        query_params['version'] = version
+    if package_type:
+        query_params['package_type'] = package_type
+    
+    if query_params:
+        url = "{}&{}".format(url, urlencode(query_params))
+
+    try:
+        _logger.debug("GET url="+str(url))
+        _logger.debug("GET insecure="+str(config['ssl_verify']))
+
+        r = requests.get(url, params=params, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
         raise err

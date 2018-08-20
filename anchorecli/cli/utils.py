@@ -692,7 +692,33 @@ def format_output(config, op, params, payload):
             ret = t.get_string()
         elif op == 'event_get':
             ret = yaml.safe_dump(payload['event'], default_flow_style=False)
-
+        elif op == 'query_images_by_vulnerability':
+            vulnerability_id = params.get('vulnerability_id')
+            #header = ['Severity', 'Full Tag', 'Package', 'Package Type', 'Namespace', 'Digest']
+            header = ['Full Tag', 'Severity', 'Package', 'Package Type', 'Namespace', 'Digest']
+            t = PrettyTable(header)
+            t.set_style(PLAIN_COLUMNS)
+            t.align = 'l'            
+            for record in payload.get('images', []):
+                for tag_record in record.get('image', {}).get('tag_history', []):
+                    for package_record in record.get('vulnerable_packages', []):
+                        row = [tag_record.get('fulltag', "N/A"), package_record.get('severity', "N/A"), "{}-{}".format(package_record.get("name"), package_record.get("version")), package_record.get("type"), package_record.get('namespace', "N/A"), record.get('image', {}).get('imageDigest', "N/A")]
+                        t.add_row(row)
+            ret = t.get_string()
+        elif op == 'query_images_by_package':
+            vulnerability_id = params.get('vulnerability_id')
+            header = ['Full Tag', 'Package', 'Package Type', 'Digest']
+            t = PrettyTable(header)
+            t.set_style(PLAIN_COLUMNS)
+            t.align = 'l'            
+            for record in payload.get('images', []):
+                for tag_record in record.get('image', {}).get('tag_history', []):
+                    for package_record in record.get('packages', []):
+                        row = [tag_record.get('fulltag', "N/A"), "{}-{}".format(package_record.get("name"), package_record.get("version")), package_record.get("type"), record.get('image', {}).get('imageDigest', "N/A")]
+                        t.add_row(row)
+            ret = t.get_string()
+        else:
+            raise Exception("no output handler for this operation")
     except Exception as err:
         print("WARNING: failed to format output (returning raw output) - exception: " + str(err))
         try:
