@@ -64,6 +64,7 @@ def delete(host_id, servicename):
 @click.option("--filter-olderthan", default=None, help="Filter resources to those older than specified number of hours")
 @click.option("--dontask", is_flag=True, help="Do not ask for confirmation")
 def prune(filter_notdangling, filter_olderthan, dontask):
+    global input
     ecode = 0
 
     dangling = not filter_notdangling
@@ -87,6 +88,10 @@ def prune(filter_notdangling, filter_olderthan, dontask):
             if dontask:
                 answer = "y"
             else:
+                try:
+                    input = raw_input
+                except NameError:
+                    pass
                 try:
                     answer = input("Really prune all above resources? (y/N)")
                 except:
@@ -136,15 +141,19 @@ def list():
 @feeds.command(name="sync", short_help="Fetch latest updates from the feed service")
 @click.option("--flush", is_flag=True, help="Flush all previous data, including CVE matches, and resync from scratch")
 def flush(flush):
+    global input
     ecode = 0
 
     try:
         answer = "n"
         try:
-
             print("\nWARNING: This operation should not normally need to be performed except when the anchore-engine operator is certain that it is required - the operation will take a long time (hours) to complete, and there may be an impact on anchore-engine performance during the re-sync/flush.\n")
+            try:
+                input = raw_input
+            except NameError:
+                pass
             answer = input("Really perform a manual feed data sync/flush? (y/N)")
-        except:
+        except Exception as err:
             answer = "n"
 
         if 'y' == answer.lower():

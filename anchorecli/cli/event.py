@@ -88,6 +88,7 @@ def get(event_id):
 @click.argument('event_id', nargs=1, required=False)
 @click.option('--all', help='Delete all events', is_flag=True, default=False)
 def delete(since=None, before=None, dontask=False, event_id=None, all=False):
+    global input
     """
     EVENT_ID: ID of the event to be deleted. --since and --before options will be ignored if this is specified
 
@@ -103,6 +104,10 @@ def delete(since=None, before=None, dontask=False, event_id=None, all=False):
                 if dontask:
                     answer = "y"
                 else:
+                    try:
+                        input = raw_input
+                    except NameError:
+                        pass
                     try:
                         answer = input("Really delete (clear) all events? (y/N)")
                     except:
