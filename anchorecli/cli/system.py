@@ -140,7 +140,7 @@ def list():
 
 @feeds.command(name="sync", short_help="Fetch latest updates from the feed service")
 @click.option("--flush", is_flag=True, help="Flush all previous data, including CVE matches, and resync from scratch")
-def flush(flush):
+def feedsync(flush):
     global input
     ecode = 0
 
