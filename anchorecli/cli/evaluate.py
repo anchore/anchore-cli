@@ -47,7 +47,7 @@ def check(input_image, show_history, detail, tag, policy):
             ecode = anchorecli.cli.utils.get_ecode(ret)
             if ret['success']:
                 print(anchorecli.cli.utils.format_output(config, 'evaluate_check', {'detail': detail, 'history': show_history, 'tag': thetag}, ret['payload']))
-                ecode = anchorecli.cli.utils.get_eval_ecode(ret['payload'], imageDigest)
+                ecode = anchorecli.cli.utils.get_eval_ecode(ret['payload'], anchorecli.cli.utils.unquote_plus(imageDigest))
             else:
                 raise Exception(json.dumps(ret['error'], indent=4))
         else:
