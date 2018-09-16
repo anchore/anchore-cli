@@ -26,6 +26,7 @@ def setup_config(cli_opts):
         'user':None,
         'pass':None,
         'url':"http://localhost:8228/v1",
+        'api-version': None,
         'ssl_verify':True,
         'jsonmode':False,
         'debug':False,
@@ -50,7 +51,7 @@ def setup_config(cli_opts):
                         raise Exception("invalid credentials file format")
 
                     default_creds = ydata.get('default', {})
-                    for e in ['ANCHORE_CLI_USER', 'ANCHORE_CLI_PASS', 'ANCHORE_CLI_URL', 'ANCHORE_CLI_SSL_VERIFY']:
+                    for e in ['ANCHORE_CLI_USER', 'ANCHORE_CLI_PASS', 'ANCHORE_CLI_URL', 'ANCHORE_CLI_API_VERSION', 'ANCHORE_CLI_SSL_VERIFY']:
                         if e in default_creds:
                             settings[e] = default_creds[e]
                 except Exception as err:
@@ -61,7 +62,7 @@ def setup_config(cli_opts):
     
     # load environment if present
     try:
-        for e in ['ANCHORE_CLI_USER', 'ANCHORE_CLI_PASS', 'ANCHORE_CLI_URL', 'ANCHORE_CLI_SSL_VERIFY', 'ANCHORE_CLI_JSON', 'ANCHORE_CLI_DEBUG']:
+        for e in ['ANCHORE_CLI_USER', 'ANCHORE_CLI_PASS', 'ANCHORE_CLI_URL', 'ANCHORE_CLI_API_VERSION', 'ANCHORE_CLI_SSL_VERIFY', 'ANCHORE_CLI_JSON', 'ANCHORE_CLI_DEBUG']:
             if e in os.environ:
                 settings[e] = os.environ[e]
     except Exception as err:
@@ -77,6 +78,9 @@ def setup_config(cli_opts):
 
         if cli_opts['url']:
             settings['ANCHORE_CLI_URL'] = cli_opts['url']
+
+        if cli_opts['api-version']:
+            settings['ANCHORE_CLI_API_VERSION'] = cli_opts['api-version']
 
         if cli_opts['insecure']:
             settings['ANCHORE_CLI_SSL_VERIFY'] = "n"
@@ -98,6 +102,8 @@ def setup_config(cli_opts):
         if 'ANCHORE_CLI_URL' in settings:
             ret['url'] = settings['ANCHORE_CLI_URL']
 
+        if 'ANCHORE_CLI_API_VERSION' in settings:
+            ret['api-version'] = settings['ANCHORE_CLI_API_VERSION']
         if 'ANCHORE_CLI_SSL_VERIFY' in settings:
             if settings['ANCHORE_CLI_SSL_VERIFY'].lower() == 'n':
                 ret['ssl_verify'] = False
