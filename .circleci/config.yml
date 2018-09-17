@@ -50,7 +50,7 @@ jobs:
       - run:
           name: Save Docker image
           command: |
-            rm -rf /home/circleci/workspace/caches/
+            rm -rf /home/circleci/workspace/caches/ || true
             mkdir /home/circleci/workspace/caches/ -p
             docker save -o /home/circleci/workspace/caches/${CIRCLE_PROJECT_REPONAME}-ci.tar ${IMAGE_NAME}:ci
       - save_cache:
