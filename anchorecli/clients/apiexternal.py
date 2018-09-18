@@ -163,6 +163,8 @@ def detect_api_version(config):
     :param config:
     :return: tuple of ints
     """
+    if config['api-version']:
+        return tuple([int(x) for x in config['api-version'].split('.')])
 
     url = urlparse(config['url'])
     url = urlunparse((url.scheme, url.netloc, '/swagger.json', url.params, url.query, url.fragment))

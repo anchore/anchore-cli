@@ -16,13 +16,14 @@ import anchorecli.clients
 @click.option('--u', help='Username (or use environment variable ANCHORE_CLI_USER)')
 @click.option('--p', help='Password (or use environment variable ANCHORE_CLI_PASS)')
 @click.option('--url', help='Service URL (or use environment variable ANCHORE_CLI_URL)')
+@click.option('--api-version', help='Explicitly specify the API version to skip checking. Useful when swagger endpoint is inaccessible')
 @click.option('--insecure', is_flag=True, help='Skip SSL cert checks (or use environment variable ANCHORE_CLI_SSL_VERIFY=<y/n>)')
 @click.option('--json', is_flag=True, help='Output raw API JSON')
 
 @click.version_option(version=version.version)
 @click.pass_context
 #@extended_help_option(extended_help="extended help")
-def main_entry(ctx, debug, u, p, url, insecure, json):
+def main_entry(ctx, debug, u, p, url, api_version, insecure, json):
     if debug:
         logging.basicConfig(level=logging.DEBUG)
 
@@ -30,6 +31,7 @@ def main_entry(ctx, debug, u, p, url, insecure, json):
         'u': u,
         'p': p,
         'url': url,
+        'api-version': api_version,
         'insecure': insecure,
         'json': json,
         'debug': debug
