@@ -632,39 +632,6 @@ def format_output(config, op, params, payload):
                 ret = 'Success'
         elif re.match(".*_delete$", op) or re.match(".*_activate$", op) or re.match(".*_deactivate$", op):
             ret = 'Success'
-        elif op in ['prune_candidates', 'pruned_resources']:
-            obuf = ""
-            try:
-                header = ['ResourceType', 'UserId', 'ResourceId', 'Created']
-                t = PrettyTable(header)
-                t.set_style(PLAIN_COLUMNS)
-                t.align = 'l'                        
-
-                if payload[op]:
-                    for resource in payload[op]:
-                        try:
-                            if resource['resourcetype'] == 'archive':
-                                idstr = '/'.join([resource['resource_ids']['bucket'], resource['resource_ids']['archiveId']])
-                            elif resource['resourcetype'] == 'subscriptions':
-                                idstr = '='.join([resource['resource_ids']['subscription_type'], resource['resource_ids']['subscription_key']])
-                            elif resource['resourcetype'] == 'evaluations':
-                                idstr = resource['resource_ids']['evalId']
-                            else:
-                                idstr = '/'.join(list(resource['resource_ids'].values()))
-                            t.add_row([resource['resourcetype'], resource['userId'], idstr, str(resource['created_at'])])
-                        except Exception as err:
-                            raise err
-
-                    ret = t.get_string(sortby='ResourceType')+"\n"
-                else:
-                    if op == 'prune_candidates':
-                        ret = "No resources to prune"
-                    elif op == 'prune_resources':
-                        ret = "No resources were pruned"
-                    else:
-                        ret = "Nothing to do"
-            except Exception as err:
-                raise err
         elif op in ['describe_gates']:
             ret = _format_gates(payload, all=params.get('all', False))
         elif op in ['describe_gate_triggers']:
