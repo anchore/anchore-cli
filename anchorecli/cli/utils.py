@@ -364,6 +364,8 @@ def format_output(config, op, params, payload):
                 outdict = OrderedDict()
 
                 outdict['Image Digest'] = str(image_record['imageDigest'])
+                if image_record.get('parentDigest', None):
+                    outdict['Parent Digest'] = str(image_record['parentDigest'])
                 outdict['Analysis Status'] = str(image_record['analysis_status'])
                 outdict['Image Type'] = str(image_record['image_type'])
 

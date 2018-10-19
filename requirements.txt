@@ -1,6 +1,6 @@
 click
 prettytable
 requests
-urllib3
+urllib3==1.23
 python-dateutil
 PyYAML
