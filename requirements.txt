@@ -1,6 +1,6 @@
-click
-prettytable
-requests
+click==7.0
+prettytable==0.7.2
+requests==2.20.0
 urllib3==1.23
-python-dateutil
-PyYAML
+python-dateutil==2.7.3
+PyYAML==3.13
