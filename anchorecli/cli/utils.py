@@ -632,8 +632,6 @@ def format_output(config, op, params, payload):
                 ret = 'Deleted {} events'.format(len(payload)) if payload else 'No matching events found'
             else:
                 ret = 'Success'
-        elif re.match(".*_delete$", op) or re.match(".*_activate$", op) or re.match(".*_deactivate$", op):
-            ret = 'Success'
         elif op in ['describe_gates']:
             ret = _format_gates(payload, all=params.get('all', False))
         elif op in ['describe_gate_triggers']:
@@ -692,8 +690,74 @@ def format_output(config, op, params, payload):
                         row = [tag_record.get('fulltag', "N/A"), "{}-{}".format(package_record.get("name"), package_record.get("version")), package_record.get("type"), record.get('image', {}).get('imageDigest', "N/A")]
                         t.add_row(row)
             ret = t.get_string()
+        elif op == 'account_whoami':
+            outdict = OrderedDict()
+            
+            outdict['Username'] = payload.get('user', {}).get('username', "N/A")
+            outdict['AccountName'] = payload.get('account', {}).get('name', "N/A")
+            outdict['AccountEmail'] = payload.get('account', {}).get('email', "N/A")
+            outdict['AccountType'] = payload.get('account', {}).get('type', "N/A")
+
+            obuf = ""
+            for k in list(outdict.keys()):
+                obuf = obuf + k + ": " + outdict[k] + "\n"
+            obuf = obuf + "\n"
+
+            ret = obuf
+        elif op in ['account_add', 'account_get']:
+            outdict = OrderedDict()
+            
+            outdict['Name'] = payload.get('name', "N/A")
+            outdict['Email'] = payload.get('email', "N/A")
+            outdict['Type'] = payload.get('type', "N/A")
+            outdict['Active'] = payload.get('is_active', False)
+            outdict['Created'] = payload.get('created_at', "N/A")
+
+            obuf = ""
+            for k in list(outdict.keys()):
+                obuf = obuf + "{}: {}\n".format(k, outdict[k])
+            obuf = obuf + "\n"
+
+            ret = obuf
+        elif op in ['account_list']:
+            header = ['Name', 'Email', 'Type', 'Active', 'Created']
+            t = PrettyTable(header)
+            t.set_style(PLAIN_COLUMNS)
+            t.align = 'l'            
+            for record in payload:
+                row = [record.get('name', "N/A"), record.get('email', "N/A"), record.get('type', "N/A"), str(record.get('is_active', False)), record.get('created_at', "N/A")]
+                t.add_row(row)
+            #ret = t.get_string()
+            ret = t.get_string(sortby='Created')+"\n"
+
+        elif op in ['user_add', 'user_get']:
+            outdict = OrderedDict()
+            
+            outdict['Name'] = payload.get('username', "N/A")
+            outdict['Created'] = payload.get('created_at', "N/A")
+
+            obuf = ""
+            for k in list(outdict.keys()):
+                obuf = obuf + "{}: {}\n".format(k, outdict[k])
+            obuf = obuf + "\n"
+
+            ret = obuf
+        elif op in ['user_list']:
+            header = ['Name', 'Created']
+            t = PrettyTable(header)
+            t.set_style(PLAIN_COLUMNS)
+            t.align = 'l'            
+            for record in payload:
+                row = [record.get('username', "N/A"), record.get('created_at', "N/A")]
+                t.add_row(row)
+            ret = t.get_string(sortby='Created')+"\n"            
+        elif op in ['user_setpassword']:
+            ret = "Password (re)set success"
+        elif re.match(".*_delete$", op) or re.match(".*_activate$", op) or re.match(".*_deactivate$", op):
+            # NOTE this should always be the last in the if/elif conditional
+            ret = 'Success'
         else:
-            raise Exception("no output handler for this operation")
+            raise Exception("no output handler for this operation ({})".format(op))
     except Exception as err:
         print("WARNING: failed to format output (returning raw output) - exception: " + str(err))
         try:
@@ -1014,9 +1078,4 @@ def parse_dockerimage_string(instr):
         ret['pullstring'] = None
 
     return(ret)
-
-
-            
-        
-
 

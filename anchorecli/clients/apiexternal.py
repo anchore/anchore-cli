@@ -1030,3 +1030,247 @@ def query_images_by_package(config, name, version=None, package_type=None):
         raise err
 
     return(ret)
+
+# account clients
+
+def add_account(config, account_name=None, email=None):
+    userId = config['user']
+    password = config['pass']
+    base_url = config['url']
+
+    ret = {}
+
+    base_url = re.sub("/$", "", base_url)
+    url = '/'.join([base_url, "accounts"])
+
+    payload = {}
+
+    payload.update({'name': account_name})
+    if email:
+        payload['email'] = email
+
+    try:
+        _logger.debug("POST url="+str(url))
+        r = requests.post(url, data=json.dumps(payload), auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
+        ret = anchorecli.clients.common.make_client_result(r, raw=False)
+    except Exception as err:
+        raise err
+
+    return(ret)
+
+
+def get_account(config, account_name=None):
+    userId = config['user']
+    password = config['pass']
+    base_url = config['url']
+
+    ret = {}
+
+    base_url = re.sub("/$", "", base_url)
+
+    if account_name:
+        url = '/'.join([base_url, "accounts", account_name])
+    else:
+        url = '/'.join([base_url, "account"])
+
+    try:
+        _logger.debug("GET url="+str(url))
+        r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
+        ret = anchorecli.clients.common.make_client_result(r, raw=False)
+    except Exception as err:
+        raise err
+
+    return(ret)
+
+
+def list_accounts(config):
+    userId = config['user']
+    password = config['pass']
+    base_url = config['url']
+
+    ret = {}
+
+    base_url = re.sub("/$", "", base_url)
+    url = '/'.join([base_url, "accounts"])
+
+    try:
+        _logger.debug("GET url="+str(url))
+        r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
+        ret = anchorecli.clients.common.make_client_result(r, raw=False)
+    except Exception as err:
+        raise err
+
+    return(ret)
+
+
+def del_account(config, account_name=None):
+    userId = config['user']
+    password = config['pass']
+    base_url = config['url']
+
+    ret = {}
+
+    base_url = re.sub("/$", "", base_url)
+    url = '/'.join([base_url, "accounts", account_name])
+
+    try:
+        _logger.debug("DELETE url="+str(url))
+        r = requests.delete(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
+        ret = anchorecli.clients.common.make_client_result(r, raw=False)
+    except Exception as err:
+        raise err
+
+    return(ret)
+
+
+def activate_account(config, account_name=None):
+    userId = config['user']
+    password = config['pass']
+    base_url = config['url']
+
+    ret = {}
+
+    base_url = re.sub("/$", "", base_url)
+    url = '/'.join([base_url, "accounts", account_name, 'activate'])
+
+    try:
+        _logger.debug("POST url="+str(url))
+        r = requests.post(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
+        ret = anchorecli.clients.common.make_client_result(r, raw=False)
+    except Exception as err:
+        raise err
+
+    return(ret)
+
+
+def deactivate_account(config, account_name=None):
+    userId = config['user']
+    password = config['pass']
+    base_url = config['url']
+
+    ret = {}
+
+    base_url = re.sub("/$", "", base_url)
+    url = '/'.join([base_url, "accounts", account_name, 'deactivate'])
+
+    try:
+        _logger.debug("POST url="+str(url))
+        r = requests.post(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
+        ret = anchorecli.clients.common.make_client_result(r, raw=False)
+    except Exception as err:
+        raise err
+
+    return(ret)
+
+# user clients
+
+def add_user(config, account_name=None, user_name=None, user_password=None):
+    userId = config['user']
+    password = config['pass']
+    base_url = config['url']
+
+    ret = {}
+
+    base_url = re.sub("/$", "", base_url)
+    url = '/'.join([base_url, "accounts", account_name, 'users'])
+
+    payload = {}
+    payload.update({'username': user_name, 'password': user_password})
+
+    try:
+        _logger.debug("POST url="+str(url))
+        r = requests.post(url, data=json.dumps(payload), auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
+        ret = anchorecli.clients.common.make_client_result(r, raw=False)
+    except Exception as err:
+        raise err
+
+    return(ret)
+
+
+def get_user(config, account_name=None, user_name=None):
+    userId = config['user']
+    password = config['pass']
+    base_url = config['url']
+
+    ret = {}
+
+    base_url = re.sub("/$", "", base_url)
+    if account_name and user_name:
+        url = '/'.join([base_url, "accounts", account_name, 'users', user_name])
+    elif not account_name and not user_name:
+        url = '/'.join([base_url, "user"])
+    else:
+        return(ret)
+
+    try:
+        _logger.debug("GET url="+str(url))
+        r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
+        ret = anchorecli.clients.common.make_client_result(r, raw=False)
+    except Exception as err:
+        raise err
+
+    return(ret)
+
+
+def del_user(config, account_name=None, user_name=None):
+    userId = config['user']
+    password = config['pass']
+    base_url = config['url']
+
+    ret = {}
+
+    base_url = re.sub("/$", "", base_url)
+    url = '/'.join([base_url, "accounts", account_name, 'users', user_name])
+
+    try:
+        _logger.debug("DELETE url="+str(url))
+        r = requests.delete(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
+        ret = anchorecli.clients.common.make_client_result(r, raw=False)
+    except Exception as err:
+        raise err
+
+    return(ret)
+
+
+def list_users(config, account_name=None):
+    userId = config['user']
+    password = config['pass']
+    base_url = config['url']
+
+    ret = {}
+
+    base_url = re.sub("/$", "", base_url)
+    if account_name:
+        url = '/'.join([base_url, "accounts", account_name, 'users'])
+
+    try:
+        _logger.debug("GET url="+str(url))
+        r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
+        ret = anchorecli.clients.common.make_client_result(r, raw=False)
+    except Exception as err:
+        raise err
+
+    return(ret)
+
+def update_user_password(config, account_name=None, user_name=None, user_password=None):
+    userId = config['user']
+    password = config['pass']
+    base_url = config['url']
+
+    ret = {}
+
+    base_url = re.sub("/$", "", base_url)
+    url = '/'.join([base_url, "accounts", account_name, 'users', user_name, 'credentials'])
+
+    payload = {}
+    payload.update({'type': 'password', 'value': user_password})
+
+    try:
+        _logger.debug("POST url="+str(url))
+        r = requests.post(url, data=json.dumps(payload), auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
+        ret = anchorecli.clients.common.make_client_result(r, raw=False)
+    except Exception as err:
+        raise err
+
+    return(ret)        
+        

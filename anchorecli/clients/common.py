@@ -14,7 +14,7 @@ def make_client_result(response, raw=False):
     try:
         ret['httpcode'] = response.status_code
 
-        if response.status_code == 200:
+        if response.status_code in range(200, 299):
             ret['success'] = True
             if raw == True:
                 ret['payload'] = response.text
