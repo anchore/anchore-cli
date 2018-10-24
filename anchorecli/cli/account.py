@@ -148,7 +148,7 @@ def delete(account_name, dontask):
         except NameError:
             pass
         try:
-            answer = input("This operation is irreversible. Really delete account {} along with *all* users and resources associated with this account? (y/N)")
+            answer = input("This operation is irreversible. Really delete account {} along with *all* users and resources associated with this account? (y/N)".format(account_name))
         except:
             answer = "n"
 
