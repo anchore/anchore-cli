@@ -174,6 +174,11 @@ def format_error_output(config, op, params, payload):
     except Exception as err:
         obuf = str(payload)
 
+    # operation-specific output postfixes
+    if op in ['account_delete']:
+        if "Invalid account state change requested" in errdata.get('message', ""):
+            obuf = obuf + "\nNOTE: accounts must be disabled (anchore-cli account disable <account>) in order to be deleted\n"
+
     ret = obuf
     return(ret)
             
@@ -710,7 +715,7 @@ def format_output(config, op, params, payload):
             outdict['Name'] = payload.get('name', "N/A")
             outdict['Email'] = payload.get('email', "N/A")
             outdict['Type'] = payload.get('type', "N/A")
-            outdict['Active'] = payload.get('is_active', False)
+            outdict['State'] = payload.get('state', "N/A")
             outdict['Created'] = payload.get('created_at', "N/A")
 
             obuf = ""
@@ -720,12 +725,12 @@ def format_output(config, op, params, payload):
 
             ret = obuf
         elif op in ['account_list']:
-            header = ['Name', 'Email', 'Type', 'Active', 'Created']
+            header = ['Name', 'Email', 'Type', 'State', 'Created']
             t = PrettyTable(header)
             t.set_style(PLAIN_COLUMNS)
             t.align = 'l'            
             for record in payload:
-                row = [record.get('name', "N/A"), record.get('email', "N/A"), record.get('type', "N/A"), str(record.get('is_active', False)), record.get('created_at', "N/A")]
+                row = [record.get('name', "N/A"), record.get('email', "N/A"), record.get('type', "N/A"), record.get('state', "N/A"), record.get('created_at', "N/A")]
                 t.add_row(row)
             #ret = t.get_string()
             ret = t.get_string(sortby='Created')+"\n"
@@ -753,7 +758,7 @@ def format_output(config, op, params, payload):
             ret = t.get_string(sortby='Created')+"\n"            
         elif op in ['user_setpassword']:
             ret = "Password (re)set success"
-        elif re.match(".*_delete$", op) or re.match(".*_activate$", op) or re.match(".*_deactivate$", op):
+        elif re.match(".*_delete$", op) or re.match(".*_activate$", op) or re.match(".*_deactivate$", op) or re.match(".*_enable$", op) or re.match(".*_disable$", op):
             # NOTE this should always be the last in the if/elif conditional
             ret = 'Success'
         else:

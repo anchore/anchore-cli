@@ -1123,7 +1123,7 @@ def del_account(config, account_name=None):
     return(ret)
 
 
-def activate_account(config, account_name=None):
+def enable_account(config, account_name=None):
     userId = config['user']
     password = config['pass']
     base_url = config['url']
@@ -1131,11 +1131,14 @@ def activate_account(config, account_name=None):
     ret = {}
 
     base_url = re.sub("/$", "", base_url)
-    url = '/'.join([base_url, "accounts", account_name, 'activate'])
+    url = '/'.join([base_url, "accounts", account_name, 'state'])
+
+    payload = {}
+    payload.update({'state': 'enabled'})
 
     try:
-        _logger.debug("POST url="+str(url))
-        r = requests.post(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
+        _logger.debug("PUT url="+str(url))
+        r = requests.put(url, data=json.dumps(payload), auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
         raise err
@@ -1143,7 +1146,7 @@ def activate_account(config, account_name=None):
     return(ret)
 
 
-def deactivate_account(config, account_name=None):
+def disable_account(config, account_name=None):
     userId = config['user']
     password = config['pass']
     base_url = config['url']
@@ -1151,11 +1154,14 @@ def deactivate_account(config, account_name=None):
     ret = {}
 
     base_url = re.sub("/$", "", base_url)
-    url = '/'.join([base_url, "accounts", account_name, 'deactivate'])
+    url = '/'.join([base_url, "accounts", account_name, 'state'])
+
+    payload = {}
+    payload.update({'state': 'disabled'})
 
     try:
-        _logger.debug("POST url="+str(url))
-        r = requests.post(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
+        _logger.debug("PUT url="+str(url))
+        r = requests.put(url, data=json.dumps(payload), auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
         raise err

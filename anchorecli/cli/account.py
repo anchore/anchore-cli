@@ -63,6 +63,9 @@ def add(account_name, email):
     ecode = 0
 
     try:
+        if not re.match("^[a-z0-9][a-z0-9_-]{1,126}[a-z0-9]$", account_name):
+            raise Exception("Account name provided is invalid. Please create an account with a valid, URL-friendly account name at least 5 characters long that contains no spaces. You can use letters, numbers, underscores (_), and hyphens (-).")
+
         ret = anchorecli.clients.apiexternal.add_account(config, account_name=account_name, email=email)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret['success']:
@@ -125,75 +128,91 @@ def list_accounts():
     anchorecli.cli.utils.doexit(ecode)
 
 
-@account.command(name='del', short_help="Delete an account (must be deactivated first)")
+@account.command(name='del', short_help="Delete an account (must be disabled first)")
 @click.argument('account_name', nargs=1, required=True)
-def delete(account_name):
+@click.option('--dontask', is_flag=True, help="Do not prompt for confirmation of account deletion")
+def delete(account_name, dontask):
+    global input
     """
-    ACCOUNT_NAME: name of account to delete (must be deactivated first)
+    ACCOUNT_NAME: name of account to delete (must be disabled first)
+
+    """
+    ecode = 0
+
+    answer = "n"
+    if dontask:
+        answer = "y"
+    else:
+        try:
+            input = raw_input
+        except NameError:
+            pass
+        try:
+            answer = input("This operation is irreversible. Really delete account {} along with *all* users and resources associated with this account? (y/N)")
+        except:
+            answer = "n"
+
+    if answer.lower() == "y":
+        try:
+            ret = anchorecli.clients.apiexternal.del_account(config, account_name=account_name)
+            ecode = anchorecli.cli.utils.get_ecode(ret)
+            if ret['success']:
+                print(anchorecli.cli.utils.format_output(config, 'account_delete', {}, ret['payload']))
+            else:
+                raise Exception( json.dumps(ret['error'], indent=4))
+
+        except Exception as err:
+            print(anchorecli.cli.utils.format_error_output(config, 'account_delete', {}, err))
+            if not ecode:
+                ecode = 2
+
+    anchorecli.cli.utils.doexit(ecode)
+
+
+@account.command(name='enable', short_help="Enable a disabled account")
+@click.argument('account_name', nargs=1, required=True)
+def enable(account_name):
+    """
+    ACCOUNT_NAME: name of account to enable
 
     """
     ecode = 0
 
     try:
-        ret = anchorecli.clients.apiexternal.del_account(config, account_name=account_name)
+        ret = anchorecli.clients.apiexternal.enable_account(config, account_name=account_name)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret['success']:
-            print(anchorecli.cli.utils.format_output(config, 'account_delete', {}, ret['payload']))
+            print(anchorecli.cli.utils.format_output(config, 'account_enable', {}, ret['payload']))
         else:
             raise Exception( json.dumps(ret['error'], indent=4))
 
     except Exception as err:
-        print(anchorecli.cli.utils.format_error_output(config, 'account_delete', {}, err))
+        print(anchorecli.cli.utils.format_error_output(config, 'account_enable', {}, err))
         if not ecode:
             ecode = 2
 
     anchorecli.cli.utils.doexit(ecode)
 
 
-@account.command(name='activate', short_help="Activate a deactivated account")
+@account.command(name='disable', short_help="Disable an enabled account")
 @click.argument('account_name', nargs=1, required=True)
-def activate(account_name):
+def disable(account_name):
     """
-    ACCOUNT_NAME: name of account to activate
+    ACCOUNT_NAME: name of account to disable
 
     """
     ecode = 0
 
     try:
-        ret = anchorecli.clients.apiexternal.activate_account(config, account_name=account_name)
+        ret = anchorecli.clients.apiexternal.disable_account(config, account_name=account_name)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret['success']:
-            print(anchorecli.cli.utils.format_output(config, 'account_activate', {}, ret['payload']))
+            print(anchorecli.cli.utils.format_output(config, 'account_disable', {}, ret['payload']))
         else:
             raise Exception( json.dumps(ret['error'], indent=4))
 
     except Exception as err:
-        print(anchorecli.cli.utils.format_error_output(config, 'account_activate', {}, err))
-        if not ecode:
-            ecode = 2
-
-    anchorecli.cli.utils.doexit(ecode)
-
-
-@account.command(name='deactivate', short_help="Deactivate an activated account")
-@click.argument('account_name', nargs=1, required=True)
-def deactivate(account_name):
-    """
-    ACCOUNT_NAME: name of account to deactivate
-
-    """
-    ecode = 0
-
-    try:
-        ret = anchorecli.clients.apiexternal.deactivate_account(config, account_name=account_name)
-        ecode = anchorecli.cli.utils.get_ecode(ret)
-        if ret['success']:
-            print(anchorecli.cli.utils.format_output(config, 'account_deactivate', {}, ret['payload']))
-        else:
-            raise Exception( json.dumps(ret['error'], indent=4))
-
-    except Exception as err:
-        print(anchorecli.cli.utils.format_error_output(config, 'account_deactivate', {}, err))
+        print(anchorecli.cli.utils.format_error_output(config, 'account_disable', {}, err))
         if not ecode:
             ecode = 2
 
@@ -224,6 +243,12 @@ def user_add(user_name, user_password, account):
     ecode = 0
 
     try:
+        # do some input validation
+        if not re.match("^[a-z0-9][a-z0-9_-]{1,126}[a-z0-9]$", user_name):
+            raise Exception("Username provided is invalid. Please create a user with a valid, URL-friendly username at least 5 characters long that contains no spaces. You can use letters, numbers, underscores (_), and hyphens (-).")
+        if not re.match(".{6,128}$", user_password):
+            raise Exception("Please enter a password at least 6 characters long that contains no spaces.")
+
         ret = anchorecli.clients.apiexternal.add_user(config, account_name=account, user_name=user_name, user_password=user_password)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret['success']:
