@@ -698,10 +698,10 @@ def format_output(config, op, params, payload):
         elif op == 'account_whoami':
             outdict = OrderedDict()
             
-            outdict['Username'] = payload.get('user', {}).get('username', "N/A")
-            outdict['AccountName'] = payload.get('account', {}).get('name', "N/A")
-            outdict['AccountEmail'] = payload.get('account', {}).get('email', "N/A")
-            outdict['AccountType'] = payload.get('account', {}).get('type', "N/A")
+            outdict['Username'] = str(payload.get('user', {}).get('username', "N/A"))
+            outdict['AccountName'] = str(payload.get('account', {}).get('name', "N/A"))
+            outdict['AccountEmail'] = str(payload.get('account', {}).get('email', "N/A"))
+            outdict['AccountType'] = str(payload.get('account', {}).get('type', "N/A"))
 
             obuf = ""
             for k in list(outdict.keys()):
@@ -712,11 +712,11 @@ def format_output(config, op, params, payload):
         elif op in ['account_add', 'account_get']:
             outdict = OrderedDict()
             
-            outdict['Name'] = payload.get('name', "N/A")
-            outdict['Email'] = payload.get('email', "N/A")
-            outdict['Type'] = payload.get('type', "N/A")
-            outdict['State'] = payload.get('state', "N/A")
-            outdict['Created'] = payload.get('created_at', "N/A")
+            outdict['Name'] = str(payload.get('name', "N/A"))
+            outdict['Email'] = str(payload.get('email', "N/A"))
+            outdict['Type'] = str(payload.get('type', "N/A"))
+            outdict['State'] = str(payload.get('state', "N/A"))
+            outdict['Created'] = str(payload.get('created_at', "N/A"))
 
             obuf = ""
             for k in list(outdict.keys()):
@@ -730,7 +730,7 @@ def format_output(config, op, params, payload):
             t.set_style(PLAIN_COLUMNS)
             t.align = 'l'            
             for record in payload:
-                row = [record.get('name', "N/A"), record.get('email', "N/A"), record.get('type', "N/A"), record.get('state', "N/A"), record.get('created_at', "N/A")]
+                row = [str(record.get('name', "N/A")), str(record.get('email', "N/A")), str(record.get('type', "N/A")), str(record.get('state', "N/A")), str(record.get('created_at', "N/A"))]
                 t.add_row(row)
             #ret = t.get_string()
             ret = t.get_string(sortby='Created')+"\n"
@@ -738,8 +738,8 @@ def format_output(config, op, params, payload):
         elif op in ['user_add', 'user_get']:
             outdict = OrderedDict()
             
-            outdict['Name'] = payload.get('username', "N/A")
-            outdict['Created'] = payload.get('created_at', "N/A")
+            outdict['Name'] = str(payload.get('username', "N/A"))
+            outdict['Created'] = str(payload.get('created_at', "N/A"))
 
             obuf = ""
             for k in list(outdict.keys()):
@@ -753,7 +753,7 @@ def format_output(config, op, params, payload):
             t.set_style(PLAIN_COLUMNS)
             t.align = 'l'            
             for record in payload:
-                row = [record.get('username', "N/A"), record.get('created_at', "N/A")]
+                row = [str(record.get('username', "N/A")), str(record.get('created_at', "N/A"))]
                 t.add_row(row)
             ret = t.get_string(sortby='Created')+"\n"            
         elif op in ['user_setpassword']:
