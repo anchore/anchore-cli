@@ -64,7 +64,7 @@ def add(account_name, email):
 
     try:
         if not re.match("^[a-z0-9][a-z0-9_-]{1,126}[a-z0-9]$", account_name):
-            raise Exception("Account name provided is invalid. Please create an account with a valid, URL-friendly account name at least 5 characters long that contains no spaces. You can use letters, numbers, underscores (_), and hyphens (-).")
+            raise Exception("Account name provided is invalid. Please create an account with a valid, URL-friendly account name at between 3 and 128 characters long that contains no spaces, with the first and last character being a letter or number. You can use letters, numbers, underscores (_), and hyphens (-).")
 
         ret = anchorecli.clients.apiexternal.add_account(config, account_name=account_name, email=email)
         ecode = anchorecli.cli.utils.get_ecode(ret)
@@ -245,7 +245,7 @@ def user_add(user_name, user_password, account):
     try:
         # do some input validation
         if not re.match("^[a-z0-9][a-z0-9_-]{1,126}[a-z0-9]$", user_name):
-            raise Exception("Username provided is invalid. Please create a user with a valid, URL-friendly username at least 5 characters long that contains no spaces. You can use letters, numbers, underscores (_), and hyphens (-).")
+            raise Exception("Account name provided is invalid. Please create an account with a valid, URL-friendly account name at between 3 and 128 characters long that contains no spaces, with the first and last character being a letter or number. You can use letters, numbers, underscores (_), and hyphens (-).")
         if not re.match(".{6,128}$", user_password):
             raise Exception("Please enter a password at least 6 characters long that contains no spaces.")
 
