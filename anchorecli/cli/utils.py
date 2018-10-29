@@ -758,7 +758,7 @@ def format_output(config, op, params, payload):
             ret = t.get_string(sortby='Created')+"\n"            
         elif op in ['user_setpassword']:
             ret = "Password (re)set success"
-        elif re.match(".*_delete$", op) or re.match(".*_activate$", op) or re.match(".*_deactivate$", op) or re.match(".*_enable$", op) or re.match(".*_disable$", op):
+        elif op in ['delete_system_service'] or re.match(".*_delete$", op) or re.match(".*_activate$", op) or re.match(".*_deactivate$", op) or re.match(".*_enable$", op) or re.match(".*_disable$", op):
             # NOTE this should always be the last in the if/elif conditional
             ret = 'Success'
         else:
