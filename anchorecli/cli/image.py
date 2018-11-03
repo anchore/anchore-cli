@@ -4,6 +4,7 @@ import re
 import json
 import click
 import logging
+import time
 
 import anchorecli.clients.apiexternal
 import anchorecli.cli.utils
@@ -22,6 +23,68 @@ def image(ctx_config):
     except Exception as err:
         print(anchorecli.cli.utils.format_error_output(config, 'image', {}, err))
         sys.exit(2)
+
+
+@image.command(short_help="Wait for an image to analyze")
+@click.argument('input_image')
+@click.option('--timeout', type=float, default=-1.0, help="Time to wait, if < 0, wait forever, if 0, do not wait")
+@click.option('--interval', type=float, default=5.0)
+def wait(input_image, timeout, interval):
+    """
+    Wait for an image to go to analyzed or analysis_failed status with a specific timeout
+
+    :param input_image:
+    :param timeout:
+    :return:
+    """
+    ecode = 0
+
+    try:
+        itype = anchorecli.cli.utils.discover_inputimage_format(config, input_image)
+        image = input_image
+        #timeout = float(timeout)
+        t1 = time.time()
+        while timeout < 0 or time.time() - t1 < timeout:
+            _logger.debug("discovery from input: " + str(itype) + " : " + str(image))
+            if itype == 'tag':
+                ret = anchorecli.clients.apiexternal.get_image(config, tag=image, history=False)
+            elif itype == 'imageid':
+                ret = anchorecli.clients.apiexternal.get_image(config, image_id=image, history=False)
+            elif itype == 'imageDigest':
+                ret = anchorecli.clients.apiexternal.get_image(config, imageDigest=image, history=False)
+            else:
+                ecode = 1
+                raise Exception("cannot use input image string: no discovered imageDigest")
+
+            if ret['payload'] and ret['payload'][0]['analysis_status'] in ['analyzed', 'analysis_failed']:
+                break
+            else:
+                if not ret['payload']:
+                    raise Exception('Requested image not found in system')
+                print('Status: {}'.format(ret['payload'][0]['analysis_status']))
+
+
+            print('Waiting {} seconds for retry. Total timeout remaining: {}'.format(interval, int(timeout - (time.time() - t1))))
+            time.sleep(interval)
+        else:
+            raise Exception('Timed-out waiting for analyis status to reach terminal state (analyzed or analysis_failed)')
+
+        if ret:
+            ecode = anchorecli.cli.utils.get_ecode(ret)
+            if ret['success']:
+                print(anchorecli.cli.utils.format_output(config, 'image_get', {}, ret['payload']))
+            else:
+                raise Exception(json.dumps(ret['error'], indent=4))
+        else:
+            raise Exception("operation failed with empty response")
+
+    except Exception as err:
+        print(anchorecli.cli.utils.format_error_output(config, 'image_get', {}, err))
+        if not ecode:
+            ecode = 2
+
+    anchorecli.cli.utils.doexit(ecode)
+
 
 @image.command(name='add', short_help="Add an image")
 @click.argument('input_image', nargs=1)
