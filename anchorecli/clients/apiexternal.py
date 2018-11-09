@@ -166,20 +166,39 @@ def detect_api_version(config):
     if config['api-version']:
         return tuple([int(x) for x in config['api-version'].split('.')])
 
-    url = urlparse(config['url'])
-    url = urlunparse((url.scheme, url.netloc, '/swagger.json', url.params, url.query, url.fragment))
-
     userId = config['user']
     password = config['pass']
 
-    # Detect if we can use query params or must use the GET body
-    resp = requests.get(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
-    if not resp or not resp.json().get('info').get('version'):
-        return None
-    else:
-        version = tuple([int(x) for x in resp.json().get('info').get('version').split('.')])
-        return version
+    # contruct candidate URLs for finding the anchore-engine swagger.json document, supporting indirection through proxies and base anchore-engine service
+    urls = []
+    try:
+        url = urlparse(config['url'])
+        url = urlunparse((url.scheme, url.netloc, '/swagger.json', url.params, url.query, url.fragment))
+        urls.append(url)
+    except:
+        pass
 
+    try:
+        url = '/'.join([re.sub("/$", "", config['url']), "swagger.json"])
+        urls.append(url)
+    except:
+        pass
+
+    for url in urls:
+        # Detect if we can use query params or must use the GET body
+        version = None
+        try:
+            resp = requests.get(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
+            if not resp or not resp.json().get('info').get('version'):
+                pass
+            else:
+                version = tuple([int(x) for x in resp.json().get('info').get('version').split('.')])
+        except:
+            pass
+        if version:
+            return(version)
+
+    return(None)
 
 def get_image(config, tag=None, image_id=None, imageDigest=None, history=False):
     userId = config['user']
