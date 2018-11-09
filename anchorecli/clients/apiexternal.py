@@ -195,10 +195,11 @@ def detect_api_version(config):
                 version = tuple([int(x) for x in resp.json().get('info').get('version').split('.')])
         except:
             pass
+
         if version:
             return(version)
 
-    return(None)
+    return(tuple([0]))
 
 def get_image(config, tag=None, image_id=None, imageDigest=None, history=False):
     userId = config['user']
