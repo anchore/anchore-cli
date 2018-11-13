@@ -170,6 +170,8 @@ def format_error_output(config, op, params, payload):
 
         for k in list(outdict.keys()):
             obuf = obuf + k + ": " + outdict[k] + "\n"
+        if not obuf:
+            raise Exception("not JSON output could be parsed from error response")
         #obuf = obuf + "\n"
     except Exception as err:
         obuf = str(payload)

@@ -34,6 +34,9 @@ def make_client_result(response, raw=False):
                     ret['error'] = json.loads(response.text)
                 except:
                     ret['error'] = response.text
+
+            if not ret.get('error', None) and response.status_code in [401]:
+                ret['error'] = "Unauthorized - please check your username/password"
     except Exception as err:
         raise err
 
