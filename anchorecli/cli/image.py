@@ -63,8 +63,11 @@ def wait(input_image, timeout, interval):
                     raise Exception('Requested image not found in system')
                 print('Status: {}'.format(ret['payload'][0]['analysis_status']))
 
+            if timeout > 0:
+                print('Waiting {} seconds for next retry. Total timeout remaining: {}'.format(interval, int(timeout - (time.time() - t1))))
+            else:
+                print('Waiting {} seconds for next retry.'.format(interval))
 
-            print('Waiting {} seconds for retry. Total timeout remaining: {}'.format(interval, int(timeout - (time.time() - t1))))
             time.sleep(interval)
         else:
             raise Exception('Timed-out waiting for analyis status to reach terminal state (analyzed or analysis_failed)')
