@@ -27,8 +27,8 @@ def image(ctx_config):
 
 @image.command(short_help="Wait for an image to analyze")
 @click.argument('input_image')
-@click.option('--timeout', type=float, default=-1.0, help="Time to wait, if < 0, wait forever, if 0, do not wait")
-@click.option('--interval', type=float, default=5.0)
+@click.option('--timeout', type=float, default=-1.0, help="Time to wait, in seconds.  If < 0, wait forever, if 0, do not wait (default=-1)")
+@click.option('--interval', type=float, default=5.0, help="Interval between checks, in seconds (default=5)")
 def wait(input_image, timeout, interval):
     """
     Wait for an image to go to analyzed or analysis_failed status with a specific timeout
