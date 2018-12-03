@@ -94,7 +94,6 @@ def wait(timeout, interval, feedsready, servicesready):
                 ecode = anchorecli.cli.utils.get_ecode(ret)
                 if ret['success']:
 
-
                     for service_record in ret.get('payload', {}).get('service_states', []):
                         s = service_record.get('servicename', None)
                         if s:
@@ -112,6 +111,8 @@ def wait(timeout, interval, feedsready, servicesready):
                         break;
                     else:
                         _logger.debug("service set not yet available {}".format(all_up))
+                elif ret.get('httpcode', 500) in [401]:
+                    raise Exception("service responded with 401 Unauthorized - please check anchore-engine credentials and try again")
             except Exception as err:
                 print ("service status failed {}".format(err))
             time.sleep(interval)
