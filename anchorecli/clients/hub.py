@@ -44,7 +44,7 @@ def _fetch_bundle(config, bundlename=None, auth=(None, None)):
     url = None
     for record in index['content']:
         if record['type'] == 'bundle' and record['name'] == bundlename:
-            url = record['location']
+            url = config['hub-url'] + '/' + record['location']
 
     if not url:
         raise Exception("Bundle name {} not found in index".format(bundlename))
