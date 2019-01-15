@@ -16,7 +16,6 @@ except:
 
 from prettytable import PrettyTable, PLAIN_COLUMNS, ALL
 from collections import OrderedDict
-#from textwrap import fill
 
 import anchorecli.clients.apiexternal
 

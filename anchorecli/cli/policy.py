@@ -8,16 +8,18 @@ import anchorecli.cli
 config = {}
 
 @click.group(name='policy', short_help='Policy operations')
+@click.pass_context
 @click.pass_obj
-def policy(ctx_config):
+def policy(ctx_config, ctx):
     global config
     config = ctx_config
 
-    try:
-        anchorecli.cli.utils.check_access(config)
-    except Exception as err:
-        print(anchorecli.cli.utils.format_error_output(config, 'policy', {}, err))
-        sys.exit(2)
+    if ctx.invoked_subcommand not in ['hub']:
+        try:
+            anchorecli.cli.utils.check_access(config)
+        except Exception as err:
+            print(anchorecli.cli.utils.format_error_output(config, 'policy', {}, err))
+            sys.exit(2)
 
 @policy.command(name='add', short_help="Add a policy bundle")
 @click.argument('input_policy', nargs=1, type=click.Path(exists=True), metavar='<Anchore Policy Bundle File>')
@@ -178,8 +180,14 @@ def describe(all=False, gate=None, trigger=None):
 
 
 @policy.group(name="hub", short_help="Anchore Hub Operations")
-def hub():
-    pass
+@click.pass_context
+def hub(ctx):
+    if ctx.invoked_subcommand not in ['list', 'get']:
+        try:
+            anchorecli.cli.utils.check_access(config)
+        except Exception as err:
+            print(anchorecli.cli.utils.format_error_output(config, 'policy', {}, err))
+            sys.exit(2)
 
 @hub.command(name='list')
 def hublist():

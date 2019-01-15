@@ -20,7 +20,8 @@ import anchorecli.clients.common
 _logger = logging.getLogger(__name__)
 
 def _get_hub_index(config, auth=(None, None)):
-    base_url = config['hub-url']
+    base_url = re.sub("/$", "", config['hub-url'])
+
     index = {}
     url = "{}/index.json".format(base_url)
     try:
@@ -34,7 +35,8 @@ def _get_hub_index(config, auth=(None, None)):
     return(index)
 
 def _fetch_bundle(config, bundlename=None, auth=(None, None)):
-    base_url = config['hub-url']
+    base_url = re.sub("/$", "", config['hub-url'])
+
     ret = anchorecli.clients.hub.get_policies(config)
     if ret['success']:
         index = ret['payload']
@@ -44,7 +46,7 @@ def _fetch_bundle(config, bundlename=None, auth=(None, None)):
     url = None
     for record in index['content']:
         if record['type'] == 'bundle' and record['name'] == bundlename:
-            url = record['location']
+            url = '/'.join([base_url, record['location']])
 
     if not url:
         raise Exception("Bundle name {} not found in index".format(bundlename))
