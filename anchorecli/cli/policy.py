@@ -2,7 +2,7 @@ import sys
 import json
 import click
 
-import anchorecli.clients.apiexternal
+import anchorecli.clients.apiexternal, anchorecli.clients.hub
 import anchorecli.cli
 
 config = {}
@@ -171,6 +171,50 @@ def describe(all=False, gate=None, trigger=None):
 
     except Exception as err:
         print(anchorecli.cli.utils.format_error_output(config, 'describe_policy', {}, err))
+        if not ecode:
+            ecode = 2
+
+    anchorecli.cli.utils.doexit(ecode)
+
+
+@policy.group(name="hub", short_help="Anchore Hub Operations")
+def hub():
+    pass
+
+@hub.command(name='list')
+def hublist():
+    ecode = 0
+    
+    try:
+        ret = anchorecli.clients.hub.get_policies(config)
+        if ret['success']:
+            print(anchorecli.cli.utils.format_output(config, 'policy_hub_list', {}, ret['payload']))
+        else:
+            raise Exception( json.dumps(ret['error'], indent=4))
+
+    except Exception as err:
+        print(anchorecli.cli.utils.format_error_output(config, 'policy_hub_list', {}, err))
+        if not ecode:
+            ecode = 2
+
+    anchorecli.cli.utils.doexit(ecode)
+
+@hub.command(name='install')
+@click.argument('bundlename', nargs=1)
+@click.option('--target-id', help='Override bundle target ID with supplied ID string')
+@click.option('--force', help='Install specified bundleid in place of existing policy bundle with same ID, if present', is_flag=True)
+def hubinstall(bundlename, target_id, force):
+    ecode = 0
+    
+    try:
+        ret = anchorecli.clients.hub.install_policy(config, bundlename, target_id=target_id, force=force)
+        if ret['success']:
+            print(anchorecli.cli.utils.format_output(config, 'policy_add', {}, ret['payload']))
+        else:
+            raise Exception( json.dumps(ret['error'], indent=4))
+
+    except Exception as err:
+        print(anchorecli.cli.utils.format_error_output(config, 'policy_hub_install', {}, err))
         if not ecode:
             ecode = 2
 
