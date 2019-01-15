@@ -26,6 +26,7 @@ def setup_config(cli_opts):
         'user':None,
         'pass':None,
         'url':"http://localhost:8228/v1",
+        'hub-url':"http://localhost:8080/",
         'api-version': None,
         'ssl_verify':True,
         'jsonmode':False,
@@ -51,7 +52,7 @@ def setup_config(cli_opts):
                         raise Exception("invalid credentials file format")
 
                     default_creds = ydata.get('default', {})
-                    for e in ['ANCHORE_CLI_USER', 'ANCHORE_CLI_PASS', 'ANCHORE_CLI_URL', 'ANCHORE_CLI_API_VERSION', 'ANCHORE_CLI_SSL_VERIFY']:
+                    for e in ['ANCHORE_CLI_USER', 'ANCHORE_CLI_PASS', 'ANCHORE_CLI_URL', 'ANCHORE_CLI_HUB_URL', 'ANCHORE_CLI_API_VERSION', 'ANCHORE_CLI_SSL_VERIFY']:
                         if e in default_creds:
                             settings[e] = default_creds[e]
                 except Exception as err:
@@ -62,7 +63,7 @@ def setup_config(cli_opts):
     
     # load environment if present
     try:
-        for e in ['ANCHORE_CLI_USER', 'ANCHORE_CLI_PASS', 'ANCHORE_CLI_URL', 'ANCHORE_CLI_API_VERSION', 'ANCHORE_CLI_SSL_VERIFY', 'ANCHORE_CLI_JSON', 'ANCHORE_CLI_DEBUG']:
+        for e in ['ANCHORE_CLI_USER', 'ANCHORE_CLI_PASS', 'ANCHORE_CLI_URL', 'ANCHORE_CLI_HUB_URL', 'ANCHORE_CLI_API_VERSION', 'ANCHORE_CLI_SSL_VERIFY', 'ANCHORE_CLI_JSON', 'ANCHORE_CLI_DEBUG']:
             if e in os.environ:
                 settings[e] = os.environ[e]
     except Exception as err:
@@ -78,6 +79,9 @@ def setup_config(cli_opts):
 
         if cli_opts['url']:
             settings['ANCHORE_CLI_URL'] = cli_opts['url']
+
+        if cli_opts['hub-url']:
+            settings['ANCHORE_CLI_HUB_URL'] = cli_opts['hub-url']
 
         if cli_opts['api-version']:
             settings['ANCHORE_CLI_API_VERSION'] = cli_opts['api-version']
@@ -101,6 +105,8 @@ def setup_config(cli_opts):
             ret['pass'] = settings['ANCHORE_CLI_PASS']
         if 'ANCHORE_CLI_URL' in settings:
             ret['url'] = settings['ANCHORE_CLI_URL']
+        if 'ANCHORE_CLI_HUB_URL' in settings:
+            ret['hub-url'] = settings['ANCHORE_CLI_HUB_URL']
 
         if 'ANCHORE_CLI_API_VERSION' in settings:
             ret['api-version'] = settings['ANCHORE_CLI_API_VERSION']

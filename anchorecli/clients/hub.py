@@ -39,7 +39,7 @@ def get_policies(config):
         'httpcode': 500,
     }
 
-    hub_base_url = "http://localhost:8080/"
+    hub_base_url = config['hub-url']
 
     try:
         index = _get_hub_index(base_url=hub_base_url)
@@ -48,7 +48,7 @@ def get_policies(config):
         ret['httpcode'] = 200
     except Exception as err:
         ret['success'] = False
-        ret['error'] = err
+        ret['error'] = str(err)
 
     return(ret)
 
