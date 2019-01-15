@@ -19,7 +19,8 @@ import anchorecli.clients.common
 
 _logger = logging.getLogger(__name__)
 
-def _get_hub_index(base_url=None, auth=(None, None)):
+def _get_hub_index(config, auth=(None, None)):
+    base_url = config['hub-url']
     index = {}
     url = "{}/index.json".format(base_url)
     try:
@@ -32,17 +33,58 @@ def _get_hub_index(base_url=None, auth=(None, None)):
         raise err
     return(index)
 
-def get_policies(config):
+def _fetch_bundle(config, bundlename=None, auth=(None, None)):
+    base_url = config['hub-url']
+    ret = anchorecli.clients.hub.get_policies(config)
+    if ret['success']:
+        index = ret['payload']
+    else:
+        raise Exception(ret['error'])
+
+    url = None
+    for record in index['content']:
+        if record['type'] == 'bundle' and record['name'] == bundlename:
+            url = record['location']
+
+    if not url:
+        raise Exception("Bundle name {} not found in index".format(bundlename))
+
+    bundle = None
+    r = requests.get(url, auth=auth)
+    if r.status_code not in range(200, 299):
+        raise Exception("Could not fetch index from {} - server responded with {}".format(url, r))
+    else:
+        bundle = r.json()
+
+    return(bundle)
+
+def get_policy(config, bundlename, auth=(None, None)):
     ret = {
         'success': False,
         'payload': {},
         'httpcode': 500,
     }
 
-    hub_base_url = config['hub-url']
+    try:
+        bundle = _fetch_bundle(config, bundlename=bundlename, auth=auth)
+        ret['payload'] = bundle
+        ret['httpcode'] = 200
+        ret['success'] = True
+    except Exception as err:
+        ret['success'] = False
+        ret['error'] = str(err)
+
+    return(ret)
+
+def get_policies(config, auth=(None, None)):
+    ret = {
+        'success': False,
+        'payload': {},
+        'httpcode': 500,
+    }
 
     try:
-        index = _get_hub_index(base_url=hub_base_url)
+        index = _get_hub_index(config, auth=auth)
         ret['success'] = True
         ret['payload'] = index
         ret['httpcode'] = 200
@@ -60,31 +102,13 @@ def install_policy(config, bundlename, target_id=None, force=False, auth=(None, 
     }
 
     try:
-        ret = anchorecli.clients.hub.get_policies(config)
-        if ret['success']:
-            index = ret['payload']
+        bundle = _fetch_bundle(config, bundlename=bundlename, auth=auth)
+
+        if target_id:
+            bundleid = target_id
         else:
-            raise Exception(ret['error'])
-
-        url = None
-        for record in index['content']:
-            if record['type'] == 'bundle' and record['name'] == bundlename:
-                url = record['location']
-
-        if not url:
-            raise Exception("Bundle name {} not found in index".format(bundlename))
-
-        bundle = None
-        r = requests.get(url, auth=auth)
-        if r.status_code not in range(200, 299):
-            raise Exception("Could not fetch index from {} - server responded with {}".format(url, r))
-        else:
-            bundle = r.json()
-            if target_id:
-                bundleid = target_id
-            else:
-                bundleid = bundle['name']
-            bundle['id'] = bundleid
+            bundleid = bundle['name']
+        bundle['id'] = bundleid
 
         if not force:
             ret = anchorecli.clients.apiexternal.get_policies(config)

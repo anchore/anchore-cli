@@ -199,6 +199,26 @@ def hublist():
 
     anchorecli.cli.utils.doexit(ecode)
 
+@hub.command(name='get')
+@click.argument('bundlename', nargs=1)
+def hubget(bundlename):
+    ecode = 0
+    
+    try:
+        ret = anchorecli.clients.hub.get_policy(config, bundlename)
+        if ret['success']:
+            print(anchorecli.cli.utils.format_output(config, 'policy_hub_get', {}, ret['payload']))
+        else:
+            raise Exception( json.dumps(ret['error'], indent=4))
+
+    except Exception as err:
+        print(anchorecli.cli.utils.format_error_output(config, 'policy_hub_get', {}, err))
+        if not ecode:
+            ecode = 2
+
+    anchorecli.cli.utils.doexit(ecode)
+    
+
 @hub.command(name='install')
 @click.argument('bundlename', nargs=1)
 @click.option('--target-id', help='Override bundle target ID with supplied ID string')

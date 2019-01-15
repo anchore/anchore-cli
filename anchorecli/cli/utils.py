@@ -7,6 +7,7 @@ import yaml
 import logging
 import dateutil.parser
 import struct
+import textwrap
 
 try:
     from urllib.parse import quote_plus,unquote_plus
@@ -532,7 +533,6 @@ def format_output(config, op, params, payload):
             ret = t.get_string(sortby='Active', reversesort=True)
 
         elif op == 'policy_hub_list':
-            import textwrap
             header = ['Name', 'Description', 'Updated']
             t = PrettyTable(header)
             t.set_style(PLAIN_COLUMNS)
@@ -544,7 +544,8 @@ def format_output(config, op, params, payload):
                     t.add_row(row)
 
             ret = t.get_string(sortby='Name', reversesort=True)
-
+        elif op == 'policy_hub_get':
+            ret = json.dumps(payload, indent=4, sort_keys=True)
         elif op == 'evaluate_check':
                 obuf = ""
 
