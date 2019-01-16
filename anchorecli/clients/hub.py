@@ -46,7 +46,7 @@ def _fetch_bundle(config, bundlename=None, auth=(None, None)):
     url = None
     for record in index['content']:
         if record['type'] == 'bundle' and record['name'] == bundlename:
-            url = config['hub-url'] + '/' + record['location']
+            url = base_url + '/' + record['location']
 
     if not url:
         raise Exception("Bundle name {} not found in index".format(bundlename))
@@ -54,7 +54,7 @@ def _fetch_bundle(config, bundlename=None, auth=(None, None)):
     bundle = None
     r = requests.get(url, auth=auth)
     if r.status_code not in range(200, 299):
-        raise Exception("Could not fetch index from {} - server responded with {}".format(url, r))
+        raise Exception("Could not fetch bundle from {} - server responded with {}".format(url, r))
     else:
         bundle = r.json()
 
