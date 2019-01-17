@@ -26,7 +26,7 @@ def setup_config(cli_opts):
         'user':None,
         'pass':None,
         'url':"http://localhost:8228/v1",
-        'hub-url':"http://localhost:8080/",
+        'hub-url':"http://anchore-hub-staticsite.s3-website-us-east-1.amazonaws.com/",
         'api-version': None,
         'ssl_verify':True,
         'jsonmode':False,
@@ -544,7 +544,51 @@ def format_output(config, op, params, payload):
 
             ret = t.get_string(sortby='Name', reversesort=True)
         elif op == 'policy_hub_get':
-            ret = json.dumps(payload, indent=4, sort_keys=True)
+            obuf = ""
+
+            outdict = OrderedDict()
+            
+            outdict['Policy Bundle ID'] = str(payload['id'])
+            outdict['Name'] = str(payload['name'])
+            outdict['Description'] = str(payload.get('description', payload.get('comment', "N/A")))
+
+            for k in list(outdict.keys()):
+                obuf = obuf + k + ": " + outdict[k] + "\n"
+            obuf = obuf + "\n"
+
+            id_to_name = {}
+            for record in payload['policies']:
+                outdict = OrderedDict()
+                outdict['Policy Name'] = record['name']
+                outdict['Policy Description'] = str(record.get('description', record.get('comment', "N/A")))
+                id_to_name[record['id']] = record['name']
+                for k in list(outdict.keys()):
+                    obuf = obuf + k + ": " + outdict[k] + "\n"
+                obuf = obuf + "\n"
+
+            for record in payload['whitelists']:
+                outdict = OrderedDict()
+                outdict['Whitelist Name'] = record['name']
+                outdict['Whitelist Description'] = str(record.get('description', record.get('comment', "N/A")))
+                id_to_name[record['id']] = record['name']
+                for k in list(outdict.keys()):
+                    obuf = obuf + k + ": " + outdict[k] + "\n"
+                obuf = obuf + "\n"
+
+            for record in payload['mappings']:
+                outdict = OrderedDict()
+                outdict['Mapping Name'] = record['name']
+                outdict['Mapping Rule'] = "{}/{}:{}".format(record['registry'],record['repository'],record['image']['value'])
+                pids = [str(id_to_name[x]) for x in [record.get('policy_id', None)] + record.get('policy_ids', [])]
+                outdict['Mapping Policies'] = ",".join(pids)
+                wids = [str(id_to_name[x]) for x in record.get('whitelist_ids', [])]
+                outdict['Mapping Whitelists'] = ",".join(wids)
+                for k in list(outdict.keys()):
+                    obuf = obuf + k + ": " + outdict[k] + "\n"
+                obuf = obuf + "\n"
+
+            ret = obuf
+            #ret = json.dumps(payload, indent=4, sort_keys=True)
         elif op == 'evaluate_check':
                 obuf = ""
 
