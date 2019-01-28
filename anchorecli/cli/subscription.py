@@ -21,8 +21,8 @@ def subscription(ctx_config):
         sys.exit(2)
 
 @subscription.command(name='activate', short_help="Activate a subscription")
-@click.argument('subscription_type', nargs=1)
-@click.argument('subscription_key', nargs=1, required=False)
+@click.argument('subscription_type', nargs=1, required=True)
+@click.argument('subscription_key', nargs=1, required=True)
 def activate(subscription_type, subscription_key):
     """
     SUBSCRIPTION_TYPE: Type of subscription. Valid options: 
@@ -53,8 +53,8 @@ def activate(subscription_type, subscription_key):
     anchorecli.cli.utils.doexit(ecode)
 
 @subscription.command(name='deactivate', short_help="Deactivate a subscription")
-@click.argument('subscription_type', nargs=1)
-@click.argument('subscription_key', nargs=1, required=False)
+@click.argument('subscription_type', nargs=1, required=True)
+@click.argument('subscription_key', nargs=1, required=True)
 def deactivate(subscription_type, subscription_key):
     """
     SUBSCRIPTION_TYPE: Type of subscription. Valid options: 
