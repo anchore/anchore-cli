@@ -26,7 +26,7 @@ def setup_config(cli_opts):
         'user':None,
         'pass':None,
         'url':"http://localhost:8228/v1",
-        'hub-url':"http://anchore-hub-staticsite.s3-website-us-east-1.amazonaws.com/",
+        'hub-url':"https://hub.anchore.io/",
         'api-version': None,
         'ssl_verify':True,
         'jsonmode':False,
@@ -551,7 +551,6 @@ def format_output(config, op, params, payload):
             outdict['Policy Bundle ID'] = str(payload['id'])
             outdict['Name'] = str(payload['name'])
             outdict['Description'] = str(payload.get('description', payload.get('comment', "N/A")))
-
             for k in list(outdict.keys()):
                 obuf = obuf + k + ": " + outdict[k] + "\n"
             obuf = obuf + "\n"
@@ -560,6 +559,7 @@ def format_output(config, op, params, payload):
             for record in payload['policies']:
                 outdict = OrderedDict()
                 outdict['Policy Name'] = record['name']
+                #outdict['Policy ID'] = record['id']
                 outdict['Policy Description'] = str(record.get('description', record.get('comment', "N/A")))
                 id_to_name[record['id']] = record['name']
                 for k in list(outdict.keys()):
@@ -569,6 +569,7 @@ def format_output(config, op, params, payload):
             for record in payload['whitelists']:
                 outdict = OrderedDict()
                 outdict['Whitelist Name'] = record['name']
+                #outdict['Whitelist ID'] = record['id']
                 outdict['Whitelist Description'] = str(record.get('description', record.get('comment', "N/A")))
                 id_to_name[record['id']] = record['name']
                 for k in list(outdict.keys()):
@@ -579,7 +580,11 @@ def format_output(config, op, params, payload):
                 outdict = OrderedDict()
                 outdict['Mapping Name'] = record['name']
                 outdict['Mapping Rule'] = "{}/{}:{}".format(record['registry'],record['repository'],record['image']['value'])
-                pids = [str(id_to_name[x]) for x in [record.get('policy_id', None)] + record.get('policy_ids', [])]
+                pids = []
+                pid = record.get('policy_id', None)
+                if pid:
+                    pids.append(pid) 
+                pids = [str(id_to_name[x]) for x in pids + record.get('policy_ids', [])]
                 outdict['Mapping Policies'] = ",".join(pids)
                 wids = [str(id_to_name[x]) for x in record.get('whitelist_ids', [])]
                 outdict['Mapping Whitelists'] = ",".join(wids)
