@@ -993,7 +993,7 @@ def check_access(config):
 def discover_inputimage_format(config, input_string):
     itype = None
 
-    if re.match("^sha256:[0-9a-fA-F]{64}", input_string):
+    if re.match("(sha256|local):[0-9a-fA-F]{64}", input_string):
         itype = 'imageDigest'
     elif re.match("[0-9a-fA-F]{64}", input_string):
         itype = 'imageid'
@@ -1006,17 +1006,17 @@ def discover_inputimage(config, input_string):
     type = None
     image = None
 
-    patt = re.match(".*(sha256:.*)", input_string)
+    patt = re.match("(.*@|^)(sha256:.*)", input_string)
     if patt:
-        urldigest = quote_plus(patt.group(1))
+        urldigest = quote_plus(patt.group(2))
         return("digest", input_string, urldigest)
 
     try:
         digest = unquote_plus(str(input_string))
-        patt = re.match(".*(sha256:.*)", digest)
+        patt = re.match("(.*@|^)(sha256:.*)", digest)
         if patt:
             return("imageDigest", input_string, input_string)
-        patt = re.match(".*(local:.*)", digest)
+        patt = re.match("(.*@|^)(local:.*)", digest)
         if patt:
             return("imageDigest", input_string, input_string)
     except Exception as err:
