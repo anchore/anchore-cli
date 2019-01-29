@@ -532,14 +532,14 @@ def format_output(config, op, params, payload):
             ret = t.get_string(sortby='Active', reversesort=True)
 
         elif op == 'policy_hub_list':
-            header = ['Name', 'Description', 'Updated']
+            header = ['Name', 'Description']
             t = PrettyTable(header)
             t.set_style(PLAIN_COLUMNS)
             t.align = 'l'
             last_updated = payload['metadata']['last_updated']
             for record in payload['content']:
                 if record.get('type', None) == 'bundle':
-                    row = [textwrap.fill(record['name'], width=30), textwrap.fill(record['description'], width=30), last_updated]
+                    row = [textwrap.fill(record['name'], width=40), textwrap.fill(record['description'], width=60)]
                     t.add_row(row)
 
             ret = t.get_string(sortby='Name', reversesort=True)
