@@ -8,6 +8,7 @@ import logging
 import dateutil.parser
 import struct
 import textwrap
+import base64
 
 try:
     from urllib.parse import quote_plus,unquote_plus
@@ -348,7 +349,7 @@ def format_output(config, op, params, payload):
                     obuf = obuf + t.get_string(sortby='Package')
                 elif params['query_type'] in ['manifest', 'dockerfile', 'docker_history']:
                     try:
-                        obuf = payload.get('metadata', "").decode('base64')
+                        obuf = base64.b64decode(payload.get('content', "")).decode('utf-8')
                     except Exception as err:
                         obuf = ""
                 else:
