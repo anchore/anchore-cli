@@ -257,11 +257,7 @@ def query_content(input_image, content_type):
             ecode = anchorecli.cli.utils.get_ecode(ret)
             if ret:
                 if ret['success']:
-                    if content_type in ['manifest', 'docker_history']:
-                        o = json.loads(anchorecli.cli.utils.format_output(config, 'image_content', {'query_type':content_type}, ret['payload']))
-                        print(json.dumps(o, indent=4))
-                    else:
-                        print(anchorecli.cli.utils.format_output(config, 'image_content', {'query_type':content_type}, ret['payload']))
+                    print(anchorecli.cli.utils.format_output(config, 'image_content', {'query_type':content_type}, ret['payload']))
                 else:
                     raise Exception (json.dumps(ret['error'], indent=4))
             else:
@@ -298,7 +294,11 @@ def query_metadata(input_image, metadata_type):
             ecode = anchorecli.cli.utils.get_ecode(ret)
             if ret:
                 if ret['success']:
-                    print(anchorecli.cli.utils.format_output(config, 'image_metadata', {'query_type':metadata_type}, ret['payload']))
+                    if metadata_type in ['manifest', 'docker_history']:
+                        o = json.loads(anchorecli.cli.utils.format_output(config, 'image_metadata', {'query_type':metadata_type}, ret['payload']))
+                        print(json.dumps(o, indent=4))
+                    else:
+                        print(anchorecli.cli.utils.format_output(config, 'image_metadata', {'query_type':metadata_type}, ret['payload']))
                 else:
                     raise Exception (json.dumps(ret['error'], indent=4))
             else:

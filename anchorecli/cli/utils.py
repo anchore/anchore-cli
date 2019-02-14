@@ -349,7 +349,7 @@ def format_output(config, op, params, payload):
                     obuf = obuf + t.get_string(sortby='Package')
                 elif params['query_type'] in ['manifest', 'dockerfile', 'docker_history']:
                     try:
-                        obuf = base64.b64decode(payload.get('content', "")).decode('utf-8')
+                        obuf = base64.b64decode(payload.get('metadata', "")).decode('utf-8')
                     except Exception as err:
                         obuf = ""
                 else:
