@@ -20,12 +20,22 @@ _logger = logging.getLogger(__name__)
 
 header_overrides = {'Content-Type': 'application/json'}
 
+
+def set_account_header(config):
+    _logger.info('As Account = {}'.format(config.get('as_account')))
+    if config['as_account'] is not None:
+        header_overrides['x-anchore-account'] = config['as_account']
+    else:
+        header_overrides.pop('x-anchore-account', None)
+
+
 def get_base_routes(config):
     userId = config['user']
     password = config['pass']
     base_url = config['url']
 
     ret = {}
+    set_account_header(config)
 
     try:
         r = requests.get(base_url, auth=(userId, password), verify=config['ssl_verify'])
@@ -45,6 +55,7 @@ def system_feeds_list(config):
 
     base_url = re.sub("/$", "", base_url)
     url = '/'.join([base_url, "system/feeds"])
+    set_account_header(config)
 
     try:
         _logger.debug("GET url="+str(url))
@@ -65,7 +76,7 @@ def system_feeds_sync(config, flush=False):
 
     base_url = re.sub("/$", "", base_url)
     url = '/'.join([base_url, "system/feeds?flush={}".format(flush)])
-
+    set_account_header(config)
     try:
         _logger.debug("POST url="+str(url))
         _logger.debug("POST insecure="+str(config['ssl_verify']))
@@ -85,7 +96,7 @@ def system_status(config):
 
     base_url = re.sub("/$", "", base_url)
     url = '/'.join([base_url, "system"])
-
+    set_account_header(config)
     try:
         _logger.debug("GET url="+str(url))
         _logger.debug("GET insecure="+str(config['ssl_verify']))
@@ -108,6 +119,7 @@ def delete_system_service(config, host_id, servicename):
 
     base_url = re.sub("/$", "", base_url)
     url = '/'.join([base_url, "system", "services", servicename, host_id])
+    set_account_header(config)
 
     try:
         _logger.debug("DELETE url="+str(url))
@@ -147,6 +159,8 @@ def add_image(config, tag=None, digest=None, dockerfile=None, force=False, annot
     url = url + "?autosubscribe="+str(autosubscribe)
     if force:
         url = url + "&force=true"
+
+    set_account_header(config)
 
     try:
         _logger.debug("POST url="+str(url))
@@ -234,6 +248,8 @@ def get_image(config, tag=None, image_id=None, imageDigest=None, history=False):
     else:
         payload = None
 
+    set_account_header(config)
+
     try:
         _logger.debug("GET url="+str(url))
         _logger.debug("GET params="+str(params))
@@ -265,6 +281,8 @@ def get_images(config):
     _logger.info("Base = " + base_url)
     url = '/'.join([base_url, "images"])
     _logger.info("Url = " + url)
+    set_account_header(config)
+
     try:
         _logger.debug("GET url="+str(url))
         r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
@@ -285,6 +303,7 @@ def import_image(config, anchore_data=[]):
     
     base_url = re.sub("/$", "", base_url)
     url = '/'.join([base_url, "imageimport"])
+    set_account_header(config)
 
     try:
         _logger.debug("POST url="+str(url))
@@ -317,6 +336,8 @@ def query_image(config, imageDigest=None, query_group=None, query_type=None, ven
     if query_group == 'vuln':
         url = url + "?vendor_only={}".format(vendor_only)
 
+    set_account_header(config)
+
     try:
         _logger.debug("GET url="+str(url))
         r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'])
@@ -339,6 +360,8 @@ def delete_image(config, imageDigest=None, force=False):
 
     if force:
         url = url+"?force=True"
+
+    set_account_header(config)
 
     try:
         _logger.debug("DELETE url="+str(url))
@@ -368,6 +391,8 @@ def add_policy(config, policybundle={}, detail=False):
     else:
         url = url + "?detail=False"
 
+    set_account_header(config)
+
     try:
         _logger.debug("POST url="+str(url))
         r = requests.post(url, data=json.dumps(payload), auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
@@ -395,6 +420,8 @@ def get_policy(config, policyId=None, detail=False):
     else:
         url = url + "?detail=False"
 
+    set_account_header(config)
+
     try:
         _logger.debug("GET url="+str(url))
         r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'])
@@ -420,6 +447,8 @@ def get_policies(config, detail=False):
     else:
         url = url + "?detail=False"
 
+    set_account_header(config)
+
     try:
         _logger.debug("GET url="+str(url))
         r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'])
@@ -440,6 +469,7 @@ def update_policy(config, policyId, policy_record={}):
     url = '/'.join([base_url, "policies", policyId])
 
     payload = policy_record
+    set_account_header(config)
 
     try:
         _logger.debug("PUT url="+str(url))
@@ -459,6 +489,7 @@ def delete_policy(config, policyId):
 
     base_url = re.sub("/$", "", base_url)
     url = '/'.join([base_url, "policies", policyId])
+    set_account_header(config)
 
     try:
         _logger.debug("DELETE url="+str(url))
@@ -495,6 +526,8 @@ def check_eval(config, imageDigest=None, history=False, detail=False, tag=None, 
     if policyId:
         url = url + "&policyId="+str(policyId)
 
+    set_account_header(config)
+
     try:
         _logger.debug("GET url="+str(url))
         r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'])
@@ -521,6 +554,8 @@ def activate_subscription(config, subscription_type, subscription_key):
     url = '/'.join([base_url, "subscriptions", subscription_id])
     
     payload = {'active':True, 'subscription_key': subscription_key, 'subscription_type': subscription_type}
+    set_account_header(config)
+
     try:
         _logger.debug("PUT url="+str(url))
         r = requests.put(url, data=json.dumps(payload), auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
@@ -545,6 +580,8 @@ def deactivate_subscription(config, subscription_type, subscription_key):
     url = '/'.join([base_url, "subscriptions", subscription_id])
 
     payload = {'active':False, 'subscription_key': subscription_key, 'subscription_type': subscription_type}
+    set_account_header(config)
+
     try:
         _logger.debug("PUT url="+str(url))
         r = requests.put(url, data=json.dumps(payload), auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
@@ -565,6 +602,8 @@ def add_subscription(config, subscription_type, subscription_key, active=True):
     url = '/'.join([base_url, "subscriptions"])
 
     payload = {'active':active, 'subscription_key': subscription_key, 'subscription_type': subscription_type}
+    set_account_header(config)
+
     try:
         _logger.debug("POST url="+str(url))
         r = requests.post(url, data=json.dumps(payload), auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
@@ -587,6 +626,7 @@ def delete_subscription(config, subscription_type=None, subscription_key=None):
 
     base_url = re.sub("/$", "", base_url)
     url = '/'.join([base_url, "subscriptions", subscription_id])
+    set_account_header(config)
 
     try:
         _logger.debug("DELETE url="+str(url))
@@ -606,6 +646,8 @@ def get_subscription(config, subscription_type=None, subscription_key=None):
 
     base_url = re.sub("/$", "", base_url)
     url = '/'.join([base_url, "subscriptions"])
+    set_account_header(config)
+
     if subscription_key or subscription_type:
         url = url + "?"
         if subscription_key:
@@ -631,6 +673,8 @@ def get_subscription_types(config):
 
     base_url = re.sub("/$", "", base_url)
     url = '/'.join([base_url, "subscriptions", "types"])
+    set_account_header(config)
+
     try:
         _logger.debug("GET url="+str(url))
         r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'])
@@ -654,6 +698,8 @@ def add_repo(config, input_repo, autosubscribe=False, lookuptag=None):
     if lookuptag:
         url = url + "&lookuptag="+str(lookuptag)
 
+    set_account_header(config)
+
     try:
         _logger.debug("POST url="+str(url))
         r = requests.post(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
@@ -670,6 +716,8 @@ def get_repo(config, input_repo=None):
     base_url = config['url']
 
     ret = {}
+
+    set_account_header(config)
 
     filtered_records = []
     subscriptions = get_subscription(config, subscription_type='repo_update')
@@ -713,6 +761,8 @@ def interactive(config, op_type, payload={}):
 
     base_url = re.sub("/$", "", base_url)
     url = '/'.join([base_url, "interactive", op_type])
+    set_account_header(config)
+
     try:
         _logger.debug("GET url="+str(url))
         r = requests.get(url, data=json.dumps(payload), auth=(userId, password), verify=config['ssl_verify'])
@@ -735,6 +785,8 @@ def get_registry(config, registry=None):
     url = '/'.join([base_url, "registries"])
     if registry:
         url = '/'.join([url, registry])
+
+    set_account_header(config)
 
     try:
         _logger.debug("GET url="+str(url))
@@ -760,6 +812,7 @@ def add_registry(config, registry=None, registry_user=None, registry_pass=None, 
     payload = {}
     verify = not insecure
     payload.update({'registry': registry, 'registry_user': registry_user, 'registry_pass': registry_pass, 'registry_type': registry_type, 'registry_verify':verify})
+    set_account_header(config)
 
     try:
         _logger.debug("POST url="+str(url))
@@ -784,6 +837,7 @@ def update_registry(config, registry=None, registry_user=None, registry_pass=Non
     payload = {}
     verify = not insecure
     payload.update({'registry': registry, 'registry_user': registry_user, 'registry_pass': registry_pass, 'registry_type': registry_type, 'registry_verify':verify})
+    set_account_header(config)
 
     try:
         _logger.debug("PUT url="+str(url))
@@ -803,7 +857,8 @@ def delete_registry(config, registry=None):
 
     base_url = re.sub("/$", "", base_url)
     url = '/'.join([base_url, "registries", registry])
-    
+    set_account_header(config)
+
     try:
         _logger.debug("DELETE url="+str(url))
         r = requests.delete(url, auth=(userId, password), verify=config['ssl_verify'])
@@ -822,6 +877,8 @@ def describe_policy_spec(config):
 
     base_url = re.sub('/$','', base_url)
     url = '/'.join([base_url, 'system', 'policy_spec'])
+    set_account_header(config)
+
     try:
         _logger.debug("GET url="+str(url))
         r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
@@ -862,6 +919,8 @@ def list_events(config, since=None, before=None, level=None, service=None, host=
 
     if resource:
         params['resource_id'] = resource
+
+    set_account_header(config)
 
     try:
         if all:
@@ -912,6 +971,7 @@ def get_event(config, event_id):
 
     base_url = re.sub("/$", "", base_url)
     url = '/'.join([base_url, "events", event_id])
+    set_account_header(config)
 
     try:
         _logger.debug("GET url="+str(url))
@@ -944,6 +1004,8 @@ def delete_events(config, since=None, before=None):
     if before:
         params['before'] = before
 
+    set_account_header(config)
+
     try:
         _logger.debug("DELETE url="+str(url))
         _logger.debug("DELETE params="+str(params))
@@ -969,6 +1031,7 @@ def delete_event(config, event_id):
 
     base_url = re.sub("/$", "", base_url)
     url = '/'.join([base_url, "events", event_id])
+    set_account_header(config)
 
     try:
         _logger.debug("DELETE url="+str(url))
@@ -1007,6 +1070,8 @@ def query_images_by_vulnerability(config, vulnerability_id, namespace=None, affe
     if query_params:
         url = "{}&{}".format(url, urlencode(query_params))
 
+    set_account_header(config)
+
     try:
         _logger.debug("GET url="+str(url))
         _logger.debug("GET insecure="+str(config['ssl_verify']))
@@ -1040,6 +1105,8 @@ def query_images_by_package(config, name, version=None, package_type=None):
     if query_params:
         url = "{}&{}".format(url, urlencode(query_params))
 
+    set_account_header(config)
+
     try:
         _logger.debug("GET url="+str(url))
         _logger.debug("GET insecure="+str(config['ssl_verify']))
@@ -1069,6 +1136,8 @@ def add_account(config, account_name=None, email=None):
     if email:
         payload['email'] = email
 
+    set_account_header(config)
+
     try:
         _logger.debug("POST url="+str(url))
         r = requests.post(url, data=json.dumps(payload), auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
@@ -1087,6 +1156,7 @@ def get_account(config, account_name=None):
     ret = {}
 
     base_url = re.sub("/$", "", base_url)
+    set_account_header(config)
 
     if account_name:
         url = '/'.join([base_url, "accounts", account_name])
@@ -1112,6 +1182,7 @@ def list_accounts(config):
 
     base_url = re.sub("/$", "", base_url)
     url = '/'.join([base_url, "accounts"])
+    set_account_header(config)
 
     try:
         _logger.debug("GET url="+str(url))
@@ -1132,6 +1203,7 @@ def del_account(config, account_name=None):
 
     base_url = re.sub("/$", "", base_url)
     url = '/'.join([base_url, "accounts", account_name])
+    set_account_header(config)
 
     try:
         _logger.debug("DELETE url="+str(url))
@@ -1155,6 +1227,7 @@ def enable_account(config, account_name=None):
 
     payload = {}
     payload.update({'state': 'enabled'})
+    set_account_header(config)
 
     try:
         _logger.debug("PUT url="+str(url))
@@ -1178,6 +1251,7 @@ def disable_account(config, account_name=None):
 
     payload = {}
     payload.update({'state': 'disabled'})
+    set_account_header(config)
 
     try:
         _logger.debug("PUT url="+str(url))
@@ -1202,6 +1276,7 @@ def add_user(config, account_name=None, user_name=None, user_password=None):
 
     payload = {}
     payload.update({'username': user_name, 'password': user_password})
+    set_account_header(config)
 
     try:
         _logger.debug("POST url="+str(url))
@@ -1228,6 +1303,8 @@ def get_user(config, account_name=None, user_name=None):
     else:
         return(ret)
 
+    set_account_header(config)
+
     try:
         _logger.debug("GET url="+str(url))
         r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
@@ -1247,6 +1324,8 @@ def del_user(config, account_name=None, user_name=None):
 
     base_url = re.sub("/$", "", base_url)
     url = '/'.join([base_url, "accounts", account_name, 'users', user_name])
+
+    set_account_header(config)
 
     try:
         _logger.debug("DELETE url="+str(url))
@@ -1269,6 +1348,8 @@ def list_users(config, account_name=None):
     if account_name:
         url = '/'.join([base_url, "accounts", account_name, 'users'])
 
+    set_account_header(config)
+
     try:
         _logger.debug("GET url="+str(url))
         r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
@@ -1290,6 +1371,7 @@ def update_user_password(config, account_name=None, user_name=None, user_passwor
 
     payload = {}
     payload.update({'type': 'password', 'value': user_password})
+    set_account_header(config)
 
     try:
         _logger.debug("POST url="+str(url))

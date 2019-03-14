@@ -20,11 +20,11 @@ import anchorecli.clients
 @click.option('--api-version', help='Explicitly specify the API version to skip checking. Useful when swagger endpoint is inaccessible')
 @click.option('--insecure', is_flag=True, help='Skip SSL cert checks (or use environment variable ANCHORE_CLI_SSL_VERIFY=<y/n>)')
 @click.option('--json', is_flag=True, help='Output raw API JSON')
-
+@click.option('--as-account', help='Set account context for the command to another account than the one the user belongs to. Subject to authz', default=None)
 @click.version_option(version=version.version)
 @click.pass_context
 #@extended_help_option(extended_help="extended help")
-def main_entry(ctx, debug, u, p, url, hub_url, api_version, insecure, json):
+def main_entry(ctx, debug, u, p, url, hub_url, api_version, insecure, json, as_account):
     if debug:
         logging.basicConfig(level=logging.DEBUG)
 
@@ -36,7 +36,8 @@ def main_entry(ctx, debug, u, p, url, hub_url, api_version, insecure, json):
         'api-version': api_version,
         'insecure': insecure,
         'json': json,
-        'debug': debug
+        'debug': debug,
+        'as_account': as_account
     }
 
     config = utils.setup_config(cli_opts)
