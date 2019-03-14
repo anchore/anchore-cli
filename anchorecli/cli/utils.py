@@ -32,6 +32,7 @@ def setup_config(cli_opts):
         'ssl_verify':True,
         'jsonmode':False,
         'debug':False,
+        'as_account': None
     }
 
     settings = {}
@@ -64,7 +65,7 @@ def setup_config(cli_opts):
     
     # load environment if present
     try:
-        for e in ['ANCHORE_CLI_USER', 'ANCHORE_CLI_PASS', 'ANCHORE_CLI_URL', 'ANCHORE_CLI_HUB_URL', 'ANCHORE_CLI_API_VERSION', 'ANCHORE_CLI_SSL_VERIFY', 'ANCHORE_CLI_JSON', 'ANCHORE_CLI_DEBUG']:
+        for e in ['ANCHORE_CLI_USER', 'ANCHORE_CLI_PASS', 'ANCHORE_CLI_URL', 'ANCHORE_CLI_HUB_URL', 'ANCHORE_CLI_API_VERSION', 'ANCHORE_CLI_SSL_VERIFY', 'ANCHORE_CLI_JSON', 'ANCHORE_CLI_DEBUG', 'ANCHORE_CLI_ACCOUNT']:
             if e in os.environ:
                 settings[e] = os.environ[e]
     except Exception as err:
@@ -96,6 +97,9 @@ def setup_config(cli_opts):
         if cli_opts['debug']:
             settings['ANCHORE_CLI_DEBUG'] = "y"
 
+        if cli_opts.get('as_account') is not None:
+            settings['ANCHORE_CLI_ACCOUNT'] = cli_opts['as_account']
+
     except Exception as err:
         raise err
 
@@ -120,6 +124,9 @@ def setup_config(cli_opts):
         if 'ANCHORE_CLI_DEBUG' in settings:
             if settings['ANCHORE_CLI_DEBUG'].lower() == 'y':
                 ret['debug'] = True
+        if 'ANCHORE_CLI_ACCOUNT' in settings:
+            ret['as_account'] = settings['ANCHORE_CLI_ACCOUNT']
+
     except Exception as err:
         raise err
 
