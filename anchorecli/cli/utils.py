@@ -840,6 +840,36 @@ def format_output(config, op, params, payload):
         elif op in ['delete_system_service'] or re.match(".*_delete$", op) or re.match(".*_activate$", op) or re.match(".*_deactivate$", op) or re.match(".*_enable$", op) or re.match(".*_disable$", op):
             # NOTE this should always be the last in the if/elif conditional
             ret = 'Success'
+        elif op in ['analysis_archive_list']:
+            header = ['Digest', 'Tags', 'Analyzed At', 'Archived At', 'Status', 'Archive Size Bytes']
+            t = PrettyTable(header)
+            t.set_style(PLAIN_COLUMNS)
+            t.align = 'l'
+            for record in payload:
+                row = [str(record['imageDigest']), str(','.join([x['pullstring'] for x in record.get('image_detail', [])])), str(record['created_at']), str(record['analyzed_at']), str(record['status']), str(record['archive_size_bytes'])]
+                t.add_row(row)
+            ret = t.get_string(sortby='Archived At', reversesort=True)+"\n"
+        elif op in ['archive_analysis']:
+            header = ['Image Digest', 'Archive Status', 'Details']
+            t = PrettyTable(header)
+            t.set_style(PLAIN_COLUMNS)
+            t.align = 'l'
+            for record in payload:
+                row = [str(record['digest']), str(record['status']), str(record['details'])]
+                t.add_row(row)
+            ret = t.get_string(sortby='Archive Status')+"\n"
+        elif op in ['archived_analysis']:
+            header = ['Digest', 'Tags', 'Analyzed At', 'Archived At', 'Status', 'Archive Size Bytes']
+            t = PrettyTable(header)
+            t.set_style(PLAIN_COLUMNS)
+            t.align = 'l'
+            record = payload
+            row = [str(record['imageDigest']),
+                   str(','.join([x['pullstring'] for x in record.get('image_detail', [])])),
+                   str(record['created_at']), str(record['analyzed_at']), str(record['status']),
+                   str(record['archive_size_bytes'])]
+            t.add_row(row)
+            ret = t.get_string(sortby='Archived At', reversesort=True) + "\n"
         else:
             raise Exception("no output handler for this operation ({})".format(op))
     except Exception as err:

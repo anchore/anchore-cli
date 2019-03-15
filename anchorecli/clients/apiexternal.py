@@ -1381,4 +1381,153 @@ def update_user_password(config, account_name=None, user_name=None, user_passwor
         raise err
 
     return(ret)        
-        
+
+def list_archives(config):
+    """
+    GET /archives
+
+    :param config:
+    :return:
+    """
+    userId = config['user']
+    password = config['pass']
+    base_url = config['url']
+
+    ret = {}
+
+    base_url = re.sub("/$", "", base_url)
+    url = '/'.join([base_url, "archives"])
+
+    set_account_header(config)
+
+    try:
+        _logger.debug("GET url=" + str(url))
+        r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'],
+                          headers=header_overrides)
+        ret = anchorecli.clients.common.make_client_result(r, raw=False)
+    except Exception as err:
+        raise err
+
+    return (ret)
+
+
+def list_archived_analyses(config):
+    """
+    GET /archives/images/data
+
+    :param config:
+    :return:
+    """
+    userId = config['user']
+    password = config['pass']
+    base_url = config['url']
+
+    ret = {}
+
+    base_url = re.sub("/$", "", base_url)
+    url = '/'.join([base_url, "archives", "images", "data"])
+
+    set_account_header(config)
+
+    try:
+        _logger.debug("GET url=" + str(url))
+        r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'],
+                          headers=header_overrides)
+        ret = anchorecli.clients.common.make_client_result(r, raw=False)
+    except Exception as err:
+        raise err
+
+    return (ret)
+
+
+def get_archived_analysis(config, digest):
+    """
+    GET /archives/images/data/{digest}
+
+    :param config:
+    :param digest:
+    :return:
+    """
+    userId = config['user']
+    password = config['pass']
+    base_url = config['url']
+
+    ret = {}
+
+    base_url = re.sub("/$", "", base_url)
+    url = '/'.join([base_url, "archives", "images", "data", digest])
+
+    set_account_header(config)
+
+    try:
+        _logger.debug("GET url=" + str(url))
+        r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'],
+                          headers=header_overrides)
+        ret = anchorecli.clients.common.make_client_result(r, raw=False)
+    except Exception as err:
+        raise err
+
+    return (ret)
+
+
+def archive_analyses(config, digests):
+    """
+    POST /archives/images/data
+
+    Payload: [digest1, digest2,..., digestN]
+
+    :param config:
+    :param digest:
+    :return:
+    """
+    userId = config['user']
+    password = config['pass']
+    base_url = config['url']
+
+    ret = {}
+
+    base_url = re.sub("/$", "", base_url)
+    url = '/'.join([base_url, "archives", "images", "data"])
+
+    set_account_header(config)
+
+    try:
+        _logger.debug("POST url=" + str(url))
+        r = requests.post(url, data=json.dumps(list(digests)), auth=(userId, password), verify=config['ssl_verify'],
+                          headers=header_overrides)
+        ret = anchorecli.clients.common.make_client_result(r, raw=False)
+    except Exception as err:
+        raise err
+
+    return (ret)
+
+
+def delete_archived_analysis(config, digest):
+    """
+    DELETE /archives/images/data/{digest}
+
+    :param config:
+    :param digest:
+    :return:
+    """
+    userId = config['user']
+    password = config['pass']
+    base_url = config['url']
+
+    ret = {}
+
+    base_url = re.sub("/$", "", base_url)
+    url = '/'.join([base_url, "archives", "images", "data", digest])
+
+    set_account_header(config)
+
+    try:
+        _logger.debug("DELETE url=" + str(url))
+        r = requests.delete(url, auth=(userId, password), verify=config['ssl_verify'],
+                          headers=header_overrides)
+        ret = anchorecli.clients.common.make_client_result(r, raw=False)
+    except Exception as err:
+        raise err
+
+    return (ret)
+
