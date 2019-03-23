@@ -1359,6 +1359,7 @@ def list_users(config, account_name=None):
 
     return(ret)
 
+
 def update_user_password(config, account_name=None, user_name=None, user_password=None):
     userId = config['user']
     password = config['pass']
@@ -1381,6 +1382,7 @@ def update_user_password(config, account_name=None, user_name=None, user_passwor
         raise err
 
     return(ret)        
+
 
 def list_archives(config):
     """
@@ -1531,3 +1533,229 @@ def delete_archived_analysis(config, digest):
 
     return (ret)
 
+
+def list_transition_rules(config):
+    """
+    GET /archives/images/rules
+
+    :param config:
+    :return:
+    """
+    userId = config['user']
+    password = config['pass']
+    base_url = config['url']
+
+    ret = {}
+
+    base_url = re.sub("/$", "", base_url)
+    url = '/'.join([base_url, "archives", "images", "rules"])
+
+    set_account_header(config)
+
+    try:
+        _logger.debug("GET url=" + str(url))
+        r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'],
+                            headers=header_overrides)
+        ret = anchorecli.clients.common.make_client_result(r, raw=False)
+    except Exception as err:
+        raise err
+
+    return (ret)
+
+
+def get_transition_rule(config, rule_id):
+    """
+    GET /archives/images/rules/{rule_id}
+
+    :param config:
+    :return:
+    """
+    userId = config['user']
+    password = config['pass']
+    base_url = config['url']
+
+    ret = {}
+
+    base_url = re.sub("/$", "", base_url)
+    url = '/'.join([base_url, "archives", "images", "rules", rule_id])
+
+    set_account_header(config)
+
+    try:
+        _logger.debug("GET url=" + str(url))
+        r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'],
+                         headers=header_overrides)
+        ret = anchorecli.clients.common.make_client_result(r, raw=False)
+    except Exception as err:
+        raise err
+
+    return (ret)
+
+
+def delete_transition_rule(config, rule_id):
+    """
+    DELETE /archives/images/rules/{rule_id}
+
+    :param config:
+    :return:
+    """
+    userId = config['user']
+    password = config['pass']
+    base_url = config['url']
+
+    ret = {}
+
+    base_url = re.sub("/$", "", base_url)
+    url = '/'.join([base_url, "archives", "images", "rules", rule_id])
+
+    set_account_header(config)
+
+    try:
+        _logger.debug("DELETE url=" + str(url))
+        r = requests.delete(url, auth=(userId, password), verify=config['ssl_verify'],
+                         headers=header_overrides)
+        ret = anchorecli.clients.common.make_client_result(r, raw=False)
+    except Exception as err:
+        raise err
+
+    return (ret)
+
+
+def get_transition_rule_history(config, rule_id):
+    """
+    GET /archives/images/rules/{rule_id}/history
+
+    :param config:
+    :return:
+    """
+    userId = config['user']
+    password = config['pass']
+    base_url = config['url']
+
+    ret = {}
+
+    base_url = re.sub("/$", "", base_url)
+    url = '/'.join([base_url, "archives", "images", "rules", rule_id, "history"])
+
+    set_account_header(config)
+
+    try:
+        _logger.debug("GET url=" + str(url))
+        r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'],
+                         headers=header_overrides)
+        ret = anchorecli.clients.common.make_client_result(r, raw=False)
+    except Exception as err:
+        raise err
+
+    return (ret)
+
+
+def add_transition_rule(config, analysis_age_days, tag_versions_newer=0, selector_registry='*', selector_repository='*', selector_tag='*', transition='archive'):
+    """
+
+    :param config:
+    :param analysis_age_days: Number of days the analysis has been in the engine (int)
+    :param tag_versions_newer: Number of newer digest mappings for the tag in the anchore db
+    :param selector_registry: Wild-card supported string to match registry (e.g. 'docker.io', '*', or '*amazonaws.com')
+    :param selector_repository: Wild-card supported string to match registry (e.g. 'docker.io', '*', or '*amazonaws.com')
+    :param selector_tag: Wild-card supported string to match registry (e.g. 'docker.io', '*', or '*amazonaws.com')
+    :param transition: which transition to use, either 'archive' or 'delete'
+    :return:
+    """
+
+    userId = config['user']
+    password = config['pass']
+    base_url = config['url']
+
+    ret = {}
+
+    base_url = re.sub("/$", "", base_url)
+    url = '/'.join([base_url, "archives", "images", "rules"])
+
+    set_account_header(config)
+
+    if transition not in ['archive', 'delete']:
+        raise ValueError('transiton must be one of "archive" or "delete"')
+
+    if type(analysis_age_days) != int:
+        raise TypeError('analysis_age_days must be an integer')
+
+    if type(tag_versions_newer) != int:
+        raise TypeError('tag_versions_newer must be an integer')
+
+    payload = {
+        'selector': {
+            'registry': selector_registry,
+            'repository': selector_repository,
+            'tag': selector_tag
+        },
+        'tag_versions_newer': tag_versions_newer,
+        'analysis_age_days': analysis_age_days,
+        'transition': transition
+    }
+
+    try:
+        _logger.debug("GET url=" + str(url))
+        r = requests.post(url, data=json.dumps(payload), auth=(userId, password), verify=config['ssl_verify'],
+                         headers=header_overrides)
+        ret = anchorecli.clients.common.make_client_result(r, raw=False)
+    except Exception as err:
+        raise err
+
+    return (ret)
+
+
+def add_transition_rule(config, analysis_age_days, tag_versions_newer=0, selector_registry='*', selector_repository='*', selector_tag='*', transition='archive'):
+    """
+
+    :param config:
+    :param analysis_age_days: Number of days the analysis has been in the engine (int)
+    :param tag_versions_newer: Number of newer digest mappings for the tag in the anchore db
+    :param selector_registry: Wild-card supported string to match registry (e.g. 'docker.io', '*', or '*amazonaws.com')
+    :param selector_repository: Wild-card supported string to match registry (e.g. 'docker.io', '*', or '*amazonaws.com')
+    :param selector_tag: Wild-card supported string to match registry (e.g. 'docker.io', '*', or '*amazonaws.com')
+    :param transition: which transition to use, either 'archive' or 'delete'
+    :return:
+    """
+
+    userId = config['user']
+    password = config['pass']
+    base_url = config['url']
+
+    ret = {}
+
+    base_url = re.sub("/$", "", base_url)
+    url = '/'.join([base_url, "archives", "images", "rules"])
+
+    set_account_header(config)
+
+    if transition not in ['archive', 'delete']:
+        raise ValueError('transiton must be one of "archive" or "delete"')
+
+    if type(analysis_age_days) != int:
+        raise TypeError('analysis_age_days must be an integer')
+
+    if type(tag_versions_newer) != int:
+        raise TypeError('tag_versions_newer must be an integer')
+
+    payload = {
+        'selector': {
+            'registry': selector_registry,
+            'repository': selector_repository,
+            'tag': selector_tag
+        },
+        'tag_versions_newer': tag_versions_newer,
+        'analysis_age_days': analysis_age_days,
+        'transition': transition
+    }
+
+    try:
+        _logger.debug("POST url=" + str(url))
+        print(json.dumps(payload))
+        r = requests.post(url, data=json.dumps(payload), auth=(userId, password), verify=config['ssl_verify'],
+                         headers=header_overrides)
+        ret = anchorecli.clients.common.make_client_result(r, raw=False)
+    except Exception as err:
+        raise err
+
+    return (ret)

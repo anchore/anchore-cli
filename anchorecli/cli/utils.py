@@ -858,18 +858,36 @@ def format_output(config, op, params, payload):
                 row = [str(record['digest']), str(record['status']), str(record['details'])]
                 t.add_row(row)
             ret = t.get_string(sortby='Archive Status')+"\n"
-        elif op in ['archived_analysis']:
-            header = ['Digest', 'Tags', 'Analyzed At', 'Archived At', 'Status', 'Archive Size Bytes']
+        elif op in ['transition_rules']:
+            header = ['Rule Id', 'Selector Registry', 'Selector Repository', 'Selector Tag', 'Min Analysis Age (Days)', 'Min Tag Versions Newer', 'Rule Last Updated']
             t = PrettyTable(header)
             t.set_style(PLAIN_COLUMNS)
             t.align = 'l'
-            record = payload
-            row = [str(record['imageDigest']),
-                   str(','.join([x['pullstring'] for x in record.get('image_detail', [])])),
-                   str(record['created_at']), str(record['analyzed_at']), str(record['status']),
-                   str(record['archive_size_bytes'])]
-            t.add_row(row)
-            ret = t.get_string(sortby='Archived At', reversesort=True) + "\n"
+            if type(payload) != list:
+                payload = [payload]
+            for record in payload:
+                row = [str(record['rule_id']),
+                       str(record['selector']['registry']),
+                       str(record['selector']['repository']),
+                       str(record['selector']['tag']),
+                       str(record['analysis_age_days']),
+                       str(record['tag_versions_newer']),
+                       str(record['last_updated'])]
+                t.add_row(row)
+            ret = t.get_string(sortby='Rule Last Updated', reversesort=True) + "\n"
+        elif op in ['transition_rule_history']:
+            header = ['Rule Id', 'Image Digest', 'Transition', 'Transition Date']
+            t = PrettyTable(header)
+            t.set_style(PLAIN_COLUMNS)
+            t.align = 'l'
+            for record in payload:
+                row = [str(record['rule_id']),
+                       str(record['imageDigest']),
+                       str(record['transition']),
+                       str(record['created_at'])
+                       ]
+                t.add_row(row)
+            ret = t.get_string(sortby='Transition Date', reversesort=True) + "\n"
         else:
             raise Exception("no output handler for this operation ({})".format(op))
     except Exception as err:
