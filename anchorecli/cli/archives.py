@@ -31,6 +31,34 @@ def archive(ctx_config):
 def images(ctx_config):
     pass
 
+
+@images.command(name='restore', short_help="Restore an image to active status from the archive")
+@click.argument('image_digest')
+def image_restore(image_digest):
+    """
+    Add an analyzed image to the analysis archive
+    """
+    ecode = 0
+
+    try:
+        if not re.match(digest_regex, image_digest):
+            raise Exception('Invalid image digest {}. Must conform to regex: {}'.format(image_digest, digest_regex))
+
+        ret = anchorecli.clients.apiexternal.restore_archived_image(config, image_digest)
+        ecode = anchorecli.cli.utils.get_ecode(ret)
+        if ret['success']:
+            print(anchorecli.cli.utils.format_output(config, 'archive_analysis', {}, ret['payload']))
+        else:
+            raise Exception( json.dumps(ret['error'], indent=4))
+
+    except Exception as err:
+        print(anchorecli.cli.utils.format_error_output(config, 'image_add', {}, err))
+        if not ecode:
+            ecode = 2
+
+    anchorecli.cli.utils.doexit(ecode)
+
+
 @images.command(name='add', short_help="Add an image analysis to the archive")
 @click.argument('image_digests', nargs=-1)
 def image_add(image_digests):

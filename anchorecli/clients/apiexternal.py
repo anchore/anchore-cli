@@ -171,6 +171,38 @@ def add_image(config, tag=None, digest=None, dockerfile=None, force=False, annot
 
     return(ret)
 
+def restore_archived_image(config, digest):
+    userId = config['user']
+    password = config['pass']
+    base_url = config['url']
+
+    ret = {}
+
+    payload = {}
+
+    base_url = re.sub("/$", "", base_url)
+    url = '/'.join([base_url, "images"])
+
+    set_account_header(config)
+
+    payload = {
+        'source': {
+            'archive': {
+                'digest': digest
+            }
+        }
+    }
+    try:
+        _logger.debug("POST url=" + str(url))
+        r = requests.post(url, data=json.dumps(payload), auth=(userId, password), verify=config['ssl_verify'],
+                          headers=header_overrides)
+        ret = anchorecli.clients.common.make_client_result(r, raw=False)
+    except Exception as err:
+        raise err
+
+    return (ret)
+
+
 def detect_api_version(config):
     """
     Returns the api version for the service as a tuple of ints. E.g '0.1.1' -> (0, 1, 1)
@@ -1415,7 +1447,7 @@ def list_archives(config):
 
 def list_archived_analyses(config):
     """
-    GET /archives/images/data
+    GET /archives/images
 
     :param config:
     :return:
@@ -1427,7 +1459,7 @@ def list_archived_analyses(config):
     ret = {}
 
     base_url = re.sub("/$", "", base_url)
-    url = '/'.join([base_url, "archives", "images", "data"])
+    url = '/'.join([base_url, "archives", "images"])
 
     set_account_header(config)
 
@@ -1444,7 +1476,7 @@ def list_archived_analyses(config):
 
 def get_archived_analysis(config, digest):
     """
-    GET /archives/images/data/{digest}
+    GET /archives/images/{digest}
 
     :param config:
     :param digest:
@@ -1457,7 +1489,7 @@ def get_archived_analysis(config, digest):
     ret = {}
 
     base_url = re.sub("/$", "", base_url)
-    url = '/'.join([base_url, "archives", "images", "data", digest])
+    url = '/'.join([base_url, "archives", "images", digest])
 
     set_account_header(config)
 
@@ -1474,7 +1506,7 @@ def get_archived_analysis(config, digest):
 
 def archive_analyses(config, digests):
     """
-    POST /archives/images/data
+    POST /archives/images
 
     Payload: [digest1, digest2,..., digestN]
 
@@ -1489,7 +1521,7 @@ def archive_analyses(config, digests):
     ret = {}
 
     base_url = re.sub("/$", "", base_url)
-    url = '/'.join([base_url, "archives", "images", "data"])
+    url = '/'.join([base_url, "archives", "images"])
 
     set_account_header(config)
 
@@ -1506,7 +1538,7 @@ def archive_analyses(config, digests):
 
 def delete_archived_analysis(config, digest):
     """
-    DELETE /archives/images/data/{digest}
+    DELETE /archives/images/{digest}
 
     :param config:
     :param digest:
@@ -1519,7 +1551,7 @@ def delete_archived_analysis(config, digest):
     ret = {}
 
     base_url = re.sub("/$", "", base_url)
-    url = '/'.join([base_url, "archives", "images", "data", digest])
+    url = '/'.join([base_url, "archives", "images", digest])
 
     set_account_header(config)
 
@@ -1536,7 +1568,7 @@ def delete_archived_analysis(config, digest):
 
 def list_transition_rules(config):
     """
-    GET /archives/images/rules
+    GET /archives/rules
 
     :param config:
     :return:
@@ -1548,7 +1580,7 @@ def list_transition_rules(config):
     ret = {}
 
     base_url = re.sub("/$", "", base_url)
-    url = '/'.join([base_url, "archives", "images", "rules"])
+    url = '/'.join([base_url, "archives", "rules"])
 
     set_account_header(config)
 
@@ -1565,7 +1597,7 @@ def list_transition_rules(config):
 
 def get_transition_rule(config, rule_id):
     """
-    GET /archives/images/rules/{rule_id}
+    GET /archives/rules/{rule_id}
 
     :param config:
     :return:
@@ -1577,7 +1609,7 @@ def get_transition_rule(config, rule_id):
     ret = {}
 
     base_url = re.sub("/$", "", base_url)
-    url = '/'.join([base_url, "archives", "images", "rules", rule_id])
+    url = '/'.join([base_url, "archives", "rules", rule_id])
 
     set_account_header(config)
 
@@ -1594,7 +1626,7 @@ def get_transition_rule(config, rule_id):
 
 def delete_transition_rule(config, rule_id):
     """
-    DELETE /archives/images/rules/{rule_id}
+    DELETE /archives/rules/{rule_id}
 
     :param config:
     :return:
@@ -1606,7 +1638,7 @@ def delete_transition_rule(config, rule_id):
     ret = {}
 
     base_url = re.sub("/$", "", base_url)
-    url = '/'.join([base_url, "archives", "images", "rules", rule_id])
+    url = '/'.join([base_url, "archives", "rules", rule_id])
 
     set_account_header(config)
 
@@ -1623,7 +1655,7 @@ def delete_transition_rule(config, rule_id):
 
 def get_transition_rule_history(config, rule_id):
     """
-    GET /archives/images/rules/{rule_id}/history
+    GET /archives/rules/{rule_id}/history
 
     :param config:
     :return:
@@ -1635,7 +1667,7 @@ def get_transition_rule_history(config, rule_id):
     ret = {}
 
     base_url = re.sub("/$", "", base_url)
-    url = '/'.join([base_url, "archives", "images", "rules", rule_id, "history"])
+    url = '/'.join([base_url, "archives", "rules", rule_id, "history"])
 
     set_account_header(config)
 
@@ -1652,6 +1684,7 @@ def get_transition_rule_history(config, rule_id):
 
 def add_transition_rule(config, analysis_age_days, tag_versions_newer=0, selector_registry='*', selector_repository='*', selector_tag='*', transition='archive'):
     """
+    POST /archives/rules
 
     :param config:
     :param analysis_age_days: Number of days the analysis has been in the engine (int)
@@ -1670,62 +1703,7 @@ def add_transition_rule(config, analysis_age_days, tag_versions_newer=0, selecto
     ret = {}
 
     base_url = re.sub("/$", "", base_url)
-    url = '/'.join([base_url, "archives", "images", "rules"])
-
-    set_account_header(config)
-
-    if transition not in ['archive', 'delete']:
-        raise ValueError('transiton must be one of "archive" or "delete"')
-
-    if type(analysis_age_days) != int:
-        raise TypeError('analysis_age_days must be an integer')
-
-    if type(tag_versions_newer) != int:
-        raise TypeError('tag_versions_newer must be an integer')
-
-    payload = {
-        'selector': {
-            'registry': selector_registry,
-            'repository': selector_repository,
-            'tag': selector_tag
-        },
-        'tag_versions_newer': tag_versions_newer,
-        'analysis_age_days': analysis_age_days,
-        'transition': transition
-    }
-
-    try:
-        _logger.debug("GET url=" + str(url))
-        r = requests.post(url, data=json.dumps(payload), auth=(userId, password), verify=config['ssl_verify'],
-                         headers=header_overrides)
-        ret = anchorecli.clients.common.make_client_result(r, raw=False)
-    except Exception as err:
-        raise err
-
-    return (ret)
-
-
-def add_transition_rule(config, analysis_age_days, tag_versions_newer=0, selector_registry='*', selector_repository='*', selector_tag='*', transition='archive'):
-    """
-
-    :param config:
-    :param analysis_age_days: Number of days the analysis has been in the engine (int)
-    :param tag_versions_newer: Number of newer digest mappings for the tag in the anchore db
-    :param selector_registry: Wild-card supported string to match registry (e.g. 'docker.io', '*', or '*amazonaws.com')
-    :param selector_repository: Wild-card supported string to match registry (e.g. 'docker.io', '*', or '*amazonaws.com')
-    :param selector_tag: Wild-card supported string to match registry (e.g. 'docker.io', '*', or '*amazonaws.com')
-    :param transition: which transition to use, either 'archive' or 'delete'
-    :return:
-    """
-
-    userId = config['user']
-    password = config['pass']
-    base_url = config['url']
-
-    ret = {}
-
-    base_url = re.sub("/$", "", base_url)
-    url = '/'.join([base_url, "archives", "images", "rules"])
+    url = '/'.join([base_url, "archives", "rules"])
 
     set_account_header(config)
 
@@ -1751,7 +1729,6 @@ def add_transition_rule(config, analysis_age_days, tag_versions_newer=0, selecto
 
     try:
         _logger.debug("POST url=" + str(url))
-        print(json.dumps(payload))
         r = requests.post(url, data=json.dumps(payload), auth=(userId, password), verify=config['ssl_verify'],
                          headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)

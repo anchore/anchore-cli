@@ -855,7 +855,7 @@ def format_output(config, op, params, payload):
             t.set_style(PLAIN_COLUMNS)
             t.align = 'l'
             for record in payload:
-                row = [str(record['digest']), str(record['status']), str(record['details'])]
+                row = [str(record['digest']), str(record['status']), str(record['detail'])]
                 t.add_row(row)
             ret = t.get_string(sortby='Archive Status')+"\n"
         elif op in ['transition_rules']:
