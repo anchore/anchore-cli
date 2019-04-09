@@ -5,8 +5,6 @@
 # The following environment variables must be set in the circleci project UI
 # - $IMAGE_NAME -> name of image to push to dockerhub
 # - $IMAGE_TAG -> tag on image to push to dockerhub
-# - $DOCKER_USER -> dockerhub user with permissions to repo
-# - $DOCKER_PASS -> password for dockerhub user
 #
 # Note: YAML anchors allow an object to be re-used, reducing duplication.
 # The ampersand declares an alias for an object, then later the `<<: *name`
@@ -21,14 +19,14 @@ var_1: &load_docker_image
     name: Load Docker image layer cache
     command: |
       set +o pipefail
-      docker load -i /home/circleci/workspace/caches/${CIRCLE_PROJECT_REPONAME}-ci.tar || true
+      docker load -i "/home/circleci/workspace/caches/${CIRCLE_PROJECT_REPONAME}-ci.tar" || true
 
 var_2: &attach_workspace
   attach_workspace:
       at: /home/circleci/workspace/
 
 # Start circleci configuration
-version: 2
+version: 2.1
 jobs:
   build:
     docker:
@@ -37,26 +35,17 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
-      - restore_cache:
-          keys:
-            - v1-{{ .Branch }}
-          paths:
-            - /home/circleci/workspace/caches/
       - <<: *load_docker_image
       - run:
           name: build Docker image
           command: |
-            docker build --cache-from=${IMAGE_NAME}:ci -t ${IMAGE_NAME}:ci --build-arg commit=$CIRCLE_SHA1 .
+            docker build -t ${IMAGE_NAME}:ci --build-arg commit="$CIRCLE_SHA1" .
       - run:
           name: Save Docker image
           command: |
             rm -rf /home/circleci/workspace/caches/
             mkdir /home/circleci/workspace/caches/ -p
-            docker save -o /home/circleci/workspace/caches/${CIRCLE_PROJECT_REPONAME}-ci.tar ${IMAGE_NAME}:ci
-      - save_cache:
-          key: v1-{{ .Branch }}-{{ epoch }}
-          paths:
-            - /home/circleci/workspace/caches/
+            docker save -o "/home/circleci/workspace/caches/${CIRCLE_PROJECT_REPONAME}-ci.tar" "${IMAGE_NAME}:ci"
       - persist_to_workspace:
           root: /home/circleci/workspace/
           paths:
@@ -72,34 +61,38 @@ jobs:
       - run:
           name: Push to Dockerhub
           command: |
-            docker login -u $DOCKER_USER -p $DOCKER_PASS
+            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+            export DEV_IMG_TAG="anchore/engine-cli-dev:${CIRCLE_SHA1:0:10}"
+            docker tag "${IMAGE_NAME}:ci" "$DEV_IMG_TAG"
+            docker push "$DEV_IMG_TAG"
             if [ "$CIRCLE_BRANCH" == "master" ]; then
               echo "${IMAGE_NAME}:${IMAGE_TAG}"
-              docker tag ${IMAGE_NAME}:ci ${IMAGE_NAME}:${IMAGE_TAG}
-              docker push ${IMAGE_NAME}:${IMAGE_TAG}
+              docker tag "${IMAGE_NAME}:ci" "${IMAGE_NAME}:${IMAGE_TAG}"
+              docker push "${IMAGE_NAME}:${IMAGE_TAG}"
             elif [ "$CIRCLE_BRANCH" == "0.2" ]; then
               echo "${IMAGE_NAME}:v0.2-${IMAGE_TAG}"
-              docker tag ${IMAGE_NAME}:ci ${IMAGE_NAME}:v0.2-${IMAGE_TAG}
-              docker push ${IMAGE_NAME}:v0.2-${IMAGE_TAG}
+              docker tag "${IMAGE_NAME}:ci" "${IMAGE_NAME}:v0.2-${IMAGE_TAG}"
+              docker push "${IMAGE_NAME}:v0.2-${IMAGE_TAG}"
             elif [ "$CIRCLE_BRANCH" == "0.3" ]; then
               echo "${IMAGE_NAME}:v0.3-${IMAGE_TAG}"
-              docker tag ${IMAGE_NAME}:ci ${IMAGE_NAME}:v0.3-${IMAGE_TAG}
-              docker push ${IMAGE_NAME}:v0.3-${IMAGE_TAG}
+              docker tag "${IMAGE_NAME}:ci" "${IMAGE_NAME}:v0.3-${IMAGE_TAG}"
+              docker push "${IMAGE_NAME}:v0.3-${IMAGE_TAG}"
             else
               false
             fi
 
 workflows:
-  version: 2
   default_workflow:
     jobs:
       - build:
           filters:
             branches:
               only:
-                - master
-                - "0.2"
-                - "0.3"
+                - 'master'
+                - '0.2'
+                - '0.3'
+                - 'create_rc_images'
       - push_dockerhub:
+          context: dockerhub
           requires:
             - build
