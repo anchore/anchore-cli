@@ -816,7 +816,7 @@ def get_registry(config, registry=None):
     base_url = re.sub("/$", "", base_url)
     url = '/'.join([base_url, "registries"])
     if registry:
-        url = '/'.join([url, quote(registry, safe=[])])
+        url = '/'.join([url, quote(registry, "")])
 
     set_account_header(config)
 
@@ -865,7 +865,7 @@ def update_registry(config, registry=None, registry_user=None, registry_pass=Non
     ret = {}
 
     base_url = re.sub("/$", "", base_url)
-    url = '/'.join([base_url, "registries", quote(registry, safe=[])])
+    url = '/'.join([base_url, "registries", quote(registry, "")])
     url = "{}?validate={}".format(url, validate)
 
     payload = {}
@@ -890,7 +890,7 @@ def delete_registry(config, registry=None):
     ret = {}
 
     base_url = re.sub("/$", "", base_url)
-    url = '/'.join([base_url, "registries", quote(registry, safe=[])])
+    url = '/'.join([base_url, "registries", quote(registry, "")])
     set_account_header(config)
 
     try:
