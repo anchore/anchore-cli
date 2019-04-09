@@ -62,7 +62,7 @@ jobs:
           name: Push to Dockerhub
           command: |
             echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-            export DEV_IMG_TAG="anchore/engine-cli-dev:${CIRCLE_SHA1:0:10}"
+            export DEV_IMG_TAG="anchore/anchore-cli-dev:${CIRCLE_SHA1:0:10}"
             docker tag "${IMAGE_NAME}:ci" "$DEV_IMG_TAG"
             docker push "$DEV_IMG_TAG"
             if [ "$CIRCLE_BRANCH" == "master" ]; then
