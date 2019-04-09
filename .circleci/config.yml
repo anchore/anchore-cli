@@ -77,8 +77,6 @@ jobs:
               echo "${IMAGE_NAME}:v0.3-${IMAGE_TAG}"
               docker tag "${IMAGE_NAME}:ci" "${IMAGE_NAME}:v0.3-${IMAGE_TAG}"
               docker push "${IMAGE_NAME}:v0.3-${IMAGE_TAG}"
-            else
-              false
             fi
 
 workflows:
