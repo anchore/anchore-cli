@@ -6,9 +6,9 @@ import logging
 import urllib3
 import requests.packages.urllib3
 try:
-    from urllib.parse import urlparse, urlunparse, urlencode
+    from urllib.parse import urlparse, urlunparse, urlencode, quote
 except:
-    from urllib import urlencode
+    from urllib import urlencode, quote
     from urlparse import urlparse,urlunparse
 
 requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
@@ -816,7 +816,9 @@ def get_registry(config, registry=None):
     base_url = re.sub("/$", "", base_url)
     url = '/'.join([base_url, "registries"])
     if registry:
-        url = '/'.join([url, registry])
+        url = '/'.join([url, quote(registry, safe=[])])
+
+    set_account_header(config)
 
     set_account_header(config)
 
@@ -863,7 +865,7 @@ def update_registry(config, registry=None, registry_user=None, registry_pass=Non
     ret = {}
 
     base_url = re.sub("/$", "", base_url)
-    url = '/'.join([base_url, "registries", registry])
+    url = '/'.join([base_url, "registries", quote(registry, safe=[])])
     url = "{}?validate={}".format(url, validate)
 
     payload = {}
@@ -888,7 +890,7 @@ def delete_registry(config, registry=None):
     ret = {}
 
     base_url = re.sub("/$", "", base_url)
-    url = '/'.join([base_url, "registries", registry])
+    url = '/'.join([base_url, "registries", quote(registry, safe=[])])
     set_account_header(config)
 
     try:
