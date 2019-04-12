@@ -44,7 +44,25 @@ def status():
 
     anchorecli.cli.utils.doexit(ecode)
 
-@system.command(name='wait', short_help="Blocking operation that will return when anchore-engine is available and ready.")
+@system.command(name='errorcodes', short_help="Describe available anchore system error code names and descriptions")
+def describe_errorcodes():
+    ecode = 0
+
+    try:
+        ret = anchorecli.clients.apiexternal.describe_error_codes(config)
+        ecode = anchorecli.cli.utils.get_ecode(ret)
+        if ret['success']:
+            print(anchorecli.cli.utils.format_output(config, 'system_describe_error_codes', {}, ret['payload']))
+        else:
+            raise Exception(json.dumps(ret['error'], indent=4))
+    except Exception as err:
+        print(anchorecli.cli.utils.format_error_output(config, 'system_describe_error_codes', {}, err))
+        if not ecode:
+            ecode = 2
+
+    anchorecli.cli.utils.doexit(ecode)
+
+@system.command(name='wait', short_help="Blocking operation that will return when anchore-engine is available and ready")
 @click.option('--timeout', type=float, default=-1.0, help="Time to wait, in seconds. If < 0, wait forever (default=-1)")
 @click.option('--interval', type=float, default=5.0, help="Interval between checks, in seconds (default=5)")
 @click.option("--feedsready", default='vulnerabilities', help='In addition to API and set of core services being available, wait until at least one full feed sync has been completed for the CSV list of feeds (default="vulnerabilities").')

@@ -722,6 +722,16 @@ def format_output(config, op, params, payload):
             ret = _format_triggers(payload, params.get('gate', '').lower(), all=params.get('all', False))
         elif op in ['describe_gate_trigger_params']:
             ret = _format_trigger_params(payload, params.get('gate', '').lower(), params.get('trigger', '').lower(), all=params.get('all', False))
+        elif op in ['system_describe_error_codes']:
+            header = ['Error Code', 'Description']
+            t = PrettyTable(header)
+            t.set_style(PLAIN_COLUMNS)
+            t.align = 'l'
+            for el in payload:
+                error_name = el.get('name', "N/A")
+                error_description = textwrap.fill(el.get('description', "N/A"), width=60)
+                t.add_row([error_name, error_description])
+            ret = t.get_string(sortby="Error Code")+"\n"
         elif op in ['system_feeds_list']:
             try:
                 header = ['Feed', 'Group', 'LastSync', 'RecordCount']
