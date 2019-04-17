@@ -84,11 +84,12 @@ jobs:
             username: $DOCKER_USER
             password: $DOCKER_PASS
       steps:
+      - checkout
       - run:
           name: Trigger release candidate builds
           command: |
             source ci_utils.sh
-            trigger_artifact_build anchore-engine
+            trigger_artifact_build anchore-cli
 
 workflows:
   default_workflow:
