@@ -31,7 +31,6 @@ jobs:
   build:
     docker:
       - image: docker:stable-git
-    working_directory: ~/build
     steps:
       - checkout
       - setup_remote_docker
@@ -61,7 +60,7 @@ jobs:
           name: Push to Dockerhub
           command: |
             echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-            export DEV_IMG_TAG="anchore/anchore-cli-dev:${CIRCLE_SHA1:0:10}"
+            export DEV_IMG_TAG="anchore/anchore-cli-dev:${CIRCLE_SHA1}"
             docker tag "${IMAGE_NAME}:ci" "$DEV_IMG_TAG"
             docker push "$DEV_IMG_TAG"
             if [ "$CIRCLE_BRANCH" == "master" ]; then
@@ -78,6 +77,19 @@ jobs:
               docker push "${IMAGE_NAME}:v0.3-${IMAGE_TAG}"
             fi
 
+  trigger_downstream:
+      docker:
+        - image: anchore/test-infra:latest
+          auth:
+            username: $DOCKER_USER
+            password: $DOCKER_PASS
+      steps:
+      - run:
+          name: Trigger release candidate builds
+          command: |
+            source ci_utils.sh
+            trigger_artifact_build anchore-engine
+
 workflows:
   default_workflow:
     jobs:
@@ -88,8 +100,11 @@ workflows:
                 - 'master'
                 - '0.2'
                 - '0.3'
-                - 'create_rc_images'
       - push_dockerhub:
           context: dockerhub
           requires:
             - build
+      - trigger_downstream:
+          context: release_candidates
+          requires:
+            - push_dockerhub
