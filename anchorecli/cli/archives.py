@@ -186,9 +186,10 @@ def rule_add(days_old, tag_versions_newer, transition, registry_selector, reposi
     ecode = 0
 
     if days_old == 0 and tag_versions_newer == 0:
-        print('Must specify days_old or tag_versions_newer to be > 0')
-        ecode = 1
-        anchorecli.cli.utils.doexit(ecode)
+        resp = click.prompt('Are you sure you want to use 0 for both days old limit and number of tag versions newer? WARNING: This will archive all images that match the registry/repo/tag selectors as soon as they are analyzed', type=click.Choice(['y', 'n']), default='n')
+        if resp.lower() != 'y':
+            ecode = 0
+            anchorecli.cli.utils.doexit(ecode)
 
     try:
         ret = anchorecli.clients.apiexternal.add_transition_rule(config, days_old, tag_versions_newer, registry_selector, repository_selector, tag_selector, transition, is_global)
