@@ -856,7 +856,7 @@ def format_output(config, op, params, payload):
             t.set_style(PLAIN_COLUMNS)
             t.align = 'l'
             for record in payload:
-                row = [str(record['imageDigest']), str(','.join([x['pullstring'] for x in record.get('image_detail', [])])), str(record['created_at']), str(record['analyzed_at']), str(record['status']), str(record['archive_size_bytes'])]
+                row = [str(record['imageDigest']), str(','.join([x['pullstring'] for x in record.get('image_detail', [])])), str(record['analyzed_at']), str(record['created_at']), str(record['status']), str(record['archive_size_bytes'])]
                 t.add_row(row)
             ret = t.get_string(sortby='Archived At', reversesort=True)+"\n"
         elif op in ['archive_analysis']:
