@@ -169,20 +169,29 @@ def rules():
 
 
 @rules.command(name='add', short_help="Add a new transition rule")
-@click.argument('analysis_age_days', type=int)
-@click.argument('tag_versions_newer', type=int)
+@click.argument('days_old', type=click.IntRange(min=0))
+@click.argument('tag_versions_newer', type=click.IntRange(min=0))
 @click.argument('transition', type=click.Choice(['archive', 'delete']))
 @click.option('--registry-selector', default='*', help="Registry to filter on, wildcard supported")
 @click.option('--repository-selector', default='*', help="Repository to filter on, wildcard supported")
 @click.option('--tag-selector', default='*', help="Tag to filter on, wildcard supported")
-def rule_add(analysis_age_days, tag_versions_newer, transition, registry_selector, repository_selector, tag_selector):
+@click.option('--is-global', default=False, is_flag=True, help="If true, make this a global rule (admin only)")
+def rule_add(days_old, tag_versions_newer, transition, registry_selector, repository_selector, tag_selector, is_global):
     """
     Add an analyzed image to the analysis archive
+    :param days_old: The minimum age of the image analysis or archive records to select
+    :param tag_versions_newer: the number of newer mappings of a tag to a digest that must exist for the tag to be selected by the rule
+    :param transition: the transition to execute: archive or delete. delete transitions occur on already archived analysis, not on the active image analysis
     """
     ecode = 0
 
+    if days_old == 0 and tag_versions_newer == 0:
+        print('Must specify days_old or tag_versions_newer to be > 0')
+        ecode = 1
+        anchorecli.cli.utils.doexit(ecode)
+
     try:
-        ret = anchorecli.clients.apiexternal.add_transition_rule(config, analysis_age_days, tag_versions_newer, registry_selector, repository_selector, tag_selector, transition)
+        ret = anchorecli.clients.apiexternal.add_transition_rule(config, days_old, tag_versions_newer, registry_selector, repository_selector, tag_selector, transition, is_global)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret['success']:
             print(anchorecli.cli.utils.format_output(config, 'transition_rules', {}, ret['payload']))

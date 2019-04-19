@@ -1704,7 +1704,7 @@ def get_transition_rule_history(config, rule_id):
     return (ret)
 
 
-def add_transition_rule(config, analysis_age_days, tag_versions_newer=0, selector_registry='*', selector_repository='*', selector_tag='*', transition='archive'):
+def add_transition_rule(config, analysis_age_days, tag_versions_newer=0, selector_registry='*', selector_repository='*', selector_tag='*', transition='archive', is_global=False):
     """
     POST /archives/rules
 
@@ -1715,6 +1715,7 @@ def add_transition_rule(config, analysis_age_days, tag_versions_newer=0, selecto
     :param selector_repository: Wild-card supported string to match registry (e.g. 'docker.io', '*', or '*amazonaws.com')
     :param selector_tag: Wild-card supported string to match registry (e.g. 'docker.io', '*', or '*amazonaws.com')
     :param transition: which transition to use, either 'archive' or 'delete'
+    :param is_global: should the rule be a global rule (bool)
     :return:
     """
 
@@ -1746,7 +1747,8 @@ def add_transition_rule(config, analysis_age_days, tag_versions_newer=0, selecto
         },
         'tag_versions_newer': tag_versions_newer,
         'analysis_age_days': analysis_age_days,
-        'transition': transition
+        'transition': transition,
+        'system_global': is_global
     }
 
     try:

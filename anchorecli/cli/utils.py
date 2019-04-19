@@ -869,7 +869,7 @@ def format_output(config, op, params, payload):
                 t.add_row(row)
             ret = t.get_string(sortby='Archive Status')+"\n"
         elif op in ['transition_rules']:
-            header = ['Rule Id', 'Selector Registry', 'Selector Repository', 'Selector Tag', 'Min Analysis Age (Days)', 'Min Tag Versions Newer', 'Rule Last Updated']
+            header = ['Rule Id', 'Global', 'Analysis Age (Days)', 'Tag Versions Newer', 'Registry', 'Repository', 'Tag', 'Last Updated']
             t = PrettyTable(header)
             t.set_style(PLAIN_COLUMNS)
             t.align = 'l'
@@ -877,14 +877,15 @@ def format_output(config, op, params, payload):
                 payload = [payload]
             for record in payload:
                 row = [str(record['rule_id']),
+                       str(record['system_global']),
+                       str(record['analysis_age_days']),
+                       str(record['tag_versions_newer']),
                        str(record['selector']['registry']),
                        str(record['selector']['repository']),
                        str(record['selector']['tag']),
-                       str(record['analysis_age_days']),
-                       str(record['tag_versions_newer']),
                        str(record['last_updated'])]
                 t.add_row(row)
-            ret = t.get_string(sortby='Rule Last Updated', reversesort=True) + "\n"
+            ret = t.get_string(sortby='Last Updated', reversesort=True) + "\n"
         elif op in ['transition_rule_history']:
             header = ['Rule Id', 'Image Digest', 'Transition', 'Transition Date']
             t = PrettyTable(header)
