@@ -1,6 +1,6 @@
 click==7.0
 prettytable==0.7.2
 requests==2.20.0
-urllib3==1.24.2
+urllib3==1.23
 python-dateutil==2.7.3
 PyYAML==4.2b1
