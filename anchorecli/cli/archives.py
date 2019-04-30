@@ -47,7 +47,7 @@ def image_restore(image_digest):
         ret = anchorecli.clients.apiexternal.restore_archived_image(config, image_digest)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret['success']:
-            print(anchorecli.cli.utils.format_output(config, 'archive_analysis', {}, ret['payload']))
+            print(anchorecli.cli.utils.format_output(config, 'image_add', {}, ret['payload']))
         else:
             raise Exception( json.dumps(ret['error'], indent=4))
 
@@ -80,7 +80,7 @@ def image_add(image_digests):
             raise Exception( json.dumps(ret['error'], indent=4))
 
     except Exception as err:
-        print(anchorecli.cli.utils.format_error_output(config, 'image_add', {}, err))
+        print(anchorecli.cli.utils.format_error_output(config, 'archive_analysis', {}, err))
         if not ecode:
             ecode = 2
 
@@ -204,7 +204,7 @@ def rule_add(days_old, tag_versions_newer, transition, registry_selector, reposi
             raise Exception(json.dumps(ret['error'], indent=4))
 
     except Exception as err:
-        print(anchorecli.cli.utils.format_error_output(config, 'image_add', {}, err))
+        print(anchorecli.cli.utils.format_error_output(config, 'transition_rules', {}, err))
         if not ecode:
             ecode = 2
 
@@ -229,7 +229,7 @@ def rule_get(rule_id):
             raise Exception("operation failed with empty response")
 
     except Exception as err:
-        print(anchorecli.cli.utils.format_error_output(config, 'archived_analysis', {}, err))
+        print(anchorecli.cli.utils.format_error_output(config, 'transition_rules', {}, err))
         if not ecode:
             ecode = 2
 
@@ -249,7 +249,7 @@ def list_transition_rules():
             raise Exception(json.dumps(ret['error'], indent=4))
 
     except Exception as err:
-        print(anchorecli.cli.utils.format_error_output(config, 'analysis_archive_list', {}, err))
+        print(anchorecli.cli.utils.format_error_output(config, 'transition_rules', {}, err))
         if not ecode:
             ecode = 2
 
