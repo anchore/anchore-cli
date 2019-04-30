@@ -100,7 +100,11 @@ def image_get(digest):
         if ret:
             ecode = anchorecli.cli.utils.get_ecode(ret)
             if ret['success']:
-                print(anchorecli.cli.utils.format_output(config, 'archived_analysis', {}, ret['payload']))
+                if ret['payload']:
+                    result = [ret['payload']]
+                else:
+                    result = ret['payload']
+                print(anchorecli.cli.utils.format_output(config, 'archived_analysis', {}, result))
             else:
                 raise Exception(json.dumps(ret['error'], indent=4))
         else:
