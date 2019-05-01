@@ -183,9 +183,13 @@ def rules():
 def rule_add(days_old, tag_versions_newer, transition, registry_selector, repository_selector, tag_selector, is_global):
     """
     Add an analyzed image to the analysis archive
-    :param days_old: The minimum age of the image analysis or archive records to select
-    :param tag_versions_newer: the number of newer mappings of a tag to a digest that must exist for the tag to be selected by the rule
-    :param transition: the transition to execute: archive or delete. delete transitions occur on already archived analysis, not on the active image analysis
+
+    DAYS_OLD: The minimum age of the image analysis or archive records to select
+
+    TAG_VERSIONS_NEWER: the number of newer mappings of a tag to a digest that must exist for the tag to be selected by the rule
+
+    archive|delete: the transition to execute - archive or delete. delete transitions occur on already archived analysis, not on the active image analysis
+
     """
     ecode = 0
 
@@ -259,8 +263,6 @@ def list_transition_rules():
 @rules.command(name='del', short_help="Delete a transition rule")
 @click.argument('rule_id')
 def rule_delete(rule_id):
-    """
-    """
     ecode = 0
 
     try:
