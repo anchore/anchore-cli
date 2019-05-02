@@ -1,4 +1,4 @@
-FROM python:2-alpine
+FROM registry.access.redhat.com/ubi7/ubi
 
 ARG CLI_COMMIT
 ARG ANCHORE_CLI_VERSION="0.4.0"
@@ -22,11 +22,40 @@ LABEL anchore_cli_commit=$CLI_COMMIT \
 ENV ANCHORE_CLI_USER=admin
 ENV ANCHORE_CLI_PASS=foobar
 ENV ANCHORE_CLI_URL=http://localhost:8228/v1/
-ENV LANG=C.UTF-8
-ENV LC_ALL=C.UTF-8
+ENV LANG=en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
 
-RUN mkdir /app
-COPY . /app
-RUN pip install /app
+# Build dependencies
 
-CMD ["/bin/sh"]
+RUN yum update -y && \
+    yum install -y rh-python36 rh-python36-python-wheel rh-python36-python-pip
+
+COPY . /anchore-cli
+
+WORKDIR /anchore-cli
+
+# Perform OS setup
+
+RUN cp docker-entrypoint.sh /docker-entrypoint.sh && \
+    set -ex && \
+    groupadd --gid 1000 anchore && \
+    useradd --uid 1000 --gid anchore --shell /bin/bash --create-home anchore
+
+# Perform any base OS specific setup
+
+# Setup python3 environment & create anchore-cli wrapper script for UBI7 
+RUN echo -e '#!/usr/bin/env bash\n\nsource /opt/rh/rh-python36/enable' > /etc/profile.d/python3.sh && \
+    echo -e '#!/usr/bin/env bash\n\n/docker-entrypoint.sh anchore-cli $@' > /usr/local/bin/anchore-cli && \
+    chmod +x /usr/local/bin/anchore-cli
+
+# Perform the anchore-cli build and install
+
+RUN source /opt/rh/rh-python36/enable && \
+    pip3 install -r requirements.txt && \
+    pip3 install . && \
+    rm -rf /anchore-cli /root/.cache /wheels
+
+USER anchore:anchore
+
+ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["/bin/bash"]
