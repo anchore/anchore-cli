@@ -84,6 +84,12 @@ Add an image to the Anchore Engine
 .. code::
 
     anchore-cli image add docker.io/library/debian:latest 
+
+Wait for an image to transition to ``analyzed``
+
+.. code::
+
+    anchore-cli image add docker.io/library/debian:latest 
   
 List images analyzed by the Anchore Engine
 
@@ -91,7 +97,7 @@ List images analyzed by the Anchore Engine
 
     anchore-cli image list 
 
-Get a specific image and see when its status goes to ``analyzed``
+Get summary information for a specified image 
 
 .. code::
 
@@ -102,6 +108,12 @@ Perform a vulnerability scan on an image
 .. code::
 
    anchore-cli image vuln docker.io/library/debian:latest os
+
+Perform a policy evaluation on an image
+
+.. code::
+
+   anchore-cli evaluate check docker.io/library/debian:latest --detail
 
 List operating system packages present in an image
 
@@ -118,4 +130,4 @@ Subscribe to receive webhook notifications when new CVEs are added to an update
 More Information
 ================
 
-For further details on use of the Anchore CLI with the Anchore Engine please refer to the `Anchore Engine Wiki <https://github.com/anchore/anchore-engine/wiki/>`_
+For further details on use of the Anchore CLI with the Anchore Engine please refer to `Anchore Engine <https://github.com/anchore/anchore-engine>`_
