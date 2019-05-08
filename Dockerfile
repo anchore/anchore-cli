@@ -2,7 +2,7 @@ FROM registry.access.redhat.com/ubi7/ubi
 
 ARG CLI_COMMIT
 ARG ANCHORE_CLI_VERSION="0.4.0"
-ARG ANCHORE_CLI_RELEASE="dev"
+ARG ANCHORE_CLI_RELEASE="r0"
 
 # Container metadata section
 
