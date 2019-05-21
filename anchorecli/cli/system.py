@@ -68,8 +68,6 @@ def describe_errorcodes():
 @click.option("--feedsready", default='vulnerabilities', help='In addition to API and set of core services being available, wait until at least one full feed sync has been completed for the CSV list of feeds (default="vulnerabilities").')
 @click.option("--servicesready", default='catalog,apiext,policy_engine,simplequeue,analyzer', help='Wait for the specified CSV list of anchore-engine services to have at least one service reporting as available (default="catalog,apiext,policy_engine,simplequeue,analyzer")')
 def wait(timeout, interval, feedsready, servicesready):
-    global config
-    ecode = 0
     """
     Wait for an image to go to analyzed or analysis_failed status with a specific timeout
 
@@ -78,6 +76,9 @@ def wait(timeout, interval, feedsready, servicesready):
     :param feedsready:
     :return:
     """
+    global config
+    ecode = 0
+
     try:
         sys.stderr.write("Starting checks to wait for anchore-engine to be available timeout={} interval={}\n".format(timeout, interval))
         ts = time.time()

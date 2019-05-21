@@ -747,6 +747,16 @@ def format_output(config, op, params, payload):
                 raise err
         elif op in ['system_feeds_flush']:
             ret = 'Success'
+            if type(payload) == list:
+                header = ['Feed', 'Group', 'Status', 'Records Updated', 'Sync Duration']
+                t = PrettyTable(header)
+                t.set_style(PLAIN_COLUMNS)
+                t.align = 'l'
+                for feed in payload:
+                    for group in feed.get('groups'):
+                        row = [feed['feed'], group['group'], group['status'], group['updated_record_count'], '{:.2f}s'.format(group['total_time_seconds'])]
+                        t.add_row(row)
+                ret = t.get_string(sortby='Feed')
         elif op == 'event_list':
             header = ['Timestamp', 'Level', 'Service', 'Host', 'Event', 'ID']
             t = PrettyTable(header)
