@@ -232,9 +232,6 @@ def format_output(config, op, params, payload):
                                 latest_records[fulltag] = image_record
 
                 filtered_records = list(latest_records.values())
-                #filtered_records = []
-                #for fulltag in latest_records.keys():
-                #    filtered_records.append(latest_records[fulltag])
 
             if params['full']:
                 header = ['Full Tag', 'Image Digest', 'Analysis Status', 'Image ID']
@@ -389,6 +386,7 @@ def format_output(config, op, params, payload):
                     outdict['Parent Digest'] = str(image_record['parentDigest'])
                 outdict['Analysis Status'] = str(image_record['analysis_status'])
                 outdict['Image Type'] = str(image_record['image_type'])
+                outdict['Analyzed At'] = str(image_record['analyzed_at'])
 
                 image_detail = copy.deepcopy(image_record['image_detail'][0])
                 dockerfile = image_detail.pop('dockerfile', None)
@@ -422,9 +420,8 @@ def format_output(config, op, params, payload):
                 for image_detail_record in image_record['image_detail']:
                     image_detail = copy.deepcopy(image_detail_record)
                     outdict = OrderedDict()
-                    #outdict['Digest'] = image_detail.pop('fulldigest', "None") 
                     outdict['Full Tag'] = str(image_detail.pop('fulltag', "None"))
-                    #outdict['Registry'] = image_detail.pop('registry', "None")
+                    outdict['Tag Detected At'] = str(image_detail.pop('tag_detected_at', "None"))
 
                     for k in list(outdict.keys()):
                         obuf = obuf + k + ": " + outdict[k] + "\n"
