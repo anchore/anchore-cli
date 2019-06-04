@@ -1,8 +1,38 @@
-FROM registry.access.redhat.com/ubi7/ubi
+FROM registry.access.redhat.com/ubi7/ubi as anchore-cli-builder
+
+######## This is stage1 where anchore wheels, binary deps, and any items from the source tree get staged to /build_output ########
+
+ENV LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8
+
+COPY . /buildsource
+WORKDIR /buildsource
+
+RUN set -ex && \
+    mkdir -p /build_output /build_output/deps /build_output/configs /build_output/wheels
+
+RUN set -ex && \
+    echo "installing OS dependencies" && \
+    yum update -y && \
+    yum install -y gcc make rh-python36 rh-python36-python-wheel rh-python36-python-pip
+
+# create anchore binaries
+RUN set -ex && \
+    echo "installing anchore" && \
+    source /opt/rh/rh-python36/enable && \
+    pip3 wheel --wheel-dir=/build_output/wheels . && \
+    cp ./LICENSE /build_output/ && \
+    cp ./docker-entrypoint.sh /build_output/configs/docker-entrypoint.sh 
+
+RUN tar -z -c -v -C /build_output -f /anchore-buildblob.tgz .
+
+FROM registry.access.redhat.com/ubi7/ubi as anchore-cli-final
 
 ARG CLI_COMMIT
-ARG ANCHORE_CLI_VERSION="0.4.0"
-ARG ANCHORE_CLI_RELEASE="r0"
+ARG ANCHORE_CLI_VERSION="0.4.1"
+ARG ANCHORE_CLI_RELEASE="dev"
+
+# Copy artifacts from build step
+COPY --from=anchore-cli-builder /build_output /build_output
 
 # Container metadata section
 
@@ -30,17 +60,19 @@ ENV LC_ALL=en_US.UTF-8
 RUN yum update -y && \
     yum install -y rh-python36 rh-python36-python-wheel rh-python36-python-pip
 
-COPY . /anchore-cli
+# Setup container default configs and directories
 
 WORKDIR /anchore-cli
 
 # Perform OS setup
 
-RUN cp docker-entrypoint.sh /docker-entrypoint.sh && \
-    set -ex && \
+RUN set -ex && \
     groupadd --gid 1000 anchore && \
-    useradd --uid 1000 --gid anchore --shell /bin/bash --create-home anchore
-
+    useradd --uid 1000 --gid anchore --shell /bin/bash --create-home anchore && \
+    mkdir -p /licenses/ && \
+    cp /build_output/LICENSE /licenses/ && \
+    cp /build_output/configs/docker-entrypoint.sh /docker-entrypoint.sh 
+   
 # Perform any base OS specific setup
 
 # Setup python3 environment & create anchore-cli wrapper script for UBI7 
@@ -50,10 +82,10 @@ RUN echo -e '#!/usr/bin/env bash\n\nsource /opt/rh/rh-python36/enable' > /etc/pr
 
 # Perform the anchore-cli build and install
 
-RUN source /opt/rh/rh-python36/enable && \
-    pip3 install -r requirements.txt && \
-    pip3 install . && \
-    rm -rf /anchore-cli /root/.cache /wheels
+RUN set -ex && \
+    source /opt/rh/rh-python36/enable && \
+    pip3 install --no-index --find-links=./ /build_output/wheels/*.whl && \
+    rm -rf /build_output /root/.cache
 
 USER anchore:anchore
 
