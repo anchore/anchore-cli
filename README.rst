@@ -34,7 +34,8 @@ Installing Anchore CLI on Debian and Ubuntu
 
     apt-get update 
     apt-get install python-pip
-    pip install anchorecli 
+    pip install anchorecli
+    Note make sure ~/.local/bin is part of your PATH or just export it directly: export PATH="$HOME/.local/bin/:$PATH"
 
 Installing Anchore CLI on Mac OS / OS X
 ===========================================
