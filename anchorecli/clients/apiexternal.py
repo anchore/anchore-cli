@@ -38,7 +38,7 @@ def get_base_routes(config):
     set_account_header(config)
 
     try:
-        r = requests.get(base_url, auth=(userId, password), verify=config['ssl_verify'])
+        r = requests.get(base_url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
         raise err
@@ -123,7 +123,7 @@ def delete_system_service(config, host_id, servicename):
 
     try:
         _logger.debug("DELETE url="+str(url))
-        r = requests.delete(url, auth=(userId, password), verify=config['ssl_verify'])
+        r = requests.delete(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
         raise err
@@ -372,7 +372,7 @@ def query_image(config, imageDigest=None, query_group=None, query_type=None, ven
 
     try:
         _logger.debug("GET url="+str(url))
-        r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'])
+        r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
         raise err
@@ -397,7 +397,7 @@ def delete_image(config, imageDigest=None, force=False):
 
     try:
         _logger.debug("DELETE url="+str(url))
-        r = requests.delete(url, auth=(userId, password), verify=config['ssl_verify'])
+        r = requests.delete(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
         raise err
@@ -456,7 +456,7 @@ def get_policy(config, policyId=None, detail=False):
 
     try:
         _logger.debug("GET url="+str(url))
-        r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'])
+        r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
         
     except Exception as err:
@@ -483,7 +483,7 @@ def get_policies(config, detail=False):
 
     try:
         _logger.debug("GET url="+str(url))
-        r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'])
+        r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
         raise err
@@ -525,7 +525,7 @@ def delete_policy(config, policyId):
 
     try:
         _logger.debug("DELETE url="+str(url))
-        r = requests.delete(url, auth=(userId, password), verify=config['ssl_verify'])
+        r = requests.delete(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
         raise err
@@ -562,7 +562,7 @@ def check_eval(config, imageDigest=None, history=False, detail=False, tag=None, 
 
     try:
         _logger.debug("GET url="+str(url))
-        r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'])
+        r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
         raise err
@@ -662,7 +662,7 @@ def delete_subscription(config, subscription_type=None, subscription_key=None):
 
     try:
         _logger.debug("DELETE url="+str(url))
-        r = requests.delete(url, auth=(userId, password), verify=config['ssl_verify'])
+        r = requests.delete(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
         raise err
@@ -689,7 +689,7 @@ def get_subscription(config, subscription_type=None, subscription_key=None):
 
     try:
         _logger.debug("GET url="+str(url))
-        r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'])
+        r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
         raise err
@@ -709,7 +709,7 @@ def get_subscription_types(config):
 
     try:
         _logger.debug("GET url="+str(url))
-        r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'])
+        r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
         raise err
@@ -797,7 +797,7 @@ def interactive(config, op_type, payload={}):
 
     try:
         _logger.debug("GET url="+str(url))
-        r = requests.get(url, data=json.dumps(payload), auth=(userId, password), verify=config['ssl_verify'])
+        r = requests.get(url, data=json.dumps(payload), auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
         raise err
@@ -820,11 +820,9 @@ def get_registry(config, registry=None):
 
     set_account_header(config)
 
-    set_account_header(config)
-
     try:
         _logger.debug("GET url="+str(url))
-        r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'])
+        r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
         raise err
@@ -895,7 +893,7 @@ def delete_registry(config, registry=None):
 
     try:
         _logger.debug("DELETE url="+str(url))
-        r = requests.delete(url, auth=(userId, password), verify=config['ssl_verify'])
+        r = requests.delete(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
         raise err
