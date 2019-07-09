@@ -885,7 +885,7 @@ def format_output(config, op, params, payload):
                 t.add_row(row)
             ret = t.get_string(sortby='Archive Status')+"\n"
         elif op in ['transition_rules']:
-            header = ['Rule Id', 'Global', 'Analysis Age (Days)', 'Tag Versions Newer', 'Registry', 'Repository', 'Tag', 'Last Updated']
+            header = ['Rule Id', 'Global', 'Transition', 'Analysis Age (Days)', 'Tag Versions Newer', 'Registry', 'Repository', 'Tag', 'Last Updated']
             t = PrettyTable(header)
             t.set_style(PLAIN_COLUMNS)
             t.align = 'l'
@@ -894,6 +894,7 @@ def format_output(config, op, params, payload):
             for record in payload:
                 row = [str(record['rule_id']),
                        str(record['system_global']),
+                       str(record['transition']),
                        str(record['analysis_age_days']),
                        str(record['tag_versions_newer']),
                        str(record['selector']['registry']),
