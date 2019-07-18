@@ -434,6 +434,7 @@ def format_output(config, op, params, payload):
                 outdict = OrderedDict()
 
                 outdict['Registry'] = str(registry_record['registry'])
+                outdict['Name'] = str(registry_record.get('registry_name', "N/A"))
                 outdict['User'] = str(registry_record['registry_user'])
                 outdict['Type'] = str(registry_record['registry_type'])
                 outdict['Verify TLS'] = str(registry_record['registry_verify'])
@@ -446,12 +447,12 @@ def format_output(config, op, params, payload):
 
             ret = obuf
         elif op == 'registry_list':
-            header = ['Registry', 'Type', 'User']
+            header = ['Registry', 'Name', 'Type', 'User']
             t = PrettyTable(header)
             t.set_style(PLAIN_COLUMNS)
             t.align = 'l'
             for registry_record in payload:
-                row = [registry_record['registry'], registry_record['registry_type'], registry_record['registry_user']]
+                row = [registry_record['registry'], registry_record.get('registry_name', "N/A"), registry_record['registry_type'], registry_record['registry_user']]
                 t.add_row(row)
 
             ret = t.get_string(sortby='Registry')
