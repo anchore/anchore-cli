@@ -276,12 +276,17 @@ def format_output(config, op, params, payload):
                 obuf = obuf + "\n"
             else:
                 if params['query_type'] in ['os', 'non-os', 'all']:
-                    header = ['Vulnerability ID', 'Package', 'Severity', 'Fix', 'Vulnerability URL']
+                    header = ['Vulnerability ID', 'Package', 'Severity', 'Fix', 'CVE Refs', 'Vulnerability URL']
                     t = PrettyTable(header)
                     t.set_style(PLAIN_COLUMNS)
                     t.align = 'l'
                     for el in payload['vulnerabilities']:
-                        row = [el['vuln'], el['package'], el['severity'], el['fix'], el['url']]
+                        cve_refs = {}
+                        if el.get('nvd_data', []):
+                            for nvd_record in el.get('nvd_data'):
+                                cve_refs[nvd_record.get('id')] = True
+                        cve_ref_str = ','.join(cve_refs.keys())
+                        row = [el['vuln'], el['package'], el['severity'], el['fix'], cve_ref_str, el['url']]
                         t.add_row(row)
                     obuf = obuf + t.get_string(sortby='Severity')
                 else:
