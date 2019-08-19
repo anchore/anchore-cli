@@ -578,9 +578,19 @@ def activate_subscription(config, subscription_type, subscription_key):
 
     ret = {}
 
-    hashstr = '+'.join([userId, subscription_key, subscription_type]).encode('utf-8')
-    #subscription_id = hashlib.md5('+'.join([userId, subscription_key, subscription_type])).hexdigest()
-    subscription_id = hashlib.md5(hashstr).hexdigest()
+    # first - get the subscription record from engine, to get the right subscription_id for the record 
+    try:
+        subscription_response = get_subscription(config, subscription_type, subscription_key)
+        subscription_records = subscription_response.get('payload', [])
+        if not subscription_records:
+            raise Exception("cannot locate subscription record using specified input (subscription_type={}, subscription_key={} needs to exist before activation)".format(subscription_type, subscription_key))
+        subscription_record = subscription_records[0]
+    except Exception as err:
+        raise err
+
+    subscription_id = subscription_record.get('subscription_id', None)
+    if not subscription_id:
+        raise Exception("could not get a valid subscription record using specified input")
 
     base_url = re.sub("/$", "", base_url)
     url = '/'.join([base_url, "subscriptions", subscription_id])
@@ -604,9 +614,19 @@ def deactivate_subscription(config, subscription_type, subscription_key):
 
     ret = {}
 
-    hashstr = '+'.join([userId, subscription_key, subscription_type]).encode('utf-8')
-    #subscription_id = hashlib.md5('+'.join([userId, subscription_key, subscription_type])).hexdigest()
-    subscription_id = hashlib.md5(hashstr).hexdigest()
+    # first - get the subscription record from engine, to get the right subscription_id for the record 
+    try:
+        subscription_response = get_subscription(config, subscription_type, subscription_key)
+        subscription_records = subscription_response.get('payload', [])
+        if not subscription_records:
+            raise Exception("cannot locate subscription record using specified input (subscription_type={}, subscription_key={} needs to exist before deactivation)".format(subscription_type, subscription_key))
+        subscription_record = subscription_records[0]
+    except Exception as err:
+        raise err
+
+    subscription_id = subscription_record.get('subscription_id', None)
+    if not subscription_id:
+        raise Exception("could not get a valid subscription record using specified input")
 
     base_url = re.sub("/$", "", base_url)
     url = '/'.join([base_url, "subscriptions", subscription_id])
@@ -652,9 +672,19 @@ def delete_subscription(config, subscription_type=None, subscription_key=None):
 
     ret = {}
 
-    hashstr = '+'.join([userId, subscription_key, subscription_type]).encode('utf-8')
-    #subscription_id = hashlib.md5('+'.join([userId, subscription_key, subscription_type])).hexdigest()
-    subscription_id = hashlib.md5(hashstr).hexdigest()
+    # first - get the subscription record from engine, to get the right subscription_id for the record 
+    try:
+        subscription_response = get_subscription(config, subscription_type, subscription_key)
+        subscription_records = subscription_response.get('payload', [])
+        if not subscription_records:
+            raise Exception("cannot locate subscription record using specified input (subscription_type={}, subscription_key={} needs to exist before deletion)".format(subscription_type, subscription_key))
+        subscription_record = subscription_records[0]
+    except Exception as err:
+        raise err
+
+    subscription_id = subscription_record.get('subscription_id', None)
+    if not subscription_id:
+        raise Exception("could not get a valid subscription record using specified input")
 
     base_url = re.sub("/$", "", base_url)
     url = '/'.join([base_url, "subscriptions", subscription_id])
