@@ -1241,7 +1241,7 @@ def get_account(config, account_name=None):
     set_account_header(config)
 
     if account_name:
-        url = '/'.join([base_url, "accounts", account_name])
+        url = '/'.join([base_url, "accounts", quote(account_name, "")])
     else:
         url = '/'.join([base_url, "account"])
 
@@ -1284,7 +1284,7 @@ def del_account(config, account_name=None):
     ret = {}
 
     base_url = re.sub("/$", "", base_url)
-    url = '/'.join([base_url, "accounts", account_name])
+    url = '/'.join([base_url, "accounts", quote(account_name, "")])
     set_account_header(config)
 
     try:
@@ -1305,7 +1305,7 @@ def enable_account(config, account_name=None):
     ret = {}
 
     base_url = re.sub("/$", "", base_url)
-    url = '/'.join([base_url, "accounts", account_name, 'state'])
+    url = '/'.join([base_url, "accounts", quote(account_name, ""), 'state'])
 
     payload = {}
     payload.update({'state': 'enabled'})
@@ -1329,7 +1329,7 @@ def disable_account(config, account_name=None):
     ret = {}
 
     base_url = re.sub("/$", "", base_url)
-    url = '/'.join([base_url, "accounts", account_name, 'state'])
+    url = '/'.join([base_url, "accounts", quote(account_name, ""), 'state'])
 
     payload = {}
     payload.update({'state': 'disabled'})
@@ -1354,7 +1354,7 @@ def add_user(config, account_name=None, user_name=None, user_password=None):
     ret = {}
 
     base_url = re.sub("/$", "", base_url)
-    url = '/'.join([base_url, "accounts", account_name, 'users'])
+    url = '/'.join([base_url, "accounts", quote(account_name, ""), 'users'])
 
     payload = {}
     payload.update({'username': user_name, 'password': user_password})
@@ -1379,7 +1379,7 @@ def get_user(config, account_name=None, user_name=None):
 
     base_url = re.sub("/$", "", base_url)
     if account_name and user_name:
-        url = '/'.join([base_url, "accounts", account_name, 'users', user_name])
+        url = '/'.join([base_url, "accounts", quote(account_name, ""), 'users', quote(user_name, "")])
     elif not account_name and not user_name:
         url = '/'.join([base_url, "user"])
     else:
@@ -1405,7 +1405,7 @@ def del_user(config, account_name=None, user_name=None):
     ret = {}
 
     base_url = re.sub("/$", "", base_url)
-    url = '/'.join([base_url, "accounts", account_name, 'users', user_name])
+    url = '/'.join([base_url, "accounts", quote(account_name, ""), 'users', quote(user_name, "")])
 
     set_account_header(config)
 
@@ -1428,7 +1428,7 @@ def list_users(config, account_name=None):
 
     base_url = re.sub("/$", "", base_url)
     if account_name:
-        url = '/'.join([base_url, "accounts", account_name, 'users'])
+        url = '/'.join([base_url, "accounts", quote(account_name, ""), 'users'])
 
     set_account_header(config)
 
@@ -1450,7 +1450,7 @@ def update_user_password(config, account_name=None, user_name=None, user_passwor
     ret = {}
 
     base_url = re.sub("/$", "", base_url)
-    url = '/'.join([base_url, "accounts", account_name, 'users', user_name, 'credentials'])
+    url = '/'.join([base_url, "accounts", quote(account_name, ""), 'users', quote(user_name, ""), 'credentials'])
 
     payload = {}
     payload.update({'type': 'password', 'value': user_password})
