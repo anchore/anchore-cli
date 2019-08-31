@@ -841,6 +841,8 @@ def format_output(config, op, params, payload):
             outdict = OrderedDict()
             
             outdict['Name'] = str(payload.get('username', "N/A"))
+            outdict['Type'] = str(payload.get('type', "N/A"))
+            outdict['Source'] = str(payload.get('source', "N/A"))
             outdict['Created'] = str(payload.get('created_at', "N/A"))
 
             obuf = ""
@@ -850,12 +852,12 @@ def format_output(config, op, params, payload):
 
             ret = obuf
         elif op in ['user_list']:
-            header = ['Name', 'Created']
+            header = ['Name', 'Type', 'Source', 'Created']
             t = PrettyTable(header)
             t.set_style(PLAIN_COLUMNS)
             t.align = 'l'            
             for record in payload:
-                row = [str(record.get('username', "N/A")), str(record.get('created_at', "N/A"))]
+                row = [str(record.get('username', "N/A")), str(record.get('type', "N/A")), str(record.get('source', "N/A")), str(record.get('created_at', "N/A"))]
                 t.add_row(row)
             ret = t.get_string(sortby='Created')+"\n"            
         elif op in ['user_setpassword']:
