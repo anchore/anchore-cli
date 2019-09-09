@@ -79,6 +79,10 @@ jobs:
               echo "${IMAGE_NAME}:v0.4-${IMAGE_TAG}"
               docker tag "${IMAGE_NAME}:ci" "${IMAGE_NAME}:v0.4-${IMAGE_TAG}"
               docker push "${IMAGE_NAME}:v0.4-${IMAGE_TAG}"
+            elif [ "$CIRCLE_BRANCH" == "0.5" ]; then
+              echo "${IMAGE_NAME}:v0.5-${IMAGE_TAG}"
+              docker tag "${IMAGE_NAME}:ci" "${IMAGE_NAME}:v0.5-${IMAGE_TAG}"
+              docker push "${IMAGE_NAME}:v0.5-${IMAGE_TAG}"
             fi
 
   trigger_downstream:
@@ -106,6 +110,7 @@ workflows:
                 - '0.2'
                 - '0.3'
                 - '0.4'
+                - '0.5'
       - push_dockerhub:
           context: dockerhub
           requires:
