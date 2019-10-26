@@ -39,7 +39,7 @@ def setup_config(cli_opts):
 
     # load up credentials file if present
     try:
-        home = os.environ.get('HOME', None)
+        home = os.path.expanduser('~')
         credential_file = os.path.join(home, '.anchore', 'credentials.yaml')
         if os.path.exists(credential_file):
             ydata = {}
