@@ -703,7 +703,15 @@ def format_output(config, op, params, payload):
                             code_version = service_record['service_detail']['version']
                         except:
                             pass
-                    
+                        
+                    # override with any discovered API service that is up
+                    try:
+                        if service_record['servicename'] == 'apiext' and service_status == 'up':
+                            api_code_version = service_record['service_detail']['version']
+                            code_version = api_code_version
+                    except:
+                        pass
+                        
                 for k in outlist:
                     obuf = obuf + k + "\n"
                 obuf = obuf + "\n"
