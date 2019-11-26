@@ -752,7 +752,10 @@ def format_output(config, op, params, payload):
                 for el in payload:
                     feed = el.get('name', "N/A")
                     for gel in el['groups']:
-                        t.add_row([feed, gel.get('name', "N/A"), gel.get('last_sync', "N/A"), gel.get('record_count', "N/A")])
+                        last_sync = gel.get('last_sync', None)
+                        if not last_sync:
+                            last_sync = "pending"
+                        t.add_row([feed, gel.get('name', "N/A"), last_sync, gel.get('record_count', "N/A")])
                 ret = t.get_string(sortby='Feed')+"\n"
             except Exception as err:
                 raise err
