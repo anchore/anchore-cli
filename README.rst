@@ -90,7 +90,7 @@ Wait for an image to transition to ``analyzed``
 
 .. code::
 
-    anchore-cli image add docker.io/library/debian:latest 
+    anchore-cli image wait docker.io/library/debian:latest 
   
 List images analyzed by the Anchore Engine
 
