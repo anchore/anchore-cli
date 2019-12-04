@@ -28,9 +28,12 @@ def event(ctx_config):
 @click.option('--level', default=None, required=False, help='Filter results based on the level, supported levels are info and error')
 @click.option('--service', default=None, required=False, help='Filter events based on the originating service')
 @click.option('--host', default=None, required=False, help='Filter events based on the originating host')
+@click.option('--event_type', default=None, required=False, help='Filter events based on the event type. This may include a wildcard (e.g. "system.*")')
+@click.option('--resource_type', default=None, required=False, help='Filter events based on the resource type.')
 @click.option('--all', is_flag=True, default=False, required=False, help='Display all results. If not specified only the first 100 events are displayed')
+@click.option('--full', is_flag=True, default=False, required=False, help='Display all columns for wider output.')
 @click.argument('resource', nargs=1, required=False)
-def list(since=None, before=None, level=None, service=None, host=None, resource=None, all=False):
+def list(since=None, before=None, level=None, service=None, host=None, resource=None, event_type=None, resource_type=None, all=False, full=False):
     """
     RESOURCE: Value can be a tag, image digest or repository name. Displays results related to the specific resource
     """
@@ -42,10 +45,13 @@ def list(since=None, before=None, level=None, service=None, host=None, resource=
                 raise Exception('{} is an invalid value for --level. Supported values are \'info\' or \'error\''.format(level))
             level = level.upper()
 
-        ret = anchorecli.clients.apiexternal.list_events(config, since=since, before=before, level=level, service=service, host=host, resource=resource, all=all)
+        ret = anchorecli.clients.apiexternal.list_events(config, since=since, before=before, level=level, service=service, host=host, resource=resource, event_type=event_type, resource_type=resource_type, all=all)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret['success']:
-            print(anchorecli.cli.utils.format_output(config, 'event_list', {}, ret['payload']))
+            if full:
+                print(anchorecli.cli.utils.format_output(config, 'event_list_full', {}, ret['payload']))
+            else:
+                print(anchorecli.cli.utils.format_output(config, 'event_list', {}, ret['payload']))
         else:
             raise Exception(json.dumps(ret['error'], indent=4))
 

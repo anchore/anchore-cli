@@ -971,7 +971,7 @@ def describe_policy_spec(config):
     return(ret)
 
 
-def list_events(config, since=None, before=None, level=None, service=None, host=None, resource=None, all=False):
+def list_events(config, since=None, before=None, level=None, service=None, host=None, resource=None, resource_type=None, event_type=None, all=False):
     userId = config['user']
     password = config['pass']
     base_url = config['url']
@@ -1001,6 +1001,12 @@ def list_events(config, since=None, before=None, level=None, service=None, host=
 
     if resource:
         params['resource_id'] = resource
+
+    if event_type:
+        params['event_type'] = event_type
+
+    if resource_type:
+        params['resource_type'] = resource_type
 
     set_account_header(config)
 
