@@ -772,13 +772,23 @@ def format_output(config, op, params, payload):
                         t.add_row(row)
                 ret = t.get_string(sortby='Feed')
         elif op == 'event_list':
-            header = ['Timestamp', 'Level', 'Service', 'Host', 'Event', 'ID']
+            header = ['Timestamp', 'Level', 'Event', 'Resource', 'ID']
             t = PrettyTable(header)
             t.set_style(PLAIN_COLUMNS)
             t.align = 'l'
             for event_res in payload['results']:
                 event = event_res['event']
-                row = [event['timestamp'], event['level'], event['source']['servicename'], event['source']['hostid'], event['type'], event_res['generated_uuid']]
+                row = [event['timestamp'], event['level'], event['type'], event['resource'].get('id'), event_res['generated_uuid']]
+                t.add_row(row)
+            ret = t.get_string()
+        elif op == 'event_list_full':
+            header = ['Timestamp', 'Level', 'Event', 'ResourceType', 'Resource', 'Service', 'Host', 'ID']
+            t = PrettyTable(header)
+            t.set_style(PLAIN_COLUMNS)
+            t.align = 'l'
+            for event_res in payload['results']:
+                event = event_res['event']
+                row = [event['timestamp'], event['level'], event['type'], event['resource'].get('type'), event['resource'].get('id'), event['source']['servicename'], event['source']['hostid'], event_res['generated_uuid']]
                 t.add_row(row)
             ret = t.get_string()
         elif op == 'event_get':
