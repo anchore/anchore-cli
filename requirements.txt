@@ -1,8 +1,8 @@
-certifi==2018.10.15
-click==7.0
+certifi==2019.11.28
+Click==7.0
 prettytable==0.7.2
-python-dateutil==2.7.3
-PyYAML==4.2b1
-requests==2.20.0
-six==1.11.0
-urllib3==1.24.2
+python-dateutil==2.8.1
+PyYAML==5.3
+requests==2.22.0
+six==1.13.0
+urllib3==1.25.7
