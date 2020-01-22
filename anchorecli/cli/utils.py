@@ -186,7 +186,7 @@ def format_error_output(config, op, params, payload):
         if not obuf:
             raise Exception("not JSON output could be parsed from error response")
         #obuf = obuf + "\n"
-    except Exception as err:
+    except Exception:
         obuf = str(payload)
 
     # operation-specific output postfixes
@@ -202,7 +202,8 @@ def format_output(config, op, params, payload):
     if config['jsonmode']:
         try:
             ret = json.dumps(payload, indent=4, sort_keys=True)
-        except:
+        # XXX catch json exception explicitly here
+        except Exception:
             ret = json.dumps({'payload': str(payload)}, indent=4, sort_keys=True)
         return(ret)
 
