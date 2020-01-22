@@ -1,5 +1,4 @@
 import sys
-import os
 import re
 import json
 import click
@@ -217,7 +216,6 @@ def disable(account_name):
 
 # user suboperation
 
-whoami = {}
 @account.group(name="user", short_help="Account user operations")
 def user():
     global config, whoami
@@ -236,7 +234,7 @@ def user_add(user_name, user_password, account):
 
     if not account:
         account = whoami.get('account', {}).get('name', None)
-        
+
     ecode = 0
 
     try:
@@ -271,7 +269,7 @@ def user_delete(user_name, account):
 
     if not account:
         account = whoami.get('account', {}).get('name', None)
-        
+
     ecode = 0
 
     try:
@@ -302,7 +300,7 @@ def user_get(user_name, account):
 
     if not account:
         account = whoami.get('account', {}).get('name', None)
-        
+
     ecode = 0
 
     try:
@@ -332,7 +330,7 @@ def user_list(account):
 
     if not account:
         account = whoami.get('account', {}).get('name', None)
-        
+
     ecode = 0
 
     try:
@@ -384,5 +382,5 @@ def user_setpassword(user_password, username, account):
             ecode = 2
 
     anchorecli.cli.utils.doexit(ecode)
-    
+
 
