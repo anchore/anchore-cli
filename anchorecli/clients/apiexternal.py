@@ -1,15 +1,14 @@
 import json
 import re
 import requests
-import hashlib
 import logging
 import urllib3
 import requests.packages.urllib3
 try:
     from urllib.parse import urlparse, urlunparse, urlencode, quote
-except:
+except ImportError:
     from urllib import urlencode, quote
-    from urlparse import urlparse,urlunparse
+    from urlparse import urlparse, urlunparse
 
 requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -85,7 +84,7 @@ def system_feeds_sync(config, flush=False):
     except Exception as err:
         raise err
 
-    return(ret)    
+    return(ret)
 
 def system_status(config):
     userId = config['user']
@@ -115,7 +114,7 @@ def delete_system_service(config, host_id, servicename):
     if not host_id or not servicename:
         raise Exception("invalid host_id or servicename given")
 
-    ret = {}    
+    ret = {}
 
     base_url = re.sub("/$", "", base_url)
     url = '/'.join([base_url, "system", "services", servicename, host_id])
@@ -332,7 +331,7 @@ def import_image(config, anchore_data=[]):
     ret = []
 
     payload = anchore_data[0]
-    
+
     base_url = re.sub("/$", "", base_url)
     url = '/'.join([base_url, "imageimport"])
     set_account_header(config)
@@ -356,7 +355,7 @@ def query_image(config, imageDigest=None, query_group=None, query_type=None, ven
 
     base_url = re.sub("/$", "", base_url)
     url = '/'.join([base_url, "images", imageDigest])
-    
+
     if query_group:
         url = '/'.join([url, query_group])
     else:
@@ -458,7 +457,7 @@ def get_policy(config, policyId=None, detail=False):
         _logger.debug("GET url="+str(url))
         r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
-        
+
     except Exception as err:
         raise err
 
@@ -578,7 +577,7 @@ def activate_subscription(config, subscription_type, subscription_key):
 
     ret = {}
 
-    # first - get the subscription record from engine, to get the right subscription_id for the record 
+    # first - get the subscription record from engine, to get the right subscription_id for the record
     try:
         subscription_response = get_subscription(config, subscription_type, subscription_key)
         subscription_records = subscription_response.get('payload', [])
@@ -594,7 +593,7 @@ def activate_subscription(config, subscription_type, subscription_key):
 
     base_url = re.sub("/$", "", base_url)
     url = '/'.join([base_url, "subscriptions", subscription_id])
-    
+
     payload = {'active':True, 'subscription_key': subscription_key, 'subscription_type': subscription_type}
     set_account_header(config)
 
@@ -614,7 +613,7 @@ def deactivate_subscription(config, subscription_type, subscription_key):
 
     ret = {}
 
-    # first - get the subscription record from engine, to get the right subscription_id for the record 
+    # first - get the subscription record from engine, to get the right subscription_id for the record
     try:
         subscription_response = get_subscription(config, subscription_type, subscription_key)
         subscription_records = subscription_response.get('payload', [])
@@ -672,7 +671,7 @@ def delete_subscription(config, subscription_type=None, subscription_key=None):
 
     ret = {}
 
-    # first - get the subscription record from engine, to get the right subscription_id for the record 
+    # first - get the subscription record from engine, to get the right subscription_id for the record
     try:
         subscription_response = get_subscription(config, subscription_type, subscription_key)
         subscription_records = subscription_response.get('payload', [])
@@ -697,7 +696,7 @@ def delete_subscription(config, subscription_type=None, subscription_key=None):
     except Exception as err:
         raise err
 
-    return(ret)    
+    return(ret)
 
 def get_subscription(config, subscription_type=None, subscription_key=None):
     userId = config['user']
@@ -771,6 +770,7 @@ def add_repo(config, input_repo, autosubscribe=False, lookuptag=None):
 
     return(ret)
     #return(add_subscription(config, 'repo_update', input_repo))
+
 
 def get_repo(config, input_repo=None):
     userId = config['user']
@@ -948,7 +948,7 @@ def describe_error_codes(config):
     except Exception as err:
         raise err
 
-    return(ret)    
+    return(ret)
 
 def describe_policy_spec(config):
     userId = config['user']
@@ -1154,7 +1154,7 @@ def query_images_by_vulnerability(config, vulnerability_id, namespace=None, affe
         query_params['severity'] = severity
     if vendor_only:
         query_params['vendor_only'] = vendor_only
-    
+
     if query_params:
         url = "{}&{}".format(url, urlencode(query_params))
 
@@ -1189,7 +1189,7 @@ def query_images_by_package(config, name, version=None, package_type=None):
         query_params['version'] = version
     if package_type:
         query_params['package_type'] = package_type
-    
+
     if query_params:
         url = "{}&{}".format(url, urlencode(query_params))
 
@@ -1469,7 +1469,7 @@ def update_user_password(config, account_name=None, user_name=None, user_passwor
     except Exception as err:
         raise err
 
-    return(ret)        
+    return(ret)
 
 
 def list_archives(config):
