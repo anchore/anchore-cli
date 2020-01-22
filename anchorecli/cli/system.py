@@ -1,6 +1,4 @@
 import sys
-import os
-import re
 import json
 import time
 import click
@@ -71,8 +69,8 @@ def wait(timeout, interval, feedsready, servicesready):
     """
     Wait for an image to go to analyzed or analysis_failed status with a specific timeout
 
-    :param timeout: 
-    :param interval: 
+    :param timeout:
+    :param interval:
     :param feedsready:
     :return:
     """
@@ -88,7 +86,7 @@ def wait(timeout, interval, feedsready, servicesready):
             try:
                 anchorecli.cli.utils.check_access(config)
                 _logger.debug("check access success")
-                break;
+                break
             except Exception as err:
                 _logger.debug("check access failed, trying again")
             time.sleep(interval)
@@ -127,7 +125,7 @@ def wait(timeout, interval, feedsready, servicesready):
 
                     if False not in all_up.values():
                         _logger.debug("full set of available engine services detected")
-                        break;
+                        break
                     else:
                         _logger.debug("service set not yet available {}".format(all_up))
                 elif ret.get('httpcode', 500) in [401]:
