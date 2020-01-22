@@ -1,6 +1,4 @@
 import json
-import re
-import os
 
 
 def make_client_result(response, raw=False):
