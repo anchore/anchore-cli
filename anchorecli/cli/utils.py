@@ -250,10 +250,7 @@ def format_output(config, op, params, payload):
                 for image_detail_record in image_record['image_detail']:
                     image_detail = copy.deepcopy(image_detail_record)
 
-                    dockerpresent = imageId = fulltag = "None"
-                    dockerfile = image_detail.pop('dockerfile', None)
-                    if dockerfile:
-                        dockerpresent = "Present"
+                    imageId = fulltag = "None"
 
                     imageId = image_detail.pop('imageId', "None")
                     fulltag = image_detail.pop('registry', "None") + "/" + image_detail.pop('repo', "None") + ":" + image_detail.pop('tag', "None")
@@ -396,15 +393,9 @@ def format_output(config, op, params, payload):
                 outdict['Analyzed At'] = str(image_record['analyzed_at'])
 
                 image_detail = copy.deepcopy(image_record['image_detail'][0])
-                dockerfile = image_detail.pop('dockerfile', None)
-
-                dockerpresent = "None"
-                if dockerfile:
-                    dockerpresent = "Present"
 
                 imageId = image_detail.pop('imageId', "None")
                 outdict['Image ID'] = str(imageId)
-                #outdict['Dockerfile'] = str(dockerpresent)
 
                 if 'image_content' in image_record and image_record['image_content']:
                     image_content = image_record['image_content']
@@ -549,7 +540,6 @@ def format_output(config, op, params, payload):
             t = PrettyTable(header)
             t.set_style(PLAIN_COLUMNS)
             t.align = 'l'
-            last_updated = payload['metadata']['last_updated']
             for record in payload['content']:
                 if record.get('type', None) == 'bundle':
                     row = [textwrap.fill(record['name'], width=40), textwrap.fill(record['description'], width=60)]
@@ -798,8 +788,6 @@ def format_output(config, op, params, payload):
         elif op == 'event_get':
             ret = yaml.safe_dump(payload['event'], default_flow_style=False)
         elif op == 'query_images_by_vulnerability':
-            vulnerability_id = params.get('vulnerability_id')
-            #header = ['Severity', 'Full Tag', 'Package', 'Package Type', 'Namespace', 'Digest']
             header = ['Full Tag', 'Severity', 'Package', 'Package Type', 'Namespace', 'Digest']
             t = PrettyTable(header)
             t.set_style(PLAIN_COLUMNS)
@@ -811,7 +799,6 @@ def format_output(config, op, params, payload):
                         t.add_row(row)
             ret = t.get_string()
         elif op == 'query_images_by_package':
-            vulnerability_id = params.get('vulnerability_id')
             header = ['Full Tag', 'Package', 'Package Type', 'Digest']
             t = PrettyTable(header)
             t.set_style(PLAIN_COLUMNS)
@@ -1129,9 +1116,6 @@ def discover_inputimage_format(config, input_string):
     return(itype)
 
 def discover_inputimage(config, input_string):
-    type = None
-    image = None
-
     patt = re.match("(.*@|^)(sha256:.*)", input_string)
     if patt:
         urldigest = quote_plus(patt.group(2))
