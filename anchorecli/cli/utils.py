@@ -67,6 +67,7 @@ def setup_config(cli_opts):
         for e in ['ANCHORE_CLI_USER', 'ANCHORE_CLI_PASS', 'ANCHORE_CLI_URL', 'ANCHORE_CLI_HUB_URL', 'ANCHORE_CLI_API_VERSION', 'ANCHORE_CLI_SSL_VERIFY', 'ANCHORE_CLI_JSON', 'ANCHORE_CLI_DEBUG', 'ANCHORE_CLI_ACCOUNT']:
             if e in os.environ:
                 settings[e] = os.environ[e]
+    # XXX no need
     except Exception as err:
         raise err
 
@@ -99,6 +100,7 @@ def setup_config(cli_opts):
         if cli_opts.get('as_account') is not None:
             settings['ANCHORE_CLI_ACCOUNT'] = cli_opts['as_account']
 
+    # XXX no need
     except Exception as err:
         raise err
 
@@ -126,6 +128,7 @@ def setup_config(cli_opts):
         if 'ANCHORE_CLI_ACCOUNT' in settings:
             ret['as_account'] = settings['ANCHORE_CLI_ACCOUNT']
 
+    # XXX no need
     except Exception as err:
         raise err
 
@@ -358,7 +361,7 @@ def format_output(config, op, params, payload):
                 elif params['query_type'] in ['manifest', 'dockerfile', 'docker_history']:
                     try:
                         obuf = base64.b64decode(payload.get('metadata', "")).decode('utf-8')
-                    except Exception as err:
+                    except Exception:
                         obuf = ""
                 else:
                     try:
@@ -719,6 +722,7 @@ def format_output(config, op, params, payload):
                 obuf = obuf + "Engine Code Version: {}\n".format(code_version)
 
                 ret = obuf
+            # XXX no need
             except Exception as err:
                 raise err
         elif op == 'event_delete':
@@ -756,6 +760,7 @@ def format_output(config, op, params, payload):
                             last_sync = "pending"
                         t.add_row([feed, gel.get('name', "N/A"), last_sync, gel.get('record_count', "N/A")])
                 ret = t.get_string(sortby='Feed')+"\n"
+            # XXX no need
             except Exception as err:
                 raise err
         elif op in ['system_feeds_flush']:
@@ -950,7 +955,8 @@ def format_output(config, op, params, payload):
         print("WARNING: failed to format output (returning raw output) - exception: " + str(err))
         try:
             ret = json.dumps(payload, indent=4, sort_keys=True)
-        except:
+        # XXX catch json errors here
+        except Exception:
             ret = str(payload)
     return(ret)
 
@@ -1001,6 +1007,7 @@ def _format_gates(payload, all=False):
         else:
             return  'No policy spec to parse'
 
+    # XXX no need
     except Exception as err:
         raise err
 
@@ -1028,6 +1035,7 @@ def _format_triggers(payload, gate, all=False):
         else:
             return 'No policy spec to parse'
 
+    # XXX no need
     except Exception as err:
         raise err
 
@@ -1057,6 +1065,7 @@ def _format_trigger_params(payload, gate, trigger, all=False):
         else:
             return 'No policy spec to parse'
 
+    # XXX no need
     except Exception as err:
         raise err
 
@@ -1073,7 +1082,7 @@ def get_eval_ecode(evaldata, imageDigest):
             ret = 1
         else:
             raise Exception("got unknown eval status result: " + str(status))
-    except Exception as err:
+    except Exception:
         ret = 2
     return(ret)
 
@@ -1136,7 +1145,7 @@ def discover_inputimage(config, input_string):
         patt = re.match("(.*@|^)(local:.*)", digest)
         if patt:
             return("imageDigest", input_string, input_string)
-    except Exception as err:
+    except Exception:
         pass
 
     urldigest = None
@@ -1151,11 +1160,11 @@ def discover_inputimage(config, input_string):
                     if input_string == image_detail['imageId']:
                         ret_type = "imageid"
                         break
-            except Exception as err:
+            except Exception:
                 pass
         else:
             pass
-    except Exception as err:
+    except Exception:
         urldigest = None
 
     return(ret_type, input_string, urldigest)
