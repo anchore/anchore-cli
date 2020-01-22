@@ -773,12 +773,6 @@ def add_repo(config, input_repo, autosubscribe=False, lookuptag=None):
 
 
 def get_repo(config, input_repo=None):
-    userId = config['user']
-    password = config['pass']
-    base_url = config['url']
-
-    ret = {}
-
     set_account_header(config)
 
     filtered_records = []
@@ -792,7 +786,7 @@ def get_repo(config, input_repo=None):
 
     subscriptions['payload'] = filtered_records
 
-    return(subscriptions)
+    return subscriptions
 
 def delete_repo(config, input_repo, force=False):
     return(delete_subscription(config, 'repo_update', input_repo))
