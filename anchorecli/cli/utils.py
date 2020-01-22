@@ -247,14 +247,13 @@ def format_output(config, op, params, payload):
                 for image_detail_record in image_record['image_detail']:
                     image_detail = copy.deepcopy(image_detail_record)
 
-                    dockerpresent = imageId = fulltag = registy = "None"
+                    dockerpresent = imageId = fulltag = "None"
                     dockerfile = image_detail.pop('dockerfile', None)
                     if dockerfile:
                         dockerpresent = "Present"
 
                     imageId = image_detail.pop('imageId', "None")
                     fulltag = image_detail.pop('registry', "None") + "/" + image_detail.pop('repo', "None") + ":" + image_detail.pop('tag', "None")
-                    #registry = image_detail.pop('registry', "None")
 
                     if params['full']:
                         row = [fulltag, image_record['imageDigest'], image_record['analysis_status'], imageId]
