@@ -87,7 +87,7 @@ def wait(timeout, interval, feedsready, servicesready):
                 anchorecli.cli.utils.check_access(config)
                 _logger.debug("check access success")
                 break
-            except Exception as err:
+            except Exception:
                 _logger.debug("check access failed, trying again")
             time.sleep(interval)
         else:
@@ -235,7 +235,7 @@ def feedsync(flush):
             except NameError:
                 pass
             answer = input("Really perform a manual feed data sync/flush? (y/N)")
-        except Exception as err:
+        except Exception:
             answer = "n"
 
         if 'y' == answer.lower():
