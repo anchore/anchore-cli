@@ -1,16 +1,8 @@
-import json
 import re
 import requests
-import hashlib
 import logging
 import urllib3
-import uuid
 import requests.packages.urllib3
-try:
-    from urllib.parse import urlparse, urlunparse, urlencode
-except:
-    from urllib import urlencode
-    from urlparse import urlparse,urlunparse
 
 requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -18,6 +10,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 import anchorecli.clients.common
 
 _logger = logging.getLogger(__name__)
+
 
 def _get_hub_index(config, auth=(None, None)):
     base_url = re.sub("/$", "", config['hub-url'])
@@ -33,6 +26,7 @@ def _get_hub_index(config, auth=(None, None)):
     except Exception as err:
         raise err
     return(index)
+
 
 def _fetch_bundle(config, bundlename=None, auth=(None, None)):
     base_url = re.sub("/$", "", config['hub-url'])
@@ -60,6 +54,7 @@ def _fetch_bundle(config, bundlename=None, auth=(None, None)):
 
     return(bundle)
 
+
 def get_policy(config, bundlename, auth=(None, None)):
     ret = {
         'success': False,
@@ -78,6 +73,7 @@ def get_policy(config, bundlename, auth=(None, None)):
 
     return(ret)
 
+
 def get_policies(config, auth=(None, None)):
     ret = {
         'success': False,
@@ -95,6 +91,7 @@ def get_policies(config, auth=(None, None)):
         ret['error'] = str(err)
 
     return(ret)
+
 
 def install_policy(config, bundlename, target_id=None, force=False, auth=(None, None)):
     ret = {
