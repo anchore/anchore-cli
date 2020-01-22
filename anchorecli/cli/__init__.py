@@ -4,7 +4,7 @@ import logging
 from . import image, policy, evaluate, subscription, registry, system, utils, repo, event, query, account, archives
 
 from anchorecli import version
-import anchorecli.clients
+import anchorecli.clients # noqa
 
 
 @click.group()
