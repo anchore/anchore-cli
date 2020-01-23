@@ -6,14 +6,13 @@ import json
 import yaml
 import logging
 import dateutil.parser
-import struct
 import textwrap
 import base64
 
 try:
-    from urllib.parse import quote_plus,unquote_plus
-except:
-    from urllib import quote_plus,unquote_plus
+    from urllib.parse import quote_plus, unquote_plus
+except ImportError:
+    from urllib import quote_plus, unquote_plus
 
 from prettytable import PrettyTable, PLAIN_COLUMNS, ALL
 from collections import OrderedDict
@@ -62,12 +61,13 @@ def setup_config(cli_opts):
 
     except Exception as err:
         raise Exception("error while processing credentials file, please check format and read permissions - exception: " + str(err))
-    
+
     # load environment if present
     try:
         for e in ['ANCHORE_CLI_USER', 'ANCHORE_CLI_PASS', 'ANCHORE_CLI_URL', 'ANCHORE_CLI_HUB_URL', 'ANCHORE_CLI_API_VERSION', 'ANCHORE_CLI_SSL_VERIFY', 'ANCHORE_CLI_JSON', 'ANCHORE_CLI_DEBUG', 'ANCHORE_CLI_ACCOUNT']:
             if e in os.environ:
                 settings[e] = os.environ[e]
+    # XXX no need
     except Exception as err:
         raise err
 
@@ -93,13 +93,14 @@ def setup_config(cli_opts):
 
         if cli_opts['json']:
             settings['ANCHORE_CLI_JSON'] = "y"
-        
+
         if cli_opts['debug']:
             settings['ANCHORE_CLI_DEBUG'] = "y"
 
         if cli_opts.get('as_account') is not None:
             settings['ANCHORE_CLI_ACCOUNT'] = cli_opts['as_account']
 
+    # XXX no need
     except Exception as err:
         raise err
 
@@ -127,6 +128,7 @@ def setup_config(cli_opts):
         if 'ANCHORE_CLI_ACCOUNT' in settings:
             ret['as_account'] = settings['ANCHORE_CLI_ACCOUNT']
 
+    # XXX no need
     except Exception as err:
         raise err
 
@@ -174,7 +176,7 @@ def format_error_output(config, op, params, payload):
 
     obuf = ""
     try:
-        outdict = OrderedDict()    
+        outdict = OrderedDict()
         if 'message' in errdata:
             outdict['Error'] = str(errdata['message'])
         if 'httpcode' in errdata:
@@ -187,7 +189,7 @@ def format_error_output(config, op, params, payload):
         if not obuf:
             raise Exception("not JSON output could be parsed from error response")
         #obuf = obuf + "\n"
-    except Exception as err:
+    except Exception:
         obuf = str(payload)
 
     # operation-specific output postfixes
@@ -197,13 +199,14 @@ def format_error_output(config, op, params, payload):
 
     ret = obuf
     return(ret)
-            
+
 
 def format_output(config, op, params, payload):
     if config['jsonmode']:
         try:
             ret = json.dumps(payload, indent=4, sort_keys=True)
-        except:
+        # XXX catch json exception explicitly here
+        except Exception:
             ret = json.dumps({'payload': str(payload)}, indent=4, sort_keys=True)
         return(ret)
 
@@ -247,14 +250,10 @@ def format_output(config, op, params, payload):
                 for image_detail_record in image_record['image_detail']:
                     image_detail = copy.deepcopy(image_detail_record)
 
-                    dockerpresent = imageId = fulltag = registy = "None"
-                    dockerfile = image_detail.pop('dockerfile', None)
-                    if dockerfile:
-                        dockerpresent = "Present"
+                    imageId = fulltag = "None"
 
-                    imageId = image_detail.pop('imageId', "None") 
+                    imageId = image_detail.pop('imageId', "None")
                     fulltag = image_detail.pop('registry', "None") + "/" + image_detail.pop('repo', "None") + ":" + image_detail.pop('tag', "None")
-                    #registry = image_detail.pop('registry', "None")
 
                     if params['full']:
                         row = [fulltag, image_record['imageDigest'], image_record['analysis_status'], imageId]
@@ -359,7 +358,7 @@ def format_output(config, op, params, payload):
                 elif params['query_type'] in ['manifest', 'dockerfile', 'docker_history']:
                     try:
                         obuf = base64.b64decode(payload.get('metadata', "")).decode('utf-8')
-                    except Exception as err:
+                    except Exception:
                         obuf = ""
                 else:
                     try:
@@ -394,15 +393,9 @@ def format_output(config, op, params, payload):
                 outdict['Analyzed At'] = str(image_record['analyzed_at'])
 
                 image_detail = copy.deepcopy(image_record['image_detail'][0])
-                dockerfile = image_detail.pop('dockerfile', None)
 
-                dockerpresent = "None"
-                if dockerfile:
-                    dockerpresent = "Present"
-
-                imageId = image_detail.pop('imageId', "None") 
+                imageId = image_detail.pop('imageId', "None")
                 outdict['Image ID'] = str(imageId)
-                #outdict['Dockerfile'] = str(dockerpresent)
 
                 if 'image_content' in image_record and image_record['image_content']:
                     image_content = image_record['image_content']
@@ -432,7 +425,7 @@ def format_output(config, op, params, payload):
                         obuf = obuf + k + ": " + outdict[k] + "\n"
                     obuf = obuf + "\n"
 
-            ret = obuf    
+            ret = obuf
         elif op in ['registry_add', 'registry_get', 'registry_update']:
             obuf = ""
             for registry_record in payload:
@@ -547,7 +540,6 @@ def format_output(config, op, params, payload):
             t = PrettyTable(header)
             t.set_style(PLAIN_COLUMNS)
             t.align = 'l'
-            last_updated = payload['metadata']['last_updated']
             for record in payload['content']:
                 if record.get('type', None) == 'bundle':
                     row = [textwrap.fill(record['name'], width=40), textwrap.fill(record['description'], width=60)]
@@ -558,7 +550,7 @@ def format_output(config, op, params, payload):
             obuf = ""
 
             outdict = OrderedDict()
-            
+
             outdict['Policy Bundle ID'] = str(payload['id'])
             outdict['Name'] = str(payload['name'])
             outdict['Description'] = str(payload.get('description', payload.get('comment', "N/A")))
@@ -594,7 +586,7 @@ def format_output(config, op, params, payload):
                 pids = []
                 pid = record.get('policy_id', None)
                 if pid:
-                    pids.append(pid) 
+                    pids.append(pid)
                 pids = [str(id_to_name[x]) for x in pids + record.get('policy_ids', [])]
                 outdict['Mapping Policies'] = ",".join(pids)
                 wids = [str(id_to_name[x]) for x in record.get('whitelist_ids', [])]
@@ -660,7 +652,7 @@ def format_output(config, op, params, payload):
                                                     status_detail = "whitelisted("+eval_whitelist_detail['whitelist_name']+")"
                                             except:
                                                 status_detail = row[6]
-                                                
+
                                             newrow = [row[3], row[4], detailrow, status_detail]
                                             t.add_row(newrow)
 
@@ -680,7 +672,7 @@ def format_output(config, op, params, payload):
         elif op == 'system_status':
             try:
                 obuf = ""
-                
+
                 outlist = []
 
                 db_version = code_version = None
@@ -690,7 +682,7 @@ def format_output(config, op, params, payload):
                         service_status = "up"
                     else:
                         service_status = "down ({})".format(service_record['status_message'])
-                        
+
                     outlist.append("Service "+service_record['servicename']+" ("+service_record['hostid']+", " +service_record['base_url'] +"): " + str(service_status))
                     if not db_version:
                         try:
@@ -703,7 +695,7 @@ def format_output(config, op, params, payload):
                             code_version = service_record['service_detail']['version']
                         except:
                             pass
-                        
+
                     # override with any discovered API service that is up
                     try:
                         if service_record['servicename'] == 'apiext' and service_status == 'up':
@@ -711,7 +703,7 @@ def format_output(config, op, params, payload):
                             code_version = api_code_version
                     except:
                         pass
-                        
+
                 for k in outlist:
                     obuf = obuf + k + "\n"
                 obuf = obuf + "\n"
@@ -720,6 +712,7 @@ def format_output(config, op, params, payload):
                 obuf = obuf + "Engine Code Version: {}\n".format(code_version)
 
                 ret = obuf
+            # XXX no need
             except Exception as err:
                 raise err
         elif op == 'event_delete':
@@ -748,7 +741,7 @@ def format_output(config, op, params, payload):
                 header = ['Feed', 'Group', 'LastSync', 'RecordCount']
                 t = PrettyTable(header)
                 t.set_style(PLAIN_COLUMNS)
-                t.align = 'l'                        
+                t.align = 'l'
                 for el in payload:
                     feed = el.get('name', "N/A")
                     for gel in el['groups']:
@@ -757,6 +750,7 @@ def format_output(config, op, params, payload):
                             last_sync = "pending"
                         t.add_row([feed, gel.get('name', "N/A"), last_sync, gel.get('record_count', "N/A")])
                 ret = t.get_string(sortby='Feed')+"\n"
+            # XXX no need
             except Exception as err:
                 raise err
         elif op in ['system_feeds_flush']:
@@ -794,12 +788,10 @@ def format_output(config, op, params, payload):
         elif op == 'event_get':
             ret = yaml.safe_dump(payload['event'], default_flow_style=False)
         elif op == 'query_images_by_vulnerability':
-            vulnerability_id = params.get('vulnerability_id')
-            #header = ['Severity', 'Full Tag', 'Package', 'Package Type', 'Namespace', 'Digest']
             header = ['Full Tag', 'Severity', 'Package', 'Package Type', 'Namespace', 'Digest']
             t = PrettyTable(header)
             t.set_style(PLAIN_COLUMNS)
-            t.align = 'l'            
+            t.align = 'l'
             for record in payload.get('images', []):
                 for tag_record in record.get('image', {}).get('tag_history', []):
                     for package_record in record.get('vulnerable_packages', []):
@@ -807,11 +799,10 @@ def format_output(config, op, params, payload):
                         t.add_row(row)
             ret = t.get_string()
         elif op == 'query_images_by_package':
-            vulnerability_id = params.get('vulnerability_id')
             header = ['Full Tag', 'Package', 'Package Type', 'Digest']
             t = PrettyTable(header)
             t.set_style(PLAIN_COLUMNS)
-            t.align = 'l'            
+            t.align = 'l'
             for record in payload.get('images', []):
                 for tag_record in record.get('image', {}).get('tag_history', []):
                     for package_record in record.get('packages', []):
@@ -820,7 +811,7 @@ def format_output(config, op, params, payload):
             ret = t.get_string()
         elif op == 'account_whoami':
             outdict = OrderedDict()
-            
+
             outdict['Username'] = str(payload.get('user', {}).get('username', "N/A"))
             outdict['AccountName'] = str(payload.get('account', {}).get('name', "N/A"))
             outdict['AccountEmail'] = str(payload.get('account', {}).get('email', "N/A"))
@@ -834,7 +825,7 @@ def format_output(config, op, params, payload):
             ret = obuf
         elif op in ['account_add', 'account_get']:
             outdict = OrderedDict()
-            
+
             outdict['Name'] = str(payload.get('name', "N/A"))
             outdict['Email'] = str(payload.get('email', "N/A"))
             outdict['Type'] = str(payload.get('type', "N/A"))
@@ -851,7 +842,7 @@ def format_output(config, op, params, payload):
             header = ['Name', 'Email', 'Type', 'State', 'Created']
             t = PrettyTable(header)
             t.set_style(PLAIN_COLUMNS)
-            t.align = 'l'            
+            t.align = 'l'
             for record in payload:
                 row = [str(record.get('name', "N/A")), str(record.get('email', "N/A")), str(record.get('type', "N/A")), str(record.get('state', "N/A")), str(record.get('created_at', "N/A"))]
                 t.add_row(row)
@@ -860,7 +851,7 @@ def format_output(config, op, params, payload):
 
         elif op in ['user_add', 'user_get']:
             outdict = OrderedDict()
-            
+
             outdict['Name'] = str(payload.get('username', "N/A"))
             outdict['Type'] = str(payload.get('type', "N/A"))
             outdict['Source'] = str(payload.get('source', "N/A"))
@@ -876,11 +867,11 @@ def format_output(config, op, params, payload):
             header = ['Name', 'Type', 'Source', 'Created']
             t = PrettyTable(header)
             t.set_style(PLAIN_COLUMNS)
-            t.align = 'l'            
+            t.align = 'l'
             for record in payload:
                 row = [str(record.get('username', "N/A")), str(record.get('type', "N/A")), str(record.get('source', "N/A")), str(record.get('created_at', "N/A"))]
                 t.add_row(row)
-            ret = t.get_string(sortby='Created')+"\n"            
+            ret = t.get_string(sortby='Created')+"\n"
         elif op in ['user_setpassword']:
             ret = "Password (re)set success"
         elif op in ['delete_system_service'] or re.match(".*_delete$", op) or re.match(".*_activate$", op) or re.match(".*_deactivate$", op) or re.match(".*_enable$", op) or re.match(".*_disable$", op):
@@ -951,7 +942,8 @@ def format_output(config, op, params, payload):
         print("WARNING: failed to format output (returning raw output) - exception: " + str(err))
         try:
             ret = json.dumps(payload, indent=4, sort_keys=True)
-        except:
+        # XXX catch json errors here
+        except Exception:
             ret = str(payload)
     return(ret)
 
@@ -1002,6 +994,7 @@ def _format_gates(payload, all=False):
         else:
             return  'No policy spec to parse'
 
+    # XXX no need
     except Exception as err:
         raise err
 
@@ -1029,6 +1022,7 @@ def _format_triggers(payload, gate, all=False):
         else:
             return 'No policy spec to parse'
 
+    # XXX no need
     except Exception as err:
         raise err
 
@@ -1058,10 +1052,11 @@ def _format_trigger_params(payload, gate, trigger, all=False):
         else:
             return 'No policy spec to parse'
 
+    # XXX no need
     except Exception as err:
         raise err
 
-        
+
 def get_eval_ecode(evaldata, imageDigest):
     #0 aid tag 0 status
     ret = 2
@@ -1074,7 +1069,7 @@ def get_eval_ecode(evaldata, imageDigest):
             ret = 1
         else:
             raise Exception("got unknown eval status result: " + str(status))
-    except Exception as err:
+    except Exception:
         ret = 2
     return(ret)
 
@@ -1121,9 +1116,6 @@ def discover_inputimage_format(config, input_string):
     return(itype)
 
 def discover_inputimage(config, input_string):
-    type = None
-    image = None
-
     patt = re.match("(.*@|^)(sha256:.*)", input_string)
     if patt:
         urldigest = quote_plus(patt.group(2))
@@ -1137,7 +1129,7 @@ def discover_inputimage(config, input_string):
         patt = re.match("(.*@|^)(local:.*)", digest)
         if patt:
             return("imageDigest", input_string, input_string)
-    except Exception as err:
+    except Exception:
         pass
 
     urldigest = None
@@ -1152,11 +1144,11 @@ def discover_inputimage(config, input_string):
                     if input_string == image_detail['imageId']:
                         ret_type = "imageid"
                         break
-            except Exception as err:
+            except Exception:
                 pass
         else:
             pass
-    except Exception as err:
+    except Exception:
         urldigest = None
 
     return(ret_type, input_string, urldigest)
@@ -1214,7 +1206,7 @@ def parse_dockerimage_string(instr):
         patt = re.match("(.*)@(.*)", remain)
         if patt:
             repo = patt.group(1)
-            digest = patt.group(2)        
+            digest = patt.group(2)
         else:
             patt = re.match("(.*):(.*)", remain)
             if patt:

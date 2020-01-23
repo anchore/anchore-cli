@@ -1,15 +1,11 @@
-import os
 import click
-import subprocess
-import sys
 import logging
 
 from . import image, policy, evaluate, subscription, registry, system, utils, repo, event, query, account, archives
 
 from anchorecli import version
-import anchorecli.clients
+import anchorecli.clients # noqa
 
-#from anchoreservice.subsys import logger
 
 @click.group()
 @click.option('--debug', is_flag=True, help='Debug output to stderr')
@@ -23,7 +19,6 @@ import anchorecli.clients
 @click.option('--as-account', help='Set account context for the command to another account than the one the user belongs to. Subject to authz', default=None)
 @click.version_option(version=version.version)
 @click.pass_context
-#@extended_help_option(extended_help="extended help")
 def main_entry(ctx, debug, u, p, url, hub_url, api_version, insecure, json, as_account):
     if debug:
         logging.basicConfig(level=logging.DEBUG)
@@ -43,8 +38,9 @@ def main_entry(ctx, debug, u, p, url, hub_url, api_version, insecure, json, as_a
     config = utils.setup_config(cli_opts)
     if config['debug']:
         logging.basicConfig(level=logging.DEBUG)
-        
+
     ctx.obj = config
+
 
 main_entry.add_command(image.image)
 main_entry.add_command(evaluate.evaluate)

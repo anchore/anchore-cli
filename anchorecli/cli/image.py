@@ -1,6 +1,4 @@
 import sys
-import os
-import re
 import json
 import click
 import logging
@@ -122,7 +120,7 @@ def add(input_image, force, dockerfile, annotation, noautosubscribe):
                             annotations[k] = v
                         else:
                             raise Exception("found null in key or value")
-                    except Exception as err:
+                    except Exception:
                         raise Exception("annotation format error - annotations must be of the form (--annotation key=value), found: {}".format(a))
 
             ret = anchorecli.clients.apiexternal.add_image(config, tag=input_image, force=force, dockerfile=dockerfile_contents, annotations=annotations, autosubscribe=autosubscribe)
@@ -173,7 +171,7 @@ def get(input_image, show_history):
     INPUT_IMAGE: Input image can be in the following formats: Image Digest, ImageID or registry/repo:tag
     """
     ecode = 0
-    
+
     try:
         itype = anchorecli.cli.utils.discover_inputimage_format(config, input_image)
         image = input_image
@@ -233,7 +231,7 @@ def query_content(input_image, content_type):
     """
     INPUT_IMAGE: Input image can be in the following formats: Image Digest, ImageID or registry/repo:tag
 
-    CONTENT_TYPE: The content type can be one of the following types: 
+    CONTENT_TYPE: The content type can be one of the following types:
 
       - os: Operating System Packages
 
@@ -244,7 +242,7 @@ def query_content(input_image, content_type):
       - files: Files
     """
     ecode = 0
-    
+
     try:
         itype, image, imageDigest = anchorecli.cli.utils.discover_inputimage(config, input_image)
         _logger.debug("discovery from input: " + str(itype) + " : " + str(image) + " : " + str(imageDigest))
@@ -281,7 +279,7 @@ def query_metadata(input_image, metadata_type):
 
     """
     ecode = 0
-    
+
     try:
         itype, image, imageDigest = anchorecli.cli.utils.discover_inputimage(config, input_image)
         _logger.debug("discovery from input: " + str(itype) + " : " + str(image) + " : " + str(imageDigest))
@@ -318,8 +316,8 @@ def query_metadata(input_image, metadata_type):
 def query_vuln(input_image, vuln_type, vendor_only):
     """
     INPUT_IMAGE: Input image can be in the following formats: Image Digest, ImageID or registry/repo:tag
-    
-    VULN_TYPE: VULN_TYPE: Vulnerability type can be one of the following types: 
+
+    VULN_TYPE: VULN_TYPE: Vulnerability type can be one of the following types:
 
       - os: CVE/distro vulnerabilities against operating system packages
     """
@@ -357,7 +355,7 @@ def delete(input_image, force):
     INPUT_IMAGE: Input image can be in the following formats: Image Digest, ImageID or registry/repo:tag
     """
     ecode = 0
-    
+
     try:
         itype, image, imageDigest = anchorecli.cli.utils.discover_inputimage(config, input_image)
 

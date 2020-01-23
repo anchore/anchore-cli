@@ -1,9 +1,7 @@
-#!/usr/bin/python
 from setuptools import setup, find_packages
-import os, shutil, errno
 from anchorecli import version
 
-version =  version.version
+version = version.version
 
 with open('requirements.txt') as f:
     requirements = f.read().splitlines()
@@ -15,7 +13,6 @@ long_description = open('README.rst').read()
 
 url = 'http://www.anchore.com'
 
-#package_data = {}
 package_data = {
     package_name: [
         'cli/*',
@@ -24,14 +21,7 @@ package_data = {
     ]
 }
 
-#data_files = [('conf', ['conf/config.yaml.example'])]
 data_files = []
-#data_files = [('datafiles', ['datafiles/lynis-data.tar'])]
-#data_files = [
-#    ('twisted', ['anchore_service/twisted/*'])
-#]
-#packages=find_packages(exclude=('run*', 'log*', 'conf*', 'dead*', 'scripts/*')),
-#scripts = ['scripts/anchore-service.sh', 'scripts/anchore-service']
 scripts = []
 
 setup(
@@ -52,9 +42,18 @@ setup(
     anchore-cli=anchorecli.cli:main_entry
     ''',
     install_requires=requirements,
-    scripts=scripts
+    scripts=scripts,
+    classifiers=[
+        'Development Status :: 5 - Production/Stable',
+        'Intended Audience :: Developers',
+        'Intended Audience :: System Administrators',
+        'Intended Audience :: Information Technology',
+        'Topic :: Security',
+        'License :: OSI Approved :: Apache Software License',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+    ]
 )
-#    entry_points='''
-#    [console_scripts]
-#    anchore=anchore.cli:main_entry
-#    ''',
