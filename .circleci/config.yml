@@ -27,7 +27,52 @@ var_2: &attach_workspace
 
 # Start circleci configuration
 version: 2.1
+commands:
+  run_tox_tests:
+    description: Run tox tests
+    parameters:
+      environment:
+        type: string
+    steps:
+    - checkout
+    - restore_cache:
+        keys:
+        - v1-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}
+    - run:
+        name: install dependencies
+        command: |
+          sudo pip install --upgrade pip
+          sudo pip install --upgrade tox
+    - run:
+        name: run tests
+        command: |
+          tox << parameters.environment >> | tee tox.log
+    - save_cache:
+        paths:
+          - ~/project/.tox
+        key: v1-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}
+    - store_artifacts:
+        path: tox.log
+
 jobs:
+  linting:
+    docker:
+    - image: circleci/python:3.6
+    steps:
+    - run_tox_tests:
+        environment: "-e flake8"
+  unit_tests_py27:
+    docker:
+    - image: circleci/python:2.7
+    steps:
+    - run_tox_tests:
+        environment: "-e py27"
+  unit_tests_py36:
+    docker:
+    - image: circleci/python:3.6
+    steps:
+    - run_tox_tests:
+        environment: "-e py36"
   build:
     docker:
       - image: docker:stable-git
@@ -106,6 +151,9 @@ jobs:
 workflows:
   default_workflow:
     jobs:
+      - unit_tests_py27
+      - unit_tests_py36
+      - linting
       - build:
           filters:
             branches:
