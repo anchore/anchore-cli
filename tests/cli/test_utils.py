@@ -1,3 +1,4 @@
+import pytest
 from anchorecli.cli import utils
 
 
@@ -55,3 +56,24 @@ class TestFormatErrorOutputAccountDelete:
     def test_state_change_is_valid(self):
         result = utils.format_error_output(self.config, "account_delete", {}, '{"message": "Unable to delete account"}')
         assert 'Error: Unable to delete account\n' == result
+
+
+class TestCreateHint:
+
+    def test_cannot_create_hint(self):
+        result = utils.create_hint("should not create a hint here")
+        assert result is None
+
+    def test_creates_hint(self):
+        result = utils.create_hint("'id' is a required property")
+        assert 'Hint: The "id" key is not present in the JSON file' in result
+        assert '"id": <value>' in result
+
+    def test_cannot_create_hint(self):
+        result = utils.create_hint("unquoted_value is a required property")
+        assert result is None
+
+    @pytest.mark.parametrize('invalid_type', [None, [], {}, (), 1, True, False])
+    def test_handles_non_strings(self, invalid_type):
+        result = utils.create_hint(invalid_type)
+        assert result is None
