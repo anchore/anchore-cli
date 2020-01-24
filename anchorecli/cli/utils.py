@@ -183,12 +183,48 @@ def format_error_output(config, op, params, payload):
     if not obuf:
         obuf = str(payload)
 
+    hint = create_hint(outdict.get('Detail'))
+    if hint:
+        obuf = obuf + hint
     # operation-specific output postfixes
     if op in ['account_delete']:
         if "Invalid account state change requested" in errdata.get('message', ""):
             obuf = obuf + "\nNOTE: accounts must be disabled (anchore-cli account disable <account>) in order to be deleted\n"
 
     return obuf
+
+
+def create_hint(error_message):
+    """
+    Apply some heuristics to determine if the message is a validation failure
+    complaining about missing keys, if so, attempt to extract what may be the
+    missing key, and craft a message that indicates how that might look inside
+    a JSON object.
+
+    :returns: multiline string on success, ``None`` on failure.
+    """
+    # when validation fails, the message already has something we can depend on
+    # skip processing otherwise
+    try:
+        if not 'is a required property' in error_message:
+            return
+    except TypeError:
+        return
+
+    pattern = re.compile(r"'(?P<key>.*?)'")
+    search = re.search(pattern, error_message)
+    if not search:
+        return
+
+    parsed = search.groupdict()
+    key = parsed.get('key')
+    if key:
+        msg = ('Hint: The "{key}" key is not present in the JSON file, make sure it exists:\n\n'
+               '    {{\n'
+               '        "{key}": <value>\n'
+               '        ...\n'
+               '    }}\n')
+        return msg.format(key=key)
 
 
 def format_output(config, op, params, payload):
