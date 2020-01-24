@@ -158,38 +158,29 @@ def group_list_of_dicts(indict, bykey):
             ret.append(el)
     return(ret)
 
-def format_error_output(config, op, params, payload):
 
+def format_error_output(config, op, params, payload):
     try:
         errdata = json.loads(str(payload))
-    except:
+    except ValueError:
         errdata = {'message': str(payload)}
 
     if config['jsonmode']:
-        ret = json.dumps(errdata, indent=4, sort_keys=True)
-        return(ret)
-
-    # error message overrides
-    #if op == 'image_add':
-        #if 'httpcode' in errdata and errdata['httpcode'] == 404:
-        #    errdata['message'] = "image cannot be found/fetched from registry"
+        return json.dumps(errdata, indent=4, sort_keys=True)
 
     obuf = ""
-    try:
-        outdict = OrderedDict()
-        if 'message' in errdata:
-            outdict['Error'] = str(errdata['message'])
-        if 'httpcode' in errdata:
-            outdict['HTTP Code'] = str(errdata['httpcode'])
-        if 'detail' in errdata and errdata['detail']:
-            outdict['Detail'] = str(errdata['detail'])
+    outdict = OrderedDict()
+    if 'message' in errdata:
+        outdict['Error'] = str(errdata['message'])
+    if 'httpcode' in errdata:
+        outdict['HTTP Code'] = str(errdata['httpcode'])
+    if 'detail' in errdata and errdata['detail']:
+        outdict['Detail'] = str(errdata['detail'])
 
-        for k in list(outdict.keys()):
-            obuf = obuf + k + ": " + outdict[k] + "\n"
-        if not obuf:
-            raise Exception("not JSON output could be parsed from error response")
-        #obuf = obuf + "\n"
-    except Exception:
+    for k in list(outdict.keys()):
+        obuf = obuf + k + ": " + outdict[k] + "\n"
+
+    if not obuf:
         obuf = str(payload)
 
     # operation-specific output postfixes
@@ -197,8 +188,7 @@ def format_error_output(config, op, params, payload):
         if "Invalid account state change requested" in errdata.get('message', ""):
             obuf = obuf + "\nNOTE: accounts must be disabled (anchore-cli account disable <account>) in order to be deleted\n"
 
-    ret = obuf
-    return(ret)
+    return obuf
 
 
 def format_output(config, op, params, payload):
