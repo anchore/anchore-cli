@@ -158,47 +158,73 @@ def group_list_of_dicts(indict, bykey):
             ret.append(el)
     return(ret)
 
-def format_error_output(config, op, params, payload):
 
+def format_error_output(config, op, params, payload):
     try:
         errdata = json.loads(str(payload))
-    except:
+    except ValueError:
         errdata = {'message': str(payload)}
 
     if config['jsonmode']:
-        ret = json.dumps(errdata, indent=4, sort_keys=True)
-        return(ret)
-
-    # error message overrides
-    #if op == 'image_add':
-        #if 'httpcode' in errdata and errdata['httpcode'] == 404:
-        #    errdata['message'] = "image cannot be found/fetched from registry"
+        return json.dumps(errdata, indent=4, sort_keys=True)
 
     obuf = ""
-    try:
-        outdict = OrderedDict()
-        if 'message' in errdata:
-            outdict['Error'] = str(errdata['message'])
-        if 'httpcode' in errdata:
-            outdict['HTTP Code'] = str(errdata['httpcode'])
-        if 'detail' in errdata and errdata['detail']:
-            outdict['Detail'] = str(errdata['detail'])
+    outdict = OrderedDict()
+    if 'message' in errdata:
+        outdict['Error'] = str(errdata['message'])
+    if 'httpcode' in errdata:
+        outdict['HTTP Code'] = str(errdata['httpcode'])
+    if 'detail' in errdata and errdata['detail']:
+        outdict['Detail'] = str(errdata['detail'])
 
-        for k in list(outdict.keys()):
-            obuf = obuf + k + ": " + outdict[k] + "\n"
-        if not obuf:
-            raise Exception("not JSON output could be parsed from error response")
-        #obuf = obuf + "\n"
-    except Exception:
+    for k in list(outdict.keys()):
+        obuf = obuf + k + ": " + outdict[k] + "\n"
+
+    if not obuf:
         obuf = str(payload)
 
+    hint = create_hint(outdict.get('Detail'))
+    if hint:
+        obuf = obuf + hint
     # operation-specific output postfixes
     if op in ['account_delete']:
         if "Invalid account state change requested" in errdata.get('message', ""):
             obuf = obuf + "\nNOTE: accounts must be disabled (anchore-cli account disable <account>) in order to be deleted\n"
 
-    ret = obuf
-    return(ret)
+    return obuf
+
+
+def create_hint(error_message):
+    """
+    Apply some heuristics to determine if the message is a validation failure
+    complaining about missing keys, if so, attempt to extract what may be the
+    missing key, and craft a message that indicates how that might look inside
+    a JSON object.
+
+    :returns: multiline string on success, ``None`` on failure.
+    """
+    # when validation fails, the message already has something we can depend on
+    # skip processing otherwise
+    try:
+        if not 'is a required property' in error_message:
+            return
+    except TypeError:
+        return
+
+    pattern = re.compile(r"'(?P<key>.*?)'")
+    search = re.search(pattern, error_message)
+    if not search:
+        return
+
+    parsed = search.groupdict()
+    key = parsed.get('key')
+    if key:
+        msg = ('Hint: The "{key}" key is not present in the JSON file, make sure it exists:\n\n'
+               '    {{\n'
+               '        "{key}": <value>\n'
+               '        ...\n'
+               '    }}\n')
+        return msg.format(key=key)
 
 
 def format_output(config, op, params, payload):
