@@ -73,6 +73,20 @@ jobs:
     steps:
     - run_tox_tests:
         environment: "-e py36"
+  functional_tests_py36:
+    docker:
+      - image: circleci/python:3.6
+    steps:
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run:
+          name: forward remote docker ports
+          command: |
+            ssh -MS ../anchore -fN4 -L 8228:localhost:8228 remote-docker
+      - run_tox_tests:
+          environment: "-c tests/functional/tox.ini -e py36-anchore_0.6.0"
+      - run_tox_tests:
+          environment: "-c tests/functional/tox.ini -e py36-anchore_0.5.1"
   build:
     docker:
       - image: docker:stable-git
@@ -154,6 +168,7 @@ workflows:
       - unit_tests_py27
       - unit_tests_py36
       - linting
+      - functional_tests_py36
       - build:
           filters:
             branches:
