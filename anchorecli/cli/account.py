@@ -42,7 +42,7 @@ def account(ctx_config):
 
 
 @account.command(name='whoami', short_help="Get current account/user information")
-def whoami():
+def get_current_user():
     global whoami
     ecode = 0
     print(anchorecli.cli.utils.format_output(config, 'account_whoami', {}, whoami))
@@ -107,7 +107,6 @@ def list_accounts():
     """
     """
     ecode = 0
-
     try:
         ret = anchorecli.clients.apiexternal.list_accounts(config)
         ecode = anchorecli.cli.utils.get_ecode(ret)
