@@ -7,7 +7,7 @@ from anchorecli import version
 import anchorecli.clients # noqa
 
 
-@click.group()
+@click.group(context_settings=dict(help_option_names=['-h', '--help', 'help']))
 @click.option('--debug', is_flag=True, help='Debug output to stderr')
 @click.option('--u', help='Username (or use environment variable ANCHORE_CLI_USER)')
 @click.option('--p', help='Password (or use environment variable ANCHORE_CLI_PASS)')
@@ -42,6 +42,23 @@ def main_entry(ctx, debug, u, p, url, hub_url, api_version, insecure, json, as_a
     ctx.obj = config
 
 
+class Help(click.Command):
+    """
+    Do not parse any arguments, allow any args past the `help` command,
+    always return the help output
+    """
+
+    def parse_args(self, ctx, args):
+        return []
+
+
+@click.command(cls=Help)
+@click.pass_context
+def help(ctx):
+    print(ctx.parent.get_help())
+
+
+main_entry.add_command(help)
 main_entry.add_command(image.image)
 main_entry.add_command(evaluate.evaluate)
 main_entry.add_command(policy.policy)
