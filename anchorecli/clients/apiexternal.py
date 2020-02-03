@@ -21,7 +21,7 @@ header_overrides = {'Content-Type': 'application/json'}
 
 
 def set_account_header(config):
-    _logger.info('As Account = {}'.format(config.get('as_account')))
+    _logger.debug('As Account = {}'.format(config.get('as_account')))
     if config['as_account'] is not None:
         header_overrides['x-anchore-account'] = config['as_account']
     else:
