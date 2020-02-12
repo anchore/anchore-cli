@@ -380,3 +380,31 @@ def delete(input_image, force):
             ecode = 2
 
     anchorecli.cli.utils.doexit(ecode)
+
+@image.command(name='del-all', short_help="Delete all images")
+def delete_all():
+    ecode = 0
+    force = True
+
+    try:
+        ret = anchorecli.clients.apiexternal.get_images(config)
+        ecode = anchorecli.cli.utils.get_ecode(ret)
+        if not ret['success']:
+            raise Exception(json.dumps(ret['error'], indent=4))
+
+        for image in ret['payload']:
+            if image['imageDigest']:
+                ret = anchorecli.clients.apiexternal.delete_image(config, imageDigest=image['imageDigest'], force=force)
+                if ret['success']:
+                    for image_detail in image['image_detail']:
+                        fulltag = image_detail.pop('registry', "None") + "/" + image_detail.pop('repo', "None") + ":" + image_detail.pop('tag', "None")
+                        print(fulltag)
+                else:
+                    raise Exception(json.dumps(ret['error'], indent=4))
+
+    except Exception as err:
+        print(anchorecli.cli.utils.format_error_output(config, 'image_delete_all', {}, err))
+        if not ecode:
+            ecode = 2
+
+    anchorecli.cli.utils.doexit(ecode)
