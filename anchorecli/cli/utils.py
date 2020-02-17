@@ -21,16 +21,17 @@ import anchorecli.clients.apiexternal
 
 _logger = logging.getLogger(__name__)
 
+
 def setup_config(cli_opts):
     ret = {
-        'user':None,
-        'pass':None,
-        'url':"http://localhost:8228/v1",
-        'hub-url':"https://hub.anchore.io/",
+        'user': None,
+        'pass': None,
+        'url': "http://localhost:8228/v1",
+        'hub-url': "https://hub.anchore.io/",
         'api-version': None,
-        'ssl_verify':True,
-        'jsonmode':False,
-        'debug':False,
+        'ssl_verify': True,
+        'jsonmode': False,
+        'debug': False,
         'as_account': None
     }
 
@@ -134,16 +135,18 @@ def setup_config(cli_opts):
 
     return(ret)
 
+
 def doexit(ecode):
     try:
         sys.stdout.close()
-    except:
+    except Exception:
         pass
     try:
         sys.stderr.close()
-    except:
+    except Exception:
         pass
     sys.exit(ecode)
+
 
 def group_list_of_dicts(indict, bykey):
     ret = []
@@ -206,7 +209,7 @@ def create_hint(error_message):
     # when validation fails, the message already has something we can depend on
     # skip processing otherwise
     try:
-        if not 'is a required property' in error_message:
+        if 'is a required property' not in error_message:
             return
     except TypeError:
         return
@@ -273,9 +276,7 @@ def format_output(config, op, params, payload):
             else:
                 header = ['Full Tag', 'Image Digest', 'Analysis Status']
 
-            t = PrettyTable(header)
-            t.set_style(PLAIN_COLUMNS)
-            t.align = 'l'
+            t = plain_column_table(header)
 
             add_rows = []
             for image_record in filtered_records:
@@ -312,36 +313,28 @@ def format_output(config, op, params, payload):
             else:
                 if params['query_type'] == 'os':
                     header = ['Package', 'Version', 'License']
-                    t = PrettyTable(header)
-                    t.set_style(PLAIN_COLUMNS)
-                    t.align = 'l'
+                    t = plain_column_table(header)
                     for el in payload['content']:
                         row = [el['package'], el['version'], el['license']]
                         t.add_row(row)
                     obuf = obuf + t.get_string(sortby='Package')
                 elif params['query_type'] == 'files':
                     header = ['Filename', 'Size']
-                    t = PrettyTable(header)
-                    t.set_style(PLAIN_COLUMNS)
-                    t.align = 'l'
+                    t = plain_column_table(header)
                     for el in payload['content']:
                         row = [el['filename'], el['size']]
                         t.add_row(row)
                     obuf = obuf + t.get_string(sortby='Size', reversesort=True)
                 elif params['query_type'] in ['npm', 'gem', 'python']:
                     header = ['Package', 'Version', 'Location']
-                    t = PrettyTable(header)
-                    t.set_style(PLAIN_COLUMNS)
-                    t.align = 'l'
+                    t = plain_column_table(header)
                     for el in payload['content']:
                         row = [el['package'], el['version'], el['location']]
                         t.add_row(row)
                     obuf = obuf + t.get_string(sortby='Package')
                 elif params['query_type'] in ['java']:
                     header = ['Package', 'Specification-Version', 'Implementation-Version', 'Location']
-                    t = PrettyTable(header)
-                    t.set_style(PLAIN_COLUMNS)
-                    t.align = 'l'
+                    t = plain_column_table(header)
                     for el in payload['content']:
                         row = [el['package'], el['specification-version'], el['implementation-version'], el['location']]
                         t.add_row(row)
@@ -437,9 +430,7 @@ def format_output(config, op, params, payload):
             ret = obuf
         elif op == 'registry_list':
             header = ['Registry', 'Name', 'Type', 'User']
-            t = PrettyTable(header)
-            t.set_style(PLAIN_COLUMNS)
-            t.align = 'l'
+            t = plain_column_table(header)
             for registry_record in payload:
                 row = [registry_record['registry'], registry_record.get('registry_name', "N/A"), registry_record['registry_type'], registry_record['registry_user']]
                 t.add_row(row)
@@ -447,9 +438,7 @@ def format_output(config, op, params, payload):
             ret = t.get_string(sortby='Registry')
         elif op == 'subscription_list':
             header = ['Tag', 'Subscription Type', 'Active']
-            t = PrettyTable(header)
-            t.set_style(PLAIN_COLUMNS)
-            t.align = 'l'
+            t = plain_column_table(header)
             for subscription_record in payload:
                 row = [subscription_record['subscription_key'], subscription_record['subscription_type'], str(subscription_record['active'])]
                 t.add_row(row)
@@ -457,14 +446,12 @@ def format_output(config, op, params, payload):
             ret = t.get_string(sortby='Tag')
         elif op == 'repo_list':
             header = ['Repository', 'Watched', 'TagCount']
-            t = PrettyTable(header)
-            t.set_style(PLAIN_COLUMNS)
-            t.align = 'l'
+            t = plain_column_table(header)
             for subscription_record in payload:
                 try:
                     sval = json.loads(subscription_record['subscription_value'])
                     tagcount = str(sval['tagcount'])
-                except:
+                except Exception:
                     tagcount = 'N/A'
                 row = [subscription_record['subscription_key'], str(subscription_record['active']), str(tagcount)]
                 t.add_row(row)
@@ -479,7 +466,7 @@ def format_output(config, op, params, payload):
                 sval = json.loads(subscription_record['subscription_value'])
                 try:
                     tagcount = str(sval['tagcount'])
-                except:
+                except Exception:
                     tagcount = 'N/A'
                 row = [subscription_record['subscription_key'], str(subscription_record['active']), str(tagcount)]
                 t.add_row(row)
@@ -490,7 +477,7 @@ def format_output(config, op, params, payload):
             if 'detail' in params and params['detail']:
                 try:
                     ret = json.dumps(payload[0]['policybundle'], indent=4, sort_keys=True)
-                except:
+                except Exception:
                     ret = json.dumps(payload, indent=4, sort_keys=True)
             else:
                 obuf = ""
@@ -517,9 +504,7 @@ def format_output(config, op, params, payload):
 
         elif op == 'policy_list':
             header = ['Policy ID', 'Active', 'Created', 'Updated']
-            t = PrettyTable(header)
-            t.set_style(PLAIN_COLUMNS)
-            t.align = 'l'
+            t = plain_column_table(header)
             for policy_record in payload:
                 row = [policy_record['policyId'], str(policy_record['active']), policy_record['created_at'], policy_record['last_updated']]
                 t.add_row(row)
@@ -528,9 +513,7 @@ def format_output(config, op, params, payload):
 
         elif op == 'policy_hub_list':
             header = ['Name', 'Description']
-            t = PrettyTable(header)
-            t.set_style(PLAIN_COLUMNS)
-            t.align = 'l'
+            t = plain_column_table(header)
             for record in payload['content']:
                 if record.get('type', None) == 'bundle':
                     row = [textwrap.fill(record['name'], width=40), textwrap.fill(record['description'], width=60)]
@@ -627,9 +610,7 @@ def format_output(config, op, params, payload):
 
                                         evalresults = evaldetail['result']['result'][imageId]['result']
                                         header = ['Gate', 'Trigger', 'Detail', 'Status']
-                                        t = PrettyTable(header)
-                                        t.set_style(PLAIN_COLUMNS)
-                                        t.align = 'l'
+                                        t = plain_column_table(header)
                                         for row in evalresults['rows']:
                                             if 'full' in params and params['full']:
                                                 detailrow = row[5]
@@ -719,9 +700,7 @@ def format_output(config, op, params, payload):
             ret = _format_trigger_params(payload, params.get('gate', '').lower(), params.get('trigger', '').lower(), all=params.get('all', False))
         elif op in ['system_describe_error_codes']:
             header = ['Error Code', 'Description']
-            t = PrettyTable(header)
-            t.set_style(PLAIN_COLUMNS)
-            t.align = 'l'
+            t = plain_column_table(header)
             for el in payload:
                 error_name = el.get('name', "N/A")
                 error_description = textwrap.fill(el.get('description', "N/A"), width=60)
@@ -730,9 +709,7 @@ def format_output(config, op, params, payload):
         elif op in ['system_feeds_list']:
             try:
                 header = ['Feed', 'Group', 'LastSync', 'RecordCount']
-                t = PrettyTable(header)
-                t.set_style(PLAIN_COLUMNS)
-                t.align = 'l'
+                t = plain_column_table(header)
                 for el in payload:
                     feed = el.get('name', "N/A")
                     for gel in el['groups']:
@@ -748,9 +725,7 @@ def format_output(config, op, params, payload):
             ret = 'Success'
             if type(payload) == list:
                 header = ['Feed', 'Group', 'Status', 'Records Updated', 'Sync Duration']
-                t = PrettyTable(header)
-                t.set_style(PLAIN_COLUMNS)
-                t.align = 'l'
+                t = plain_column_table(header)
                 for feed in payload:
                     for group in feed.get('groups'):
                         row = [feed['feed'], group['group'], group['status'], group['updated_record_count'], '{:.2f}s'.format(group['total_time_seconds'])]
@@ -758,9 +733,7 @@ def format_output(config, op, params, payload):
                 ret = t.get_string(sortby='Feed')
         elif op == 'event_list':
             header = ['Timestamp', 'Level', 'Event', 'Resource', 'ID']
-            t = PrettyTable(header)
-            t.set_style(PLAIN_COLUMNS)
-            t.align = 'l'
+            t = plain_column_table(header)
             for event_res in payload['results']:
                 event = event_res['event']
                 row = [event['timestamp'], event['level'], event['type'], event['resource'].get('id'), event_res['generated_uuid']]
@@ -768,9 +741,7 @@ def format_output(config, op, params, payload):
             ret = t.get_string()
         elif op == 'event_list_full':
             header = ['Timestamp', 'Level', 'Event', 'ResourceType', 'Resource', 'Service', 'Host', 'ID']
-            t = PrettyTable(header)
-            t.set_style(PLAIN_COLUMNS)
-            t.align = 'l'
+            t = plain_column_table(header)
             for event_res in payload['results']:
                 event = event_res['event']
                 row = [event['timestamp'], event['level'], event['type'], event['resource'].get('type'), event['resource'].get('id'), event['source']['servicename'], event['source']['hostid'], event_res['generated_uuid']]
@@ -780,9 +751,7 @@ def format_output(config, op, params, payload):
             ret = yaml.safe_dump(payload['event'], default_flow_style=False)
         elif op == 'query_images_by_vulnerability':
             header = ['Full Tag', 'Severity', 'Package', 'Package Type', 'Namespace', 'Digest']
-            t = PrettyTable(header)
-            t.set_style(PLAIN_COLUMNS)
-            t.align = 'l'
+            t = plain_column_table(header)
             for record in payload.get('images', []):
                 for tag_record in record.get('image', {}).get('tag_history', []):
                     for package_record in record.get('vulnerable_packages', []):
@@ -791,9 +760,7 @@ def format_output(config, op, params, payload):
             ret = t.get_string()
         elif op == 'query_images_by_package':
             header = ['Full Tag', 'Package', 'Package Type', 'Digest']
-            t = PrettyTable(header)
-            t.set_style(PLAIN_COLUMNS)
-            t.align = 'l'
+            t = plain_column_table(header)
             for record in payload.get('images', []):
                 for tag_record in record.get('image', {}).get('tag_history', []):
                     for package_record in record.get('packages', []):
@@ -831,9 +798,7 @@ def format_output(config, op, params, payload):
             ret = obuf
         elif op in ['account_list']:
             header = ['Name', 'Email', 'Type', 'State', 'Created']
-            t = PrettyTable(header)
-            t.set_style(PLAIN_COLUMNS)
-            t.align = 'l'
+            t = plain_column_table(header)
             for record in payload:
                 row = [str(record.get('name', "N/A")), str(record.get('email', "N/A")), str(record.get('type', "N/A")), str(record.get('state', "N/A")), str(record.get('created_at', "N/A"))]
                 t.add_row(row)
@@ -856,9 +821,7 @@ def format_output(config, op, params, payload):
             ret = obuf
         elif op in ['user_list']:
             header = ['Name', 'Type', 'Source', 'Created']
-            t = PrettyTable(header)
-            t.set_style(PLAIN_COLUMNS)
-            t.align = 'l'
+            t = plain_column_table(header)
             for record in payload:
                 row = [str(record.get('username', "N/A")), str(record.get('type', "N/A")), str(record.get('source', "N/A")), str(record.get('created_at', "N/A"))]
                 t.add_row(row)
@@ -870,36 +833,28 @@ def format_output(config, op, params, payload):
             ret = 'Success'
         elif op in ['analysis_archive_list']:
             header = ['Digest', 'Tags', 'Analyzed At', 'Archived At', 'Status', 'Archive Size Bytes']
-            t = PrettyTable(header)
-            t.set_style(PLAIN_COLUMNS)
-            t.align = 'l'
+            t = plain_column_table(header)
             for record in payload:
                 row = [str(record['imageDigest']), str(','.join([x['pullstring'] for x in record.get('image_detail', [])])), str(record['analyzed_at']), str(record['created_at']), str(record['status']), str(record['archive_size_bytes'])]
                 t.add_row(row)
             ret = t.get_string(sortby='Archived At', reversesort=True)+"\n"
         elif op in ['archived_analysis']:
             header = ['Digest', 'Tags', 'Analyzed At', 'Archived At', 'Status', 'Archive Size Bytes']
-            t = PrettyTable(header)
-            t.set_style(PLAIN_COLUMNS)
-            t.align = 'l'
+            t = plain_column_table(header)
             for record in payload:
                 row = [str(record['imageDigest']), str(','.join([x['pullstring'] for x in record.get('image_detail', [])])), str(record['analyzed_at']), str(record['created_at']), str(record['status']), str(record['archive_size_bytes'])]
                 t.add_row(row)
             ret = t.get_string(sortby='Archived At', reversesort=True) + "\n"
         elif op in ['archive_analysis']:
             header = ['Image Digest', 'Archive Status', 'Details']
-            t = PrettyTable(header)
-            t.set_style(PLAIN_COLUMNS)
-            t.align = 'l'
+            t = plain_column_table(header)
             for record in payload:
                 row = [str(record['digest']), str(record['status']), str(record['detail'])]
                 t.add_row(row)
             ret = t.get_string(sortby='Archive Status')+"\n"
         elif op in ['transition_rules']:
             header = ['Rule Id', 'Global', 'Transition', 'Analysis Age (Days)', 'Tag Versions Newer', 'Registry', 'Repository', 'Tag', 'Last Updated']
-            t = PrettyTable(header)
-            t.set_style(PLAIN_COLUMNS)
-            t.align = 'l'
+            t = plain_column_table(header)
             if type(payload) != list:
                 payload = [payload]
             for record in payload:
@@ -916,9 +871,7 @@ def format_output(config, op, params, payload):
             ret = t.get_string(sortby='Last Updated', reversesort=True) + "\n"
         elif op in ['transition_rule_history']:
             header = ['Rule Id', 'Image Digest', 'Transition', 'Transition Date']
-            t = PrettyTable(header)
-            t.set_style(PLAIN_COLUMNS)
-            t.align = 'l'
+            t = plain_column_table(header)
             for record in payload:
                 row = [str(record['rule_id']),
                        str(record['imageDigest']),
