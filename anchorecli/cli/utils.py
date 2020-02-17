@@ -227,6 +227,13 @@ def create_hint(error_message):
         return msg.format(key=key)
 
 
+def plain_column_table(header, align='l'):
+    table = PrettyTable(header)
+    table.set_style(PLAIN_COLUMNS)
+    table.align = align
+    return table
+
+
 def format_output(config, op, params, payload):
     if config['jsonmode']:
         try:
@@ -235,7 +242,6 @@ def format_output(config, op, params, payload):
         except Exception:
             ret = json.dumps({'payload': str(payload)}, indent=4, sort_keys=True)
         return(ret)
-
 
     ret = ""
     try:
@@ -290,50 +296,9 @@ def format_output(config, op, params, payload):
             for row in add_rows:
                 t.add_row(row)
             ret = t.get_string(sortby='Full Tag')
-        elif op == 'image_vuln':
-            obuf = ""
-            if 'query_type' not in params or not params['query_type']:
-                outdict = OrderedDict()
-                for t in payload:
-                    outdict[t] = "available"
-                for k in list(outdict.keys()):
-                    obuf = obuf + k + ": " + outdict[k] + "\n"
-                obuf = obuf + "\n"
-            else:
-                if params['query_type'] in ['os', 'non-os', 'all']:
-                    header = ['Vulnerability ID', 'Package', 'Severity', 'Fix', 'CVE Refs', 'Vulnerability URL']
-                    t = PrettyTable(header)
-                    t.set_style(PLAIN_COLUMNS)
-                    t.align = 'l'
-                    for el in payload['vulnerabilities']:
-                        cve_refs = {}
-                        if el.get('nvd_data', []):
-                            for nvd_record in el.get('nvd_data'):
-                                cve_refs[nvd_record.get('id')] = True
-                        cve_ref_str = ','.join(cve_refs.keys())
-                        row = [el['vuln'], el['package'], el['severity'], el['fix'], cve_ref_str, el['url']]
-                        t.add_row(row)
-                    obuf = obuf + t.get_string(sortby='Severity')
-                else:
-                    try:
-                        if payload['vulnerabilities']:
-                            el = payload['vulnerabilities'][0]
-                            header = list(el.keys())
-                            t = PrettyTable(header)
-                            t.set_style(PLAIN_COLUMNS)
-                            t.align = 'l'
-                            for el in payload['vulnerabilities']:
-                                row = []
-                                for k in header:
-                                    row.append(el[k])
-                                t.add_row(row)
-                            obuf = obuf + t.get_string()
-                        else:
-                            raise Exception("no vulnerabilities available for input type ("+str(params['query_type']) + ")")
-                    except Exception as err:
-                        raise Exception("could not parse content result - exception: " + str(err))
 
-            ret = obuf
+        elif op == 'image_vuln':
+            ret = format_vulnerabilities(payload, params)
 
         elif op in ['image_content', 'image_metadata']:
             obuf = ""
@@ -972,6 +937,38 @@ def format_output(config, op, params, payload):
         except Exception:
             ret = str(payload)
     return(ret)
+
+
+def format_vulnerabilities(payload, params):
+    obuf = ""
+    if 'query_type' not in params or not params['query_type']:
+        # payload will be a list with what is available as a query for the
+        # given image
+        for query in payload:
+            obuf += "%s: available\n" % query
+        return obuf + "\n"
+
+    if params['query_type'] in ['os', 'non-os', 'all']:
+        header = [
+            'Vulnerability ID', 'Package', 'Severity', 'Fix', 'CVE Refs',
+            'Vulnerability URL', 'Type', 'Feed Group', 'Package Path'
+        ]
+        t = plain_column_table(header)
+        for el in payload['vulnerabilities']:
+            nvd_data = el.get('nvd_data')
+            cve_ids = []
+            for nvd_record in nvd_data:
+                _id = nvd_record.get('id')
+                if _id:
+                    cve_ids.append(_id)
+            row = [
+                el['vuln'], el['package'], el['severity'], el['fix'], ','.join(cve_ids),
+                el['url'], el['package_type'], el['feed_group'], el['package_path']
+            ]
+            t.add_row(row)
+        obuf = obuf + t.get_string(sortby='Severity')
+
+    return obuf
 
 
 def string_splitter(input_str, max_length=40):
