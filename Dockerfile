@@ -1,8 +1,8 @@
-FROM registry.access.redhat.com/ubi7/ubi:7.7 as anchore-cli-builder
+FROM registry.access.redhat.com/ubi8/ubi:8.1 as anchore-cli-builder
 
 ######## This is stage1 where anchore wheels, binary deps, and any items from the source tree get staged to /build_output ########
 
-ENV LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8
+ENV LANG=en_US.UTF-8 LC_ALL=C.UTF-8
 
 COPY . /buildsource
 WORKDIR /buildsource
@@ -13,19 +13,18 @@ RUN set -ex && \
 RUN set -ex && \
     echo "installing OS dependencies" && \
     yum update -y && \
-    yum install -y gcc make rh-python36 rh-python36-python-wheel rh-python36-python-pip
+    yum install -y gcc make python36 python3-wheel
 
 # create anchore binaries
 RUN set -ex && \
     echo "installing anchore" && \
-    source /opt/rh/rh-python36/enable && \
     pip3 wheel --wheel-dir=/build_output/wheels . && \
     cp ./LICENSE /build_output/ && \
     cp ./docker-entrypoint.sh /build_output/configs/docker-entrypoint.sh 
 
 RUN tar -z -c -v -C /build_output -f /anchore-buildblob.tgz .
 
-FROM registry.access.redhat.com/ubi7/ubi:7.7 as anchore-cli-final
+FROM registry.access.redhat.com/ubi8/ubi:8.1 as anchore-cli-final
 
 ARG CLI_COMMIT
 ARG ANCHORE_CLI_VERSION="0.6.2-dev"
@@ -53,12 +52,12 @@ ENV ANCHORE_CLI_USER=admin
 ENV ANCHORE_CLI_PASS=foobar
 ENV ANCHORE_CLI_URL=http://localhost:8228/v1/
 ENV LANG=en_US.UTF-8
-ENV LC_ALL=en_US.UTF-8
+ENV LC_ALL=C.UTF-8
 
 # Build dependencies
 
 RUN yum update -y && \
-    yum install -y rh-python36 rh-python36-python-wheel rh-python36-python-pip
+    yum install -y python36 python3-wheel
 
 # Setup container default configs and directories
 
@@ -75,15 +74,9 @@ RUN set -ex && \
    
 # Perform any base OS specific setup
 
-# Setup python3 environment & create anchore-cli wrapper script for UBI7 
-RUN echo -e '#!/usr/bin/env bash\n\nsource /opt/rh/rh-python36/enable' > /etc/profile.d/python3.sh && \
-    echo -e '#!/usr/bin/env bash\n\n/docker-entrypoint.sh anchore-cli $@' > /usr/local/bin/anchore-cli && \
-    chmod +x /usr/local/bin/anchore-cli
-
 # Perform the anchore-cli build and install
 
 RUN set -ex && \
-    source /opt/rh/rh-python36/enable && \
     pip3 install --no-index --find-links=./ /build_output/wheels/*.whl && \
     rm -rf /build_output /root/.cache
 
