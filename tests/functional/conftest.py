@@ -1,5 +1,6 @@
 import json
 import os
+from os.path import dirname as _dir
 import random
 import string
 import time
@@ -10,7 +11,28 @@ import docker
 from docker.errors import DockerException
 import pytest
 
-logger = logging.getLogger(__name__)
+
+def get_logger(name):
+    return logging.getLogger('conftest.%s' % name)
+
+
+def pytest_sessionstart(session):
+    BASE_FORMAT = "[%(name)s][%(levelname)-6s] %(message)s"
+    FILE_FORMAT = "[%(asctime)s]" + BASE_FORMAT
+
+    root_logger = logging.getLogger('conftest')
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    top_level = _dir(_dir(dir_path))
+    log_file = os.path.join(top_level, 'pytest-functional-tests.log')
+
+    root_logger.setLevel(logging.DEBUG)
+
+    # File Logger
+    fh = logging.FileHandler(log_file)
+    fh.setLevel(logging.DEBUG)
+    fh.setFormatter(logging.Formatter(FILE_FORMAT, "%Y-%m-%d %H:%M:%S"))
+
+    root_logger.addHandler(fh)
 
 
 def use_environ():
@@ -26,8 +48,10 @@ def use_environ():
 
 
 def create_client():
+    logger = get_logger('create_client')
     try:
         if use_environ():
+            logger.info('using environment to create docker client')
             c = docker.from_env()
         else:
             c = docker.DockerClient(base_url='unix://var/run/docker.sock', version="auto")
@@ -35,6 +59,7 @@ def create_client():
         c.run = run(c)
         return c
     except DockerException as e:
+        logger.exception('Unable to connect to a docker socket')
         raise pytest.UsageError("Could not connect to a running docker socket: %s" % str(e))
 
 
@@ -68,14 +93,17 @@ def pytest_addoption(parser):
 
 
 def pytest_report_header(config):
+    logger = get_logger('report_header')
     msg = []
     try:
         client = create_client()
         metadata = client.api.inspect_container('pytest_inline_scan')
     except docker.errors.NotFound:
+        logger.info("No running container was found, can't add info to report header")
         metadata = {'Config': {'Labels': {}}}
         msg = ['Docker: Anchore inline_scan container not running yet']
     except DockerException as e:
+        logger.exception('Unable to connect to a docker socket')
         msg = ['Anchore Version: Unable to connect to a docker socket']
         msg.append('Error: %s' % str(e))
         return msg
@@ -128,11 +156,13 @@ def inline_scan(client, request):
 
 
 def teardown_container(client, container=None, name=None):
+    logger = get_logger('teardown_container')
     container_name = name or container.name
     if name:
         container_name = name
     else:
         container_name = container.name
+    logger.debug('Tearing down container: %s', container_name)
     containers = client.containers.list(all=True, filters={'name': container_name})
     # TODO: check if stop/remove can take a force=True param
     for available_container in containers:
@@ -145,11 +175,14 @@ def start_container(client, image, name, environment, ports, detach=True):
     Start a container, wait for (successful) completion of entrypoint
     and raise an exception with container logs otherwise
     """
+    logger = get_logger('start_container')
     try:
         container = client.containers.get(name)
         if container.status != 'running':
+            logger.info('%s container found but not running, will start it', name)
             container.start()
     except docker.errors.NotFound:
+        logger.info('%s container not found, will start it', name)
         container = client.containers.run(
             image=image,
             name=name,
@@ -170,6 +203,7 @@ def start_container(client, image, name, environment, ports, detach=True):
             return container
         time.sleep(2)
 
+    logger.error('Aborting tests: unable to verify a healthy status from container')
     # If 70 seconds passed and anchore-cli wasn't able to determine an OK
     # status from anchore-engine then failure needs to be raised with as much
     # logging as possible. Can't assume the container is healthy even if the
@@ -235,7 +269,10 @@ def call(command, **kw):
                   split on whitespace. Useful when output keeps changing when tabbing on custom
                   lengths
     """
-    terminal_verbose = kw.pop('terminal_verbose', False)
+    logger = get_logger('call')
+    stdout = get_logger('call.stdout')
+    stderr = get_logger('call.stderr')
+    log_verbose = kw.pop('log_verbose', False)
     command_msg = "Running command: %s" % ' '.join(command)
     logger.info(command_msg)
     env = kw.pop('env', None)
@@ -265,16 +302,16 @@ def call(command, **kw):
     if returncode != 0:
         # set to true so that we can log the stderr/stdout that callers would
         # do anyway
-        terminal_verbose = True
+        log_verbose = True
 
     # the following can get a messed up order in the log if the system call
     # returns output with both stderr and stdout intermingled. This separates
     # that.
-    # XXX Figure out a way to nicely log all this output via proper Pytest calls
-    for line in stdout_stream.splitlines():
-        logger.info('stdout', line, terminal_verbose)
-    for line in stderr_stream.splitlines():
-        logger.info('stderr', line, terminal_verbose)
+    if log_verbose:
+        for line in stdout_stream.splitlines():
+            stdout.info(line)
+        for line in stderr_stream.splitlines():
+            stderr.info(line)
 
     returncode = ExitCode(returncode)
     returncode.stderr = stderr_stream
