@@ -53,6 +53,8 @@ commands:
         key: v1-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}
     - store_artifacts:
         path: tox.log
+    - store_artifacts:
+        path: pytest-functional-tests.log
 
 jobs:
   linting:
