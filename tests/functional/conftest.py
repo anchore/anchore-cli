@@ -68,21 +68,26 @@ def pytest_addoption(parser):
 
 
 def pytest_report_header(config):
-    msg = ['Anchore Version: Unable to connect to a running docker socket']
+    msg = []
     try:
         client = create_client()
         metadata = client.api.inspect_container('pytest_inline_scan')
-    except (DockerException, docker.errors.NotFound) as e:
+    except docker.errors.NotFound:
+        metadata = {'Config': {'Labels': {}}}
+        msg = ['Docker: Anchore inline_scan container not running yet']
+    except DockerException as e:
+        msg = ['Anchore Version: Unable to connect to a docker socket']
         msg.append('Error: %s' % str(e))
         return msg
+
     labels = metadata['Config']['Labels']
     version = labels.get('version', 'unknown')
     commit = labels.get('anchore_commit', 'unknown')
 
-    msg = [
+    msg.extend([
        'Anchore Version: %s' % version,
        'Anchore Commit: %s' % commit
-    ]
+    ])
     return msg
 
 
@@ -117,13 +122,18 @@ def inline_scan(client, request):
     no_keep_alive = request.config.getoption("--nokeepalive", False)
     if no_keep_alive:
         # Do not leave the container running and tear it down at the end of the session
-        request.addfinalizer(lambda: teardown_container(client, container))
+        request.addfinalizer(lambda: teardown_container(client, container=container))
 
     return container
 
 
-def teardown_container(client, container):
-    containers = client.containers.list(filters={'name': container.name})
+def teardown_container(client, container=None, name=None):
+    container_name = name or container.name
+    if name:
+        container_name = name
+    else:
+        container_name = container.name
+    containers = client.containers.list(all=True, filters={'name': container_name})
     # TODO: check if stop/remove can take a force=True param
     for available_container in containers:
         available_container.stop()
@@ -136,6 +146,10 @@ def start_container(client, image, name, environment, ports, detach=True):
     and raise an exception with container logs otherwise
     """
     try:
+        container = client.containers.get(name)
+        if container.status != 'running':
+            container.start()
+    except docker.errors.NotFound:
         container = client.containers.run(
             image=image,
             name=name,
@@ -143,39 +157,28 @@ def start_container(client, image, name, environment, ports, detach=True):
             detach=True,
             ports=ports,
         )
-    except docker.errors.APIError:
-        # The container is probably running already, try to find it and return it if so.
-        if client.containers.get(name):
-            return client.containers.get(name)
-        # TODO: add error reporting here when the container couldn't start or
-        # it doesn't exist at all
-        teardown_container(client, container)
-        raise
-    else:
-        start = time.time()
-        while time.time() - start < 70:
-            out, err, code = call(
-                ['anchore-cli', '--u', 'admin', '--p', 'foobar', 'system', 'status'],
-            )
-            if code == 0:
-                # This path needs to be hit when the container is ready to be
-                # used, if this is not reached, then an error needs to bubble
-                # up
-                return container
-            time.sleep(2)
+
+    start = time.time()
+    while time.time() - start < 70:
+        out, err, code = call(
+            ['anchore-cli', '--u', 'admin', '--p', 'foobar', 'system', 'status'],
+        )
+        if code == 0:
+            # This path needs to be hit when the container is ready to be
+            # used, if this is not reached, then an error needs to bubble
+            # up
+            return container
+        time.sleep(2)
 
     # If 70 seconds passed and anchore-cli wasn't able to determine an OK
     # status from anchore-engine then failure needs to be raised with as much
     # logging as possible. Can't assume the container is healthy even if the
     # exit code is 0
     print("[ERROR][setup] failed to setup container")
-    for line in out:
+    for line in out.split('\n'):
         print("[ERROR][setup][stdout] {}".format(line))
-    for line in err:
+    for line in err.split('\n'):
         print("[ERROR][setup][stderr] {}".format(line))
-    for line in client.logs(container, stream=True):
-        # XXX need to use pytest logs here
-        print("[ERROR][setup] {}".format(line.strip('\n')))
     raise RuntimeError()
 
 
