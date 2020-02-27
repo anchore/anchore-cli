@@ -138,9 +138,10 @@ def pytest_runtest_logreport(report):
 def inline_scan(client, request):
     # If the container is already running, this will return the running
     # container identified with `pytest_inline_scan`
+    image = os.environ.get('PYTEST_CONTAINER', 'anchore/inline-scan:latest')
     container = start_container(
         client,
-        image='anchore/inline-scan',
+        image=image,
         name='pytest_inline_scan',
         environment={},
         detach=True,
@@ -176,6 +177,7 @@ def start_container(client, image, name, environment, ports, detach=True):
     and raise an exception with container logs otherwise
     """
     logger = get_logger('start_container')
+    logger.info('will try to start container image %s', image)
     try:
         container = client.containers.get(name)
         if container.status != 'running':
