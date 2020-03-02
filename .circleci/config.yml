@@ -86,6 +86,8 @@ jobs:
           command: |
             ssh -MS ../anchore -fN4 -L 8228:localhost:8228 remote-docker
       - run_tox_tests:
+          environment: "-c tests/functional/tox.ini -e py36-anchore_latest"
+      - run_tox_tests:
           environment: "-c tests/functional/tox.ini -e py36-anchore_0.6.0"
       - run_tox_tests:
           environment: "-c tests/functional/tox.ini -e py36-anchore_0.5.1"
