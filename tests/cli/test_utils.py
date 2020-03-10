@@ -94,7 +94,7 @@ class TestFormatVulnerabilities:
         header = result.split('\n')[0].split()
         assert header == [
             'Vulnerability', 'ID', 'Package', 'Severity', 'Fix', 'CVE',  'Refs',
-            'Vulnerability',  'URL', 'Type', 'Feed', 'Source', 'Package', 'Path'
+            'Vulnerability',  'URL', 'Type', 'Feed', 'Group', 'Package', 'Path'
         ]
 
     def test_all(self, payload):
@@ -126,16 +126,3 @@ class TestFormatVulnerabilities:
             'centos:7',
             'None',
         ]
-
-    # impossible to test past the headers for this use case, it will dump raw
-    # dictionary segments mixed with strings, this code path is marked as XXX
-    # so that it can be removed if it is not possible to execute form the CLI
-    def test_undefined_query_param_headers(self, payload):
-        result = utils.format_vulnerabilities(payload, {'query_type': 'foo'})
-        line = result.split('\n')[0].split()
-        expected = [
-            'feed', 'feed_group', 'fix', 'nvd_data', 'package',
-            'package_cpe', 'package_cpe23', 'package_name', 'package_path',
-            'package_type', 'package_version', 'severity', 'url', 'vendor_data', 'vuln'
-        ]
-        assert line == expected
