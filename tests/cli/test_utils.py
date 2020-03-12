@@ -69,7 +69,7 @@ class TestCreateHint:
         assert 'Hint: The "id" key is not present in the JSON file' in result
         assert '"id": <value>' in result
 
-    def test_cannot_create_hint(self):
+    def test_cannot_create_hint_unquoted(self):
         result = utils.create_hint("unquoted_value is a required property")
         assert result is None
 
@@ -77,3 +77,52 @@ class TestCreateHint:
     def test_handles_non_strings(self, invalid_type):
         result = utils.create_hint(invalid_type)
         assert result is None
+
+
+class TestFormatVulnerabilities:
+
+    def test_no_query_type(self):
+        payload = ['os', 'non-os', 'all']
+        result = utils.format_vulnerabilities(payload, {})
+        lines = result.split('\n')
+        assert lines[0] == 'os: available'
+        assert lines[1] == 'non-os: available'
+        assert lines[2] == 'all: available'
+
+    def test_os_nonos_all_header(self, payload):
+        result = utils.format_vulnerabilities(payload, {'query_type': 'all'})
+        header = result.split('\n')[0].split()
+        assert header == [
+            'Vulnerability', 'ID', 'Package', 'Severity', 'Fix', 'CVE',  'Refs',
+            'Vulnerability',  'URL', 'Type', 'Feed', 'Group', 'Package', 'Path'
+        ]
+
+    def test_all(self, payload):
+        result = utils.format_vulnerabilities(payload, {'query_type': 'all'})
+        line = result.split('\n')[1].split()
+        assert line == [
+            'RHSA-2019:4190',
+            'nss-3.44.0-4.el7',
+            'High',
+            '0:3.44.0-7.el7_7',
+            'CVE-2019-11729,CVE-2019-11745',
+            'https://access.redhat.com/errata/RHSA-2019:4190',
+            'rpm',
+            'centos:7',
+            'None',
+        ]
+
+    def test_vulnerability_id_missing(self, payload):
+        result = utils.format_vulnerabilities(payload, {'query_type': 'all'})
+        line = result.split('\n')[-1].split()
+        assert line == [
+            'RHSA-2019:4190',
+            'nss-util-3.44.0-3.el7',
+            'High',
+            '0:3.44.0-4.el7_7',
+            'CVE-2019-11745',
+            'https://access.redhat.com/errata/RHSA-2019:4190',
+            'rpm',
+            'centos:7',
+            'None',
+        ]
