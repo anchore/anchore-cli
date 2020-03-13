@@ -348,35 +348,61 @@ def query_vuln(input_image, vuln_type, vendor_only):
     anchorecli.cli.utils.doexit(ecode)
 
 @image.command(name='del', short_help="Delete an image")
-@click.argument('input_image', nargs=1)
+@click.argument('input_image', required=False)
 @click.option('--force', is_flag=True, help="Force deletion of image by cancelling any subscription/notification settings prior to image delete")
-def delete(input_image, force):
+@click.option('--all', is_flag=True, help="Delete all images")
+def delete(input_image, force, all):
     """
     INPUT_IMAGE: Input image can be in the following formats: Image Digest, ImageID or registry/repo:tag
     """
     ecode = 0
 
-    try:
-        itype, image, imageDigest = anchorecli.cli.utils.discover_inputimage(config, input_image)
-
-        if imageDigest:
-            ret = anchorecli.clients.apiexternal.delete_image(config, imageDigest=imageDigest, force=force)
+    if all:
+        try:
+            ret = anchorecli.clients.apiexternal.get_images(config)
             ecode = anchorecli.cli.utils.get_ecode(ret)
-        else:
-            ecode = 1
-            raise Exception("cannot use input image string: no discovered imageDigest")
-
-        if ret:
-            if ret['success']:
-                print(anchorecli.cli.utils.format_output(config, 'image_delete', {}, ret['payload']))
-            else:
+            if not ret['success']:
                 raise Exception(json.dumps(ret['error'], indent=4))
-        else:
-            raise Exception("operation failed with empty response")
 
-    except Exception as err:
-        print(anchorecli.cli.utils.format_error_output(config, 'image_delete', {}, err))
-        if not ecode:
-            ecode = 2
+            for image in ret['payload']:
+                if image['imageDigest']:
+                    ret = anchorecli.clients.apiexternal.delete_image(config, imageDigest=image['imageDigest'], force=force)
+                    if ret['success']:
+                        for image_detail in image['image_detail']:
+                            fulltag = image_detail.pop('registry', "None") + "/" + image_detail.pop('repo', "None") + ":" + image_detail.pop('tag', "None")
+                            print(fulltag)
+                    else:
+                        raise Exception(json.dumps(ret['error'], indent=4))
+
+        except Exception as err:
+            print(anchorecli.cli.utils.format_error_output(config, 'image_delete_all', {}, err))
+            if not ecode:
+                ecode = 2
+    else:
+        try:
+            if input_image is None:
+                raise Exception("Missing argument INPUT_IMAGE")
+
+            itype, image, imageDigest = anchorecli.cli.utils.discover_inputimage(config, input_image)
+
+            if imageDigest:
+                ret = anchorecli.clients.apiexternal.delete_image(config, imageDigest=imageDigest, force=force)
+                ecode = anchorecli.cli.utils.get_ecode(ret)
+            else:
+                ecode = 1
+                raise Exception("cannot use input image string: no discovered imageDigest")
+
+            if ret:
+                if ret['success']:
+                    print(anchorecli.cli.utils.format_output(config, 'image_delete', {}, ret['payload']))
+                else:
+                    raise Exception(json.dumps(ret['error'], indent=4))
+            else:
+                raise Exception("operation failed with empty response")
+
+        except Exception as err:
+            print(anchorecli.cli.utils.format_error_output(config, 'image_delete', {}, err))
+            if not ecode:
+                ecode = 2
 
     anchorecli.cli.utils.doexit(ecode)
