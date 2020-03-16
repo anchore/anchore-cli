@@ -348,18 +348,24 @@ def format_output(config, op, params, payload):
                     try:
                         if payload['content']:
                             el = payload['content'][0]
-                            header = list(el.keys())
-                            t = PrettyTable(header)
-                            t.set_style(PLAIN_COLUMNS)
-                            t.align = 'l'
-                            for el in payload['content']:
-                                row = []
-                                for k in header:
-                                    row.append(el[k])
-                                t.add_row(row)
-                            obuf = obuf + t.get_string()
-                        else:
-                            raise Exception("no content available for input type ("+str(params['query_type']) + ")")
+                            if el.get('package', None) and el.get('version', None) and el.get('location', None):
+                                header = ['Package', 'Version', 'Location']
+                                t = plain_column_table(header)
+                                for el in payload['content']:
+                                    row = [el['package'], el['version'], el['location']]
+                                    t.add_row(row)
+                                obuf = obuf + t.get_string(sortby='Package')
+                            else:
+                                header = list(el.keys())
+                                t = PrettyTable(header)
+                                t.set_style(PLAIN_COLUMNS)
+                                t.align = 'l'
+                                for el in payload['content']:
+                                    row = []
+                                    for k in header:
+                                        row.append(el[k])
+                                    t.add_row(row)
+                                obuf = obuf + t.get_string()
                     except Exception as err:
                         raise Exception("could not parse content result - exception: " + str(err))
 
