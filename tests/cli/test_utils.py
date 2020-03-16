@@ -126,3 +126,19 @@ class TestFormatVulnerabilities:
             'centos:7',
             'None',
         ]
+
+    def test_vulnerability_advisoriy_cves(self, payload):
+        payload['vulnerabilities'][-1]['advisory_data'] = {'cves': ['CVE-GITHUB-1', 'CVE-GITHUB-2']}
+        result = utils.format_vulnerabilities(payload, {'query_type': 'all'})
+        line = result.split('\n')[-1].split()
+        assert line == [
+            'RHSA-2019:4190',
+            'nss-util-3.44.0-3.el7',
+            'High',
+            '0:3.44.0-4.el7_7',
+            'CVE-GITHUB-1,CVE-GITHUB-2,CVE-2019-11745',
+            'https://access.redhat.com/errata/RHSA-2019:4190',
+            'rpm',
+            'centos:7',
+            'None',
+        ]
