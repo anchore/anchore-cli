@@ -909,11 +909,15 @@ def format_vulnerabilities(payload, params):
         t = plain_column_table(header)
         for el in payload['vulnerabilities']:
             nvd_data = el.get('nvd_data')
+            advisory_data = el.get('advisory_data', {})
+            advisory_cves = advisory_data.get('cves', [])
             cve_ids = []
+            cve_ids.extend(advisory_cves)
             for nvd_record in nvd_data:
                 _id = nvd_record.get('id')
                 if _id:
                     cve_ids.append(_id)
+
             row = [
                 el['vuln'], el['package'], el['severity'], el['fix'], ','.join(cve_ids),
                 el['url'], el['package_type'], el['feed_group'], el['package_path']
