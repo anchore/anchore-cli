@@ -64,76 +64,62 @@ def setup_config(cli_opts):
         raise Exception("error while processing credentials file, please check format and read permissions - exception: " + str(err))
 
     # load environment if present
-    try:
-        for e in ['ANCHORE_CLI_USER', 'ANCHORE_CLI_PASS', 'ANCHORE_CLI_URL', 'ANCHORE_CLI_HUB_URL', 'ANCHORE_CLI_API_VERSION', 'ANCHORE_CLI_SSL_VERIFY', 'ANCHORE_CLI_JSON', 'ANCHORE_CLI_DEBUG', 'ANCHORE_CLI_ACCOUNT']:
-            if e in os.environ:
-                settings[e] = os.environ[e]
-    # XXX no need
-    except Exception as err:
-        raise err
+    for e in ['ANCHORE_CLI_USER', 'ANCHORE_CLI_PASS', 'ANCHORE_CLI_URL', 'ANCHORE_CLI_HUB_URL', 'ANCHORE_CLI_API_VERSION', 'ANCHORE_CLI_SSL_VERIFY', 'ANCHORE_CLI_JSON', 'ANCHORE_CLI_DEBUG', 'ANCHORE_CLI_ACCOUNT']:
+        if e in os.environ:
+            settings[e] = os.environ[e]
 
     # load cmdline options
-    try:
-        if cli_opts['u']:
-            settings['ANCHORE_CLI_USER'] = cli_opts['u']
+    if cli_opts['u']:
+        settings['ANCHORE_CLI_USER'] = cli_opts['u']
 
-        if cli_opts['p']:
-            settings['ANCHORE_CLI_PASS'] = cli_opts['p']
+    if cli_opts['p']:
+        settings['ANCHORE_CLI_PASS'] = cli_opts['p']
 
-        if cli_opts['url']:
-            settings['ANCHORE_CLI_URL'] = cli_opts['url']
+    if cli_opts['url']:
+        settings['ANCHORE_CLI_URL'] = cli_opts['url']
 
-        if cli_opts['hub-url']:
-            settings['ANCHORE_CLI_HUB_URL'] = cli_opts['hub-url']
+    if cli_opts['hub-url']:
+        settings['ANCHORE_CLI_HUB_URL'] = cli_opts['hub-url']
 
-        if cli_opts['api-version']:
-            settings['ANCHORE_CLI_API_VERSION'] = cli_opts['api-version']
+    if cli_opts['api-version']:
+        settings['ANCHORE_CLI_API_VERSION'] = cli_opts['api-version']
 
-        if cli_opts['insecure']:
-            settings['ANCHORE_CLI_SSL_VERIFY'] = "n"
+    if cli_opts['insecure']:
+        settings['ANCHORE_CLI_SSL_VERIFY'] = "n"
 
-        if cli_opts['json']:
-            settings['ANCHORE_CLI_JSON'] = "y"
+    if cli_opts['json']:
+        settings['ANCHORE_CLI_JSON'] = "y"
 
-        if cli_opts['debug']:
-            settings['ANCHORE_CLI_DEBUG'] = "y"
+    if cli_opts['debug']:
+        settings['ANCHORE_CLI_DEBUG'] = "y"
 
-        if cli_opts.get('as_account') is not None:
-            settings['ANCHORE_CLI_ACCOUNT'] = cli_opts['as_account']
+    if cli_opts.get('as_account') is not None:
+        settings['ANCHORE_CLI_ACCOUNT'] = cli_opts['as_account']
 
-    # XXX no need
-    except Exception as err:
-        raise err
+    if 'ANCHORE_CLI_USER' in settings:
+        ret['user'] = settings['ANCHORE_CLI_USER']
+    if 'ANCHORE_CLI_PASS' in settings:
+        ret['pass'] = settings['ANCHORE_CLI_PASS']
+    if 'ANCHORE_CLI_URL' in settings:
+        ret['url'] = settings['ANCHORE_CLI_URL']
+    if 'ANCHORE_CLI_HUB_URL' in settings:
+        ret['hub-url'] = settings['ANCHORE_CLI_HUB_URL']
 
-    try:
-        if 'ANCHORE_CLI_USER' in settings:
-            ret['user'] = settings['ANCHORE_CLI_USER']
-        if 'ANCHORE_CLI_PASS' in settings:
-            ret['pass'] = settings['ANCHORE_CLI_PASS']
-        if 'ANCHORE_CLI_URL' in settings:
-            ret['url'] = settings['ANCHORE_CLI_URL']
-        if 'ANCHORE_CLI_HUB_URL' in settings:
-            ret['hub-url'] = settings['ANCHORE_CLI_HUB_URL']
+    if 'ANCHORE_CLI_API_VERSION' in settings:
+        ret['api-version'] = settings['ANCHORE_CLI_API_VERSION']
+    if 'ANCHORE_CLI_SSL_VERIFY' in settings:
+        if settings['ANCHORE_CLI_SSL_VERIFY'].lower() == 'n':
+            ret['ssl_verify'] = False
+    if 'ANCHORE_CLI_JSON' in settings:
+        if settings['ANCHORE_CLI_JSON'].lower() == 'y':
+            ret['jsonmode'] = True
+    if 'ANCHORE_CLI_DEBUG' in settings:
+        if settings['ANCHORE_CLI_DEBUG'].lower() == 'y':
+            ret['debug'] = True
+    if 'ANCHORE_CLI_ACCOUNT' in settings:
+        ret['as_account'] = settings['ANCHORE_CLI_ACCOUNT']
 
-        if 'ANCHORE_CLI_API_VERSION' in settings:
-            ret['api-version'] = settings['ANCHORE_CLI_API_VERSION']
-        if 'ANCHORE_CLI_SSL_VERIFY' in settings:
-            if settings['ANCHORE_CLI_SSL_VERIFY'].lower() == 'n':
-                ret['ssl_verify'] = False
-        if 'ANCHORE_CLI_JSON' in settings:
-            if settings['ANCHORE_CLI_JSON'].lower() == 'y':
-                ret['jsonmode'] = True
-        if 'ANCHORE_CLI_DEBUG' in settings:
-            if settings['ANCHORE_CLI_DEBUG'].lower() == 'y':
-                ret['debug'] = True
-        if 'ANCHORE_CLI_ACCOUNT' in settings:
-            ret['as_account'] = settings['ANCHORE_CLI_ACCOUNT']
-
-    # XXX no need
-    except Exception as err:
-        raise err
-
-    return(ret)
+    return ret
 
 
 def doexit(ecode):
@@ -159,7 +145,7 @@ def group_list_of_dicts(indict, bykey):
     for k in list(gdict.keys()):
         for el in gdict[k]:
             ret.append(el)
-    return(ret)
+    return ret
 
 
 def format_error_output(config, op, params, payload):
@@ -244,7 +230,7 @@ def format_output(config, op, params, payload):
         # XXX catch json exception explicitly here
         except Exception:
             ret = json.dumps({'payload': str(payload)}, indent=4, sort_keys=True)
-        return(ret)
+        return ret
 
     ret = ""
     try:
@@ -645,54 +631,51 @@ def format_output(config, op, params, payload):
         elif op == 'policy_activate':
             try:
                 ret = "Success: " + str(params['policyId']) + " activated"
-            except:
+            except Exception:
                 ret = 'Success'
         elif op == 'system_status':
-            try:
-                obuf = ""
+            obuf = ""
 
-                outlist = []
+            outlist = []
 
-                db_version = code_version = None
-                for service_record in payload['service_states']:
-                    service_status = "N/A"
-                    if service_record['status']:
-                        service_status = "up"
-                    else:
-                        service_status = "down ({})".format(service_record['status_message'])
+            db_version = code_version = None
+            for service_record in payload['service_states']:
+                service_status = "N/A"
+                if service_record['status']:
+                    service_status = "up"
+                else:
+                    service_status = "down ({})".format(service_record['status_message'])
 
-                    outlist.append("Service "+service_record['servicename']+" ("+service_record['hostid']+", " +service_record['base_url'] +"): " + str(service_status))
-                    if not db_version:
-                        try:
-                            db_version = service_record['service_detail']['db_version']
-                        except:
-                            pass
-
-                    if not code_version:
-                        try:
-                            code_version = service_record['service_detail']['version']
-                        except:
-                            pass
-
-                    # override with any discovered API service that is up
+                outlist.append("Service "+service_record['servicename']+" ("+service_record['hostid']+", " +service_record['base_url'] +"): " + str(service_status))
+                if not db_version:
                     try:
-                        if service_record['servicename'] == 'apiext' and service_status == 'up':
-                            api_code_version = service_record['service_detail']['version']
-                            code_version = api_code_version
+                        db_version = service_record['service_detail']['db_version']
                     except:
                         pass
 
-                for k in outlist:
-                    obuf = obuf + k + "\n"
-                obuf = obuf + "\n"
+                if not code_version:
+                    try:
+                        code_version = service_record['service_detail']['version']
+                    except:
+                        pass
 
-                obuf = obuf + "Engine DB Version: {}\n".format(db_version)
-                obuf = obuf + "Engine Code Version: {}\n".format(code_version)
+                # override with any discovered API service that is up
+                try:
+                    if service_record['servicename'] == 'apiext' and service_status == 'up':
+                        api_code_version = service_record['service_detail']['version']
+                        code_version = api_code_version
+                except:
+                    pass
 
-                ret = obuf
-            # XXX no need
-            except Exception as err:
-                raise err
+            for k in outlist:
+                obuf = obuf + k + "\n"
+            obuf = obuf + "\n"
+
+            obuf = obuf + "Engine DB Version: {}\n".format(db_version)
+            obuf = obuf + "Engine Code Version: {}\n".format(code_version)
+
+            ret = obuf
+
         elif op == 'event_delete':
             if payload is not None and isinstance(payload, list):
                 ret = 'Deleted {} events'.format(len(payload)) if payload else 'No matching events found'
@@ -713,49 +696,41 @@ def format_output(config, op, params, payload):
                 t.add_row([error_name, error_description])
             ret = t.get_string(sortby="Error Code")+"\n"
         elif op in ['system_feeds_list']:
-            try:
-                header = ['Feed', 'Group', 'LastSync', 'RecordCount']
-                t = plain_column_table(header)
-                for el in payload:
-                    feed = el.get('name', "N/A")
-                    feed_enabled = el.get('enabled', True)
-                    if not feed_enabled:
-                        feed = '{}(disabled)'.format(feed)
-                    for gel in el['groups']:
-                        group_enabled = gel.get('enabled', True)
-                        last_sync = gel.get('last_sync', None)
-                        if not last_sync:
-                            if feed_enabled and group_enabled:
-                                last_sync = "pending"
-                            else:
-                                last_sync = '-'
-
-                        gname = gel.get('name', 'N/A')
-                        if not group_enabled:
-                            gname = '{}(disabled)'.format(gname)
-                        t.add_row([feed, gname, last_sync, gel.get('record_count', "N/A")])
-                ret = t.get_string(sortby='Feed')+"\n"
-            # XXX no need
-            except Exception as err:
-                raise err
-        elif op in ['system_feed_groups']:
-            try:
-                header = ['Group', 'LastSync', 'RecordCount']
-                t = PrettyTable(header)
-                t.set_style(PLAIN_COLUMNS)
-                t.align = 'l'
-                for gel in payload:
+            header = ['Feed', 'Group', 'LastSync', 'RecordCount']
+            t = plain_column_table(header)
+            for el in payload:
+                feed = el.get('name', "N/A")
+                feed_enabled = el.get('enabled', True)
+                if not feed_enabled:
+                    feed = '{}(disabled)'.format(feed)
+                for gel in el['groups']:
+                    group_enabled = gel.get('enabled', True)
                     last_sync = gel.get('last_sync', None)
                     if not last_sync:
-                        last_sync = "pending"
+                        if feed_enabled and group_enabled:
+                            last_sync = "pending"
+                        else:
+                            last_sync = '-'
+
                     gname = gel.get('name', 'N/A')
-                    if not gel.get('enabled', True):
+                    if not group_enabled:
                         gname = '{}(disabled)'.format(gname)
-                    t.add_row([gname, last_sync, gel.get('record_count', "N/A")])
-                ret = t.get_string(sortby='Group') + "\n"
-            # XXX no need
-            except Exception as err:
-                raise err
+                    t.add_row([feed, gname, last_sync, gel.get('record_count', "N/A")])
+            ret = t.get_string(sortby='Feed')+"\n"
+        elif op in ['system_feed_groups']:
+            header = ['Group', 'LastSync', 'RecordCount']
+            t = PrettyTable(header)
+            t.set_style(PLAIN_COLUMNS)
+            t.align = 'l'
+            for gel in payload:
+                last_sync = gel.get('last_sync', None)
+                if not last_sync:
+                    last_sync = "pending"
+                gname = gel.get('name', 'N/A')
+                if not gel.get('enabled', True):
+                    gname = '{}(disabled)'.format(gname)
+                t.add_row([gname, last_sync, gel.get('record_count', "N/A")])
+            ret = t.get_string(sortby='Group') + "\n"
         elif op in ['system_feeds_flush']:
             ret = 'Success'
             if type(payload) == list:
@@ -837,7 +812,6 @@ def format_output(config, op, params, payload):
             for record in payload:
                 row = [str(record.get('name', "N/A")), str(record.get('email', "N/A")), str(record.get('type', "N/A")), str(record.get('state', "N/A")), str(record.get('created_at', "N/A"))]
                 t.add_row(row)
-            #ret = t.get_string()
             ret = t.get_string(sortby='Created')+"\n"
 
         elif op in ['user_add', 'user_get']:
@@ -924,7 +898,7 @@ def format_output(config, op, params, payload):
         # XXX catch json errors here
         except Exception:
             ret = str(payload)
-    return(ret)
+    return ret
 
 
 def format_vulnerabilities(payload, params):
@@ -984,88 +958,72 @@ def string_splitter(input_str, max_length=40):
 
 
 def _format_gates(payload, all=False):
-    try:
-        if not all:
-            header = ['Gate', 'Description']
-        else:
-            header = ['Gate', 'Description', 'State', 'Superceded By']
+    if not all:
+        header = ['Gate', 'Description']
+    else:
+        header = ['Gate', 'Description', 'State', 'Superceded By']
 
-        t = PrettyTable(header, hrules=ALL)
-        t.align = 'l'
+    t = PrettyTable(header, hrules=ALL)
+    t.align = 'l'
 
-        if payload:
-            for gate in payload:
-                desc = string_splitter(gate.get('description', ''), 60)
-                if all:
-                    t.add_row([gate['name'].lower(), desc, gate.get('state', ''), gate.get('superceded_by', '')])
-                elif gate.get('state') in [None, 'active']:
-                    t.add_row([gate['name'].lower(), desc])
+    if payload:
+        for gate in payload:
+            desc = string_splitter(gate.get('description', ''), 60)
+            if all:
+                t.add_row([gate['name'].lower(), desc, gate.get('state', ''), gate.get('superceded_by', '')])
+            elif gate.get('state') in [None, 'active']:
+                t.add_row([gate['name'].lower(), desc])
 
-            return t.get_string(sortby='Gate', print_empty=True)
-        else:
-            return  'No policy spec to parse'
-
-    # XXX no need
-    except Exception as err:
-        raise err
+        return t.get_string(sortby='Gate', print_empty=True)
+    else:
+        return  'No policy spec to parse'
 
 
 def _format_triggers(payload, gate, all=False):
-    try:
-        if not all:
-            header = ['Trigger', 'Description', 'Parameters']
-        else:
-            header = ['Trigger', 'Description', 'Parameters', 'State', 'Superceded By']
-        t = PrettyTable(header, hrules=ALL)
-        t.align = 'l'
+    if not all:
+        header = ['Trigger', 'Description', 'Parameters']
+    else:
+        header = ['Trigger', 'Description', 'Parameters', 'State', 'Superceded By']
+    t = PrettyTable(header, hrules=ALL)
+    t.align = 'l'
 
-        if payload:
-            for gate in [x for x in payload if x['name'].lower() == gate]:
-                for trigger_entry in gate.get('triggers', []):
-                    desc = string_splitter(trigger_entry.get('description', ''))
-                    param_str = string_splitter(', '.join([x['name'].lower() for x in trigger_entry.get('parameters', [])]), max_length=20)
-                    if all:
-                        t.add_row([trigger_entry['name'].lower(), desc, param_str, trigger_entry.get('state', ''), trigger_entry.get('superceded_by', '')])
-                    elif trigger_entry.get('state') in [None, 'active']:
-                        t.add_row([trigger_entry['name'].lower(), desc, param_str])
+    if payload:
+        for gate in [x for x in payload if x['name'].lower() == gate]:
+            for trigger_entry in gate.get('triggers', []):
+                desc = string_splitter(trigger_entry.get('description', ''))
+                param_str = string_splitter(', '.join([x['name'].lower() for x in trigger_entry.get('parameters', [])]), max_length=20)
+                if all:
+                    t.add_row([trigger_entry['name'].lower(), desc, param_str, trigger_entry.get('state', ''), trigger_entry.get('superceded_by', '')])
+                elif trigger_entry.get('state') in [None, 'active']:
+                    t.add_row([trigger_entry['name'].lower(), desc, param_str])
 
-            return t.get_string(sortby='Trigger', print_empty=True)
-        else:
-            return 'No policy spec to parse'
-
-    # XXX no need
-    except Exception as err:
-        raise err
+        return t.get_string(sortby='Trigger', print_empty=True)
+    else:
+        return 'No policy spec to parse'
 
 
 def _format_trigger_params(payload, gate, trigger, all=False):
-    try:
-        if all:
-            header = ['Parameter', 'Description', 'Required', 'Example', 'State', 'Supereceded By']
-        else:
-            header = ['Parameter', 'Description', 'Required', 'Example']
-        t = PrettyTable(header, hrules=ALL)
-        #t.set_style(PLAIN_COLUMNS)
-        t.align = 'l'
+    if all:
+        header = ['Parameter', 'Description', 'Required', 'Example', 'State', 'Supereceded By']
+    else:
+        header = ['Parameter', 'Description', 'Required', 'Example']
+    t = PrettyTable(header, hrules=ALL)
+    t.align = 'l'
 
-        if payload:
-            for gate in [x for x in payload if x['name'].lower() == gate]:
-                for trigger_entry in [x for x in gate.get('triggers', []) if x['name'].lower() == trigger]:
-                    for p in trigger_entry.get('parameters', []):
-                        desc = string_splitter(p.get('description', ''))
-                        if all:
-                            t.add_row([p['name'].lower(), desc, p.get('required', True), p.get('example',''), p.get('state', ''), p.get('superceded_by', '')])
-                        elif p.get('state') in [None, 'active']:
-                            t.add_row([p['name'].lower(), desc, p.get('required', True), p.get('example', '')])
+    if payload:
+        for gate in [x for x in payload if x['name'].lower() == gate]:
+            for trigger_entry in [x for x in gate.get('triggers', []) if x['name'].lower() == trigger]:
+                for p in trigger_entry.get('parameters', []):
+                    desc = string_splitter(p.get('description', ''))
+                    if all:
+                        t.add_row([p['name'].lower(), desc, p.get('required', True), p.get('example',''), p.get('state', ''), p.get('superceded_by', '')])
+                    elif p.get('state') in [None, 'active']:
+                        t.add_row([p['name'].lower(), desc, p.get('required', True), p.get('example', '')])
 
 
-            return t.get_string(sortby='Parameter', print_empty=True)
-        else:
-            return 'No policy spec to parse'
-
-    # XXX no need
-    except Exception as err:
-        raise err
+        return t.get_string(sortby='Parameter', print_empty=True)
+    else:
+        return 'No policy spec to parse'
 
 
 def get_eval_ecode(evaldata, imageDigest):
@@ -1082,7 +1040,8 @@ def get_eval_ecode(evaldata, imageDigest):
             raise Exception("got unknown eval status result: " + str(status))
     except Exception:
         ret = 2
-    return(ret)
+    return ret
+
 
 def get_ecode(response):
     ecode = 2
@@ -1095,10 +1054,11 @@ def get_ecode(response):
             ecode = 2
         else:
             ecode = 1
-    except:
+    except Exception:
         pass
 
-    return(ecode)
+    return ecode
+
 
 def check_access(config):
     # test the endpoint
@@ -1112,7 +1072,8 @@ def check_access(config):
         else:
             raise Exception("could not access anchore service (user="+str(config['user']) +" url="+str(config['url'])+")")
 
-    return(True)
+    return True
+
 
 def discover_inputimage_format(config, input_string):
     itype = None
@@ -1124,7 +1085,8 @@ def discover_inputimage_format(config, input_string):
     else:
         itype = 'tag'
 
-    return(itype)
+    return itype
+
 
 def discover_inputimage(config, input_string):
     patt = re.match("(.*@|^)(sha256:.*)", input_string)
@@ -1162,7 +1124,8 @@ def discover_inputimage(config, input_string):
     except Exception:
         urldigest = None
 
-    return(ret_type, input_string, urldigest)
+    return ret_type, input_string, urldigest
+
 
 def parse_dockerimage_string(instr):
     host = None
@@ -1269,5 +1232,4 @@ def parse_dockerimage_string(instr):
     else:
         ret['pullstring'] = None
 
-    return(ret)
-
+    return ret
