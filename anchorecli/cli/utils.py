@@ -764,17 +764,18 @@ def format_output(config, op, params, payload):
             ret = t.get_string(sortby="Error Code")+"\n"
         elif op in ['system_feeds_list']:
             try:
-                header = ['Feed', 'Group', 'LastSync', 'RecordCount']
+                header = ['Feed', 'FeedEnabled', 'Group', 'GroupEnabled', 'LastSync', 'RecordCount']
                 t = PrettyTable(header)
                 t.set_style(PLAIN_COLUMNS)
                 t.align = 'l'
                 for el in payload:
                     feed = el.get('name', "N/A")
+                    feed_enabled = el.get('enabled', True)
                     for gel in el['groups']:
                         last_sync = gel.get('last_sync', None)
                         if not last_sync:
                             last_sync = "pending"
-                        t.add_row([feed, gel.get('name', "N/A"), last_sync, gel.get('record_count', "N/A")])
+                        t.add_row([feed, feed_enabled, gel.get('name', "N/A"), gel.get('enabled', True), last_sync, gel.get('record_count', "N/A")])
                 ret = t.get_string(sortby='Feed')+"\n"
             # XXX no need
             except Exception as err:
