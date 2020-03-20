@@ -86,6 +86,91 @@ def system_feeds_sync(config, flush=False):
 
     return(ret)
 
+
+def system_feed_enable_toggle(config, feed, enabled):
+    userId = config['user']
+    password = config['pass']
+    base_url = config['url']
+
+    ret = {}
+
+    base_url = re.sub("/$", "", base_url)
+    url = '/'.join([base_url, "system/feeds/{}?enabled={}".format(feed, enabled)])
+    set_account_header(config)
+    try:
+        _logger.debug("PUT url="+str(url))
+        _logger.debug("PUT insecure="+str(config['ssl_verify']))
+        r = requests.put(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
+        ret = anchorecli.clients.common.make_client_result(r, raw=False)
+    except Exception as err:
+        raise err
+
+    return ret
+
+
+def system_feed_group_enable_toggle(config, feed, group, enabled):
+    userId = config['user']
+    password = config['pass']
+    base_url = config['url']
+
+    ret = {}
+
+    base_url = re.sub("/$", "", base_url)
+    url = '/'.join([base_url, "system/feeds/{}/{}?enabled={}".format(feed, group, enabled)])
+    set_account_header(config)
+    try:
+        _logger.debug("PUT url="+str(url))
+        _logger.debug("PUT insecure="+str(config['ssl_verify']))
+        r = requests.put(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
+        ret = anchorecli.clients.common.make_client_result(r, raw=False)
+    except Exception as err:
+        raise err
+
+    return ret
+
+
+def system_feed_delete(config, feed):
+    userId = config['user']
+    password = config['pass']
+    base_url = config['url']
+
+    ret = {}
+
+    base_url = re.sub("/$", "", base_url)
+    url = '/'.join([base_url, "system/feeds/{}".format(feed)])
+    set_account_header(config)
+    try:
+        _logger.debug("DELETE url="+str(url))
+        _logger.debug("DELETE insecure="+str(config['ssl_verify']))
+        r = requests.delete(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
+        ret = anchorecli.clients.common.make_client_result(r, raw=False)
+    except Exception as err:
+        raise err
+
+    return ret
+
+
+def system_feed_group_delete(config, feed, group):
+    userId = config['user']
+    password = config['pass']
+    base_url = config['url']
+
+    ret = {}
+
+    base_url = re.sub("/$", "", base_url)
+    url = '/'.join([base_url, "system/feeds/{}/{}".format(feed, group)])
+    set_account_header(config)
+    try:
+        _logger.debug("DELETE url="+str(url))
+        _logger.debug("DELETE insecure="+str(config['ssl_verify']))
+        r = requests.delete(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
+        ret = anchorecli.clients.common.make_client_result(r, raw=False)
+    except Exception as err:
+        raise err
+
+    return ret
+
+
 def system_status(config):
     userId = config['user']
     password = config['pass']
