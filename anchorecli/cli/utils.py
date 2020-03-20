@@ -719,12 +719,40 @@ def format_output(config, op, params, payload):
                 for el in payload:
                     feed = el.get('name', "N/A")
                     feed_enabled = el.get('enabled', True)
+                    if not feed_enabled:
+                        feed = '{}(disabled)'.format(feed)
                     for gel in el['groups']:
+                        group_enabled = gel.get('enabled', True)
                         last_sync = gel.get('last_sync', None)
                         if not last_sync:
-                            last_sync = "pending"
-                        t.add_row([feed, feed_enabled, gel.get('name', "N/A"), gel.get('enabled', True), last_sync, gel.get('record_count', "N/A")])
+                            if feed_enabled and group_enabled:
+                                last_sync = "pending"
+                            else:
+                                last_sync = '-'
+
+                        gname = gel.get('name', 'N/A')
+                        if not group_enabled:
+                            gname = '{}(disabled)'.format(gname)
+                        t.add_row([feed, gname, last_sync, gel.get('record_count', "N/A")])
                 ret = t.get_string(sortby='Feed')+"\n"
+            # XXX no need
+            except Exception as err:
+                raise err
+        elif op in ['system_feed_groups']:
+            try:
+                header = ['Group', 'LastSync', 'RecordCount']
+                t = PrettyTable(header)
+                t.set_style(PLAIN_COLUMNS)
+                t.align = 'l'
+                for gel in payload:
+                    last_sync = gel.get('last_sync', None)
+                    if not last_sync:
+                        last_sync = "pending"
+                    gname = gel.get('name', 'N/A')
+                    if not gel.get('enabled', True):
+                        gname = '{}(disabled)'.format(gname)
+                    t.add_row([gname, last_sync, gel.get('record_count', "N/A")])
+                ret = t.get_string(sortby='Group') + "\n"
             # XXX no need
             except Exception as err:
                 raise err

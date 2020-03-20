@@ -198,9 +198,11 @@ def delete(host_id, servicename):
 
     anchorecli.cli.utils.doexit(ecode)
 
+
 @system.group(name="feeds", short_help="Feed data operations")
 def feeds():
     pass
+
 
 @feeds.command(name="list", short_help="Get a list of loaded data feeds.")
 def list():
@@ -246,6 +248,74 @@ def feedsync(flush):
                 print(anchorecli.cli.utils.format_output(config, 'system_feeds_flush', {}, ret['payload']))
             else:
                 raise Exception(json.dumps(ret['error'], indent=4))
+
+    except Exception as err:
+        print(anchorecli.cli.utils.format_error_output(config, 'system_feeds_flush', {}, err))
+        if not ecode:
+            ecode = 2
+
+    anchorecli.cli.utils.doexit(ecode)
+
+
+@feeds.command(name="config", short_help="Enable a specific feed and or group so that it will sync data on the next sync")
+@click.option('--group', help='Config a specific group only')
+@click.option('--enable', help='Enable the feed/group', is_flag=True)
+@click.option('--disable', help='Disable the feed/group', is_flag=True)
+@click.argument('feed')
+def toggle_enabled(feed, group=None, enable=None, disable=None):
+    ecode = 0
+
+    try:
+        if not enable and not disable:
+            raise Exception('Must set one of --enable or --disable')
+        elif enable and disable:
+            raise Exception('Can set only one of --enable or --disable')
+        else:
+            enabled = enable
+
+        if group:
+            ret = anchorecli.clients.apiexternal.system_feed_group_enable_toggle(config, feed, group, enabled=enabled)
+            ecode = anchorecli.cli.utils.get_ecode(ret)
+        else:
+            ret = anchorecli.clients.apiexternal.system_feed_enable_toggle(config, feed, enabled=enabled)
+            ecode = anchorecli.cli.utils.get_ecode(ret)
+
+        if ret['success']:
+            if group:
+                print(anchorecli.cli.utils.format_output(config, 'system_feed_groups', {}, [ret['payload']]))
+            else:
+                print(anchorecli.cli.utils.format_output(config, 'system_feeds_list', {}, [ret['payload']]))
+        else:
+            raise Exception(json.dumps(ret['error'], indent=4))
+
+    except Exception as err:
+        print(anchorecli.cli.utils.format_error_output(config, 'system_feeds_enable', {}, err))
+        if not ecode:
+            ecode = 2
+
+    anchorecli.cli.utils.doexit(ecode)
+
+
+@feeds.command(name="delete", short_help="Delete the feed data for a feed or group. Metadata will remain but all feed data and vuln matches (if applicable) are removed")
+@click.option('--group', help='Delete data for a specific group only')
+@click.argument('feed')
+def delete_data(feed, group=None):
+    ecode = 0
+    try:
+        if group:
+            ret = anchorecli.clients.apiexternal.system_feed_group_delete(config, feed, group)
+            ecode = anchorecli.cli.utils.get_ecode(ret)
+        else:
+            ret = anchorecli.clients.apiexternal.system_feed_delete(config, feed)
+            ecode = anchorecli.cli.utils.get_ecode(ret)
+
+        if ret['success']:
+            if group:
+                print(anchorecli.cli.utils.format_output(config, 'system_feed_groups', {}, [ret['payload']]))
+            else:
+                print(anchorecli.cli.utils.format_output(config, 'system_feeds_list', {}, [ret['payload']]))
+        else:
+            raise Exception(json.dumps(ret['error'], indent=4))
 
     except Exception as err:
         print(anchorecli.cli.utils.format_error_output(config, 'system_feeds_flush', {}, err))
