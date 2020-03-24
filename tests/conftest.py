@@ -17,3 +17,18 @@ def stub_response():
         response = Factory(status_code=status_code, text=text)
         return response
     return apply
+
+
+@pytest.fixture(autouse=True)
+def no_fds_closing(monkeypatch):
+    """
+    The ClickRunner test helper breaks when stdout and stderr is closed as it is trying to capture
+    whatever the tool was sending as output. This env is prevents anchore-cli from closing them
+    allowing the ClickRunner to work.
+
+    Related issues:
+
+    * https://github.com/pallets/click/issues/824
+    * https://github.com/pytest-dev/pytest/issues/3344
+    """
+    monkeypatch.setenv('ANCHORE_CLI_NO_FDS_CLEANUP', '1')
