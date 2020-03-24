@@ -309,6 +309,7 @@ def query_metadata(input_image, metadata_type):
 
     anchorecli.cli.utils.doexit(ecode)
 
+
 @image.command(name='vuln', short_help="Get image vulnerabilities")
 @click.argument('input_image', nargs=1)
 @click.argument('vuln_type', nargs=1, required=False)
@@ -331,12 +332,15 @@ def query_vuln(input_image, vuln_type, vendor_only):
         else:
             ret = anchorecli.clients.apiexternal.query_image(config, imageDigest=imageDigest, query_group='vuln', query_type=vuln_type, vendor_only=vendor_only)
             ecode = anchorecli.cli.utils.get_ecode(ret)
-
             if ret:
                 if ret['success']:
-                    print(anchorecli.cli.utils.format_output(config, 'image_vuln', {'query_type':vuln_type}, ret['payload']))
+                    print(anchorecli.cli.utils.format_output(config, 'image_vuln', {'query_type': vuln_type}, ret['payload']))
                 else:
-                    raise Exception (json.dumps(ret['error'], indent=4))
+                    if 'analysis_status: analyzing' in ret['error']['message']:
+                        ecode = 100
+                    elif 'analysis_status: not_analyzed' in ret['error']['message']:
+                        ecode = 101
+                    raise Exception(json.dumps(ret['error'], indent=4))
             else:
                 raise Exception("operation failed with empty response")
 
@@ -344,8 +348,8 @@ def query_vuln(input_image, vuln_type, vendor_only):
         print(anchorecli.cli.utils.format_error_output(config, 'image_vuln', {}, err))
         if not ecode:
             ecode = 2
-
     anchorecli.cli.utils.doexit(ecode)
+
 
 @image.command(name='del', short_help="Delete an image")
 @click.argument('input_image', required=False)
