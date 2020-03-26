@@ -1,193 +1,339 @@
-# CircleCI 2.0 configuration file
-#
+# CircleCI 2.1 configuration file
 # Check https://circleci.com/docs/2.0/configuration-reference/ for more details
-#
-# The following environment variables must be set in the circleci project UI
-# - $IMAGE_NAME -> name of image to push to dockerhub
-# - $IMAGE_TAG -> tag on image to push to dockerhub
 #
 # Note: YAML anchors allow an object to be re-used, reducing duplication.
 # The ampersand declares an alias for an object, then later the `<<: *name`
 # syntax dereferences it.
-# See http://blog.daemonl.com/2016/02/yaml.html
-# To validate changes, use an online parser, eg.
-# http://yaml-online-parser.appspot.com/
 #
 # Define YAML anchors
-var_1: &load_docker_image
+.global_environment_vars: &global_environment_vars
+  PROD_IMAGE_REPO: anchore/anchore-cli-dev
+  RELEASE_BRANCHES: 0.2 0.3 0.4 0.5 0.6 0.7
+  VERBOSE: true
+  TERM: xterm
+
+.attach_workspace: &attach_workspace
+  attach_workspace:
+    at: /home/circleci/workspace/
+
+.load_docker_image: &load_docker_image
   run:
     name: Load Docker image layer cache
     command: |
-      set +o pipefail
-      docker load -i "/home/circleci/workspace/caches/${CIRCLE_PROJECT_REPONAME}-ci.tar" || true
+      docker load -i "/home/circleci/workspace/caches/${CIRCLE_SHA1}.tar" || true
 
-var_2: &attach_workspace
-  attach_workspace:
-      at: /home/circleci/workspace/
+.ssh_forward_port: &ssh_forward_port
+  run:
+    name: Forward remote-docker ports for testing
+    command: |
+      ssh -MS anchore-api -fN4 -L 8228:localhost:8228 remote-docker
+      ssh -MS k8s-api -fN4 -L 32768:localhost:32768 remote-docker
+
+.filter_rc_tags: &filter_rc_tags
+  branches:
+    ignore: /.*/
+  tags:
+    only: /^v[0-9]+(\.[0-9]+)*-rc[0-9]+$/
+
+.filter_rebuild_tags: &filter_rebuild_tags
+  branches:
+    ignore: /.*/
+  tags:
+    only: /^v[0-9]+(\.[0-9]+)*-r[0-9]+$/
+
+.filter_release_branch: &filter_release_branch
+  branches:
+    only:
+      - /^[0-9]+(\.[0-9]+)$/
+      - master
+      - /^ci-.*/
+
+.filter_semver_tags: &filter_semver_tags
+  branches:
+    ignore: /.*/
+  tags:
+    only: /^v[0-9]+(\.[0-9]+)*$/
 
 # Start circleci configuration
 version: 2.1
+orbs:
+  anchore: anchore/anchore-engine@1.6.5
+
 commands:
-  run_tox_tests:
-    description: Run tox tests
+  run_tests:
+    description: |
+      Uses make script to run tests
+      Saves the tox cache & stores log output as artifacts
     parameters:
-      environment:
+      test_type:
         type: string
     steps:
-    - checkout
-    - restore_cache:
-        keys:
-        - v1-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}
-    - run:
-        name: install dependencies
-        command: |
-          sudo pip install --upgrade pip
-          sudo pip install --upgrade tox
-    - run:
-        name: run tests
-        command: |
-          tox << parameters.environment >> | tee tox.log
-    - save_cache:
-        paths:
-          - ~/project/.tox
-        key: v1-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}
-    - store_artifacts:
-        path: tox.log
-    - store_artifacts:
-        path: pytest-functional-tests.log
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}
+      - run:
+          name: run tests
+          command: make << parameters.test_type >>
+      - save_cache:
+          paths:
+            - ~/project/.tox
+          key: v1-dependencies-{{ .Branch }}-{{ checksum "requirements.txt" }}
+      - store_test_results:
+          path: .tox/results
+      - store_artifacts:
+          path: .tox/test-reports.log
+          destination: test-reports.log
 
 jobs:
-  linting:
-    docker:
-    - image: circleci/python:3.6
-    steps:
-    - run_tox_tests:
-        environment: "-e flake8"
-  unit_tests_py27:
-    docker:
-    - image: circleci/python:2.7
-    steps:
-    - run_tox_tests:
-        environment: "-e py27"
-  unit_tests_py36:
-    docker:
-    - image: circleci/python:3.6
-    steps:
-    - run_tox_tests:
-        environment: "-e py36"
-  functional_tests_py36:
+  lint:
     docker:
       - image: circleci/python:3.6
-    steps:
-      - setup_remote_docker:
-          docker_layer_caching: true
-      - run:
-          name: forward remote docker ports
-          command: |
-            ssh -MS ../anchore -fN4 -L 8228:localhost:8228 remote-docker
-      - run_tox_tests:
-          environment: "-c tests/functional/tox.ini -e py36-anchore_latest"
-      - run_tox_tests:
-          environment: "-c tests/functional/tox.ini -e py36-anchore_0.6.0"
-      - run_tox_tests:
-          environment: "-c tests/functional/tox.ini -e py36-anchore_0.5.1"
-  build:
-    docker:
-      - image: docker:stable-git
+    environment: *global_environment_vars
     steps:
       - checkout
+      - run:
+          name: run linter
+          command: make lint
+
+  unit_tests:
+    description: Uses make script to run unit tests on specified tox environment
+    parameters:
+      tox_env:
+        type: string
+    docker:
+      - image: circleci/python:3.6
+    environment: *global_environment_vars
+    steps:
+      - checkout
+      - run_tests:
+          test_type: test-unit TOX_ENV="<< parameters.tox_env >>"
+
+  functional_tests:
+    description: Uses make script to run functional tests on specified tox environment
+    parameters:
+      tox_env:
+        type: string
+    docker:
+      - image: circleci/python:3.6
+    resource_class: large
+    environment: *global_environment_vars
+    steps:
       - setup_remote_docker
+      - checkout
+      - <<: *ssh_forward_port
+      - run_tests:
+          test_type: test-functional TOX_ENV="<< parameters.tox_env >>"
+
+  build:
+    docker:
+      - image: circleci/python:3.6
+    resource_class: large
+    environment: *global_environment_vars
+    steps:
+      - setup_remote_docker
+      - checkout
       - run:
-          name: build Docker image
-          command: |
-            docker build -t ${IMAGE_NAME}:ci --build-arg CLI_COMMIT=$CIRCLE_SHA1 .
+          name: Build Docker image
+          command: make build
       - run:
-          name: Save Docker image
+          name: Save image to workspace
           command: |
             rm -rf /home/circleci/workspace/caches/
-            mkdir /home/circleci/workspace/caches/ -p
-            docker save -o "/home/circleci/workspace/caches/${CIRCLE_PROJECT_REPONAME}-ci.tar" "${IMAGE_NAME}:ci"
+            mkdir -p /home/circleci/workspace/caches/
+            docker save -o "/home/circleci/workspace/caches/${CIRCLE_SHA1}.tar" ${CIRCLE_PROJECT_REPONAME}:dev
       - persist_to_workspace:
           root: /home/circleci/workspace/
           paths:
             - caches/*
 
-  push_dockerhub:
+  e2e_tests:
     docker:
-      - image: docker:stable
+      - image: circleci/python:3.6
+    resource_class: large
+    environment: *global_environment_vars
     steps:
       - setup_remote_docker
+      - checkout
+      - <<: *attach_workspace
+      - <<: *load_docker_image
+      - <<: *ssh_forward_port
+      - run:
+          name: Run e2e tests
+          command: make test-e2e
+
+  push_image:
+    description: Uses make script to push images to DockerHub - dev, rc, prod
+    parameters:
+      make_job:
+        type: string
+    docker:
+      - image: circleci/python:3.6
+    environment: *global_environment_vars
+    steps:
+      - setup_remote_docker
+      - checkout
       - <<: *attach_workspace
       - <<: *load_docker_image
       - run:
           name: Push to Dockerhub
-          command: |
-            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-            export DEV_IMG_TAG="anchore/anchore-cli-dev:${CIRCLE_SHA1}"
-            docker tag "${IMAGE_NAME}:ci" "$DEV_IMG_TAG"
-            docker push "$DEV_IMG_TAG"
-            if [ "$CIRCLE_BRANCH" == "master" ]; then
-              echo "${IMAGE_NAME}:${IMAGE_TAG}"
-              docker tag "${IMAGE_NAME}:ci" "${IMAGE_NAME}:${IMAGE_TAG}"
-              docker push "${IMAGE_NAME}:${IMAGE_TAG}"
-            elif [ "$CIRCLE_BRANCH" == "0.2" ]; then
-              echo "${IMAGE_NAME}:v0.2-${IMAGE_TAG}"
-              docker tag "${IMAGE_NAME}:ci" "${IMAGE_NAME}:v0.2-${IMAGE_TAG}"
-              docker push "${IMAGE_NAME}:v0.2-${IMAGE_TAG}"
-            elif [ "$CIRCLE_BRANCH" == "0.3" ]; then
-              echo "${IMAGE_NAME}:v0.3-${IMAGE_TAG}"
-              docker tag "${IMAGE_NAME}:ci" "${IMAGE_NAME}:v0.3-${IMAGE_TAG}"
-              docker push "${IMAGE_NAME}:v0.3-${IMAGE_TAG}"
-            elif [ "$CIRCLE_BRANCH" == "0.4" ]; then
-              echo "${IMAGE_NAME}:v0.4-${IMAGE_TAG}"
-              docker tag "${IMAGE_NAME}:ci" "${IMAGE_NAME}:v0.4-${IMAGE_TAG}"
-              docker push "${IMAGE_NAME}:v0.4-${IMAGE_TAG}"
-            elif [ "$CIRCLE_BRANCH" == "0.5" ]; then
-              echo "${IMAGE_NAME}:v0.5-${IMAGE_TAG}"
-              docker tag "${IMAGE_NAME}:ci" "${IMAGE_NAME}:v0.5-${IMAGE_TAG}"
-              docker push "${IMAGE_NAME}:v0.5-${IMAGE_TAG}"
-            elif [ "$CIRCLE_BRANCH" == "0.6" ]; then
-              echo "${IMAGE_NAME}:v0.6-${IMAGE_TAG}"
-              docker tag "${IMAGE_NAME}:ci" "${IMAGE_NAME}:v0.6-${IMAGE_TAG}"
-              docker push "${IMAGE_NAME}:v0.6-${IMAGE_TAG}"
-            fi
-
-  trigger_downstream:
-      docker:
-        - image: anchore/test-infra:latest
-          auth:
-            username: $DOCKER_USER
-            password: $DOCKER_PASS
-      steps:
-      - checkout
-      - run:
-          name: Trigger release candidate builds
-          command: |
-            source ci_utils.sh
-            trigger_artifact_build anchore-cli
+          command: make << parameters.make_job >>
 
 workflows:
   default_workflow:
     jobs:
-      - unit_tests_py27
-      - unit_tests_py36
-      - linting
-      - functional_tests_py36
+      - lint
+      - unit_tests:
+          tox_env: "py27 py36"
+      - functional_tests:
+          name: functional_tests_latest
+          tox_env: py36-anchore_latest
+          requires:
+            - lint
+            - unit_tests
+      - functional_tests:
+          name: functional_tests_060
+          tox_env: py36-anchore_0.6.0
+          requires:
+            - lint
+            - unit_tests
+      - functional_tests:
+          name: functional_tests_051
+          tox_env: py36-anchore_0.5.1
+          requires:
+            - lint
+            - unit_tests
       - build:
-          filters:
-            branches:
-              only:
-                - 'master'
-                - '0.2'
-                - '0.3'
-                - '0.4'
-                - '0.5'
-                - '0.6'
-      - push_dockerhub:
-          context: dockerhub
+          requires:
+            - functional_tests_latest
+            - functional_tests_060
+            - functional_tests_051
+      - e2e_tests:
+          context: e2e-testing
+          filters: *filter_release_branch
           requires:
             - build
-      - trigger_downstream:
-          context: release_candidates
+      - push_image:
+          name: push_dev_image
+          make_job: push-dev
+          context: dockerhub
+          filters: *filter_release_branch
           requires:
-            - push_dockerhub
+            - e2e_tests
+      - anchore/image_scan:
+          context: dockerhub
+          requires:
+            - push_dev_image
+          image_name: anchore/anchore-cli-dev:${CIRCLE_SHA1}
+          private_registry: true
+          timeout: '2000'
+
+  rc_image_workflow:
+    jobs:
+      - e2e_tests:
+          name: rc_e2e_tests
+          context: e2e-testing
+          filters: *filter_rc_tags
+      - push_image:
+          name: push_rc_image
+          make_job: push-rc
+          context: dockerhub
+          filters: *filter_rc_tags
+          requires:
+            - rc_e2e_tests
+      - anchore/image_scan:
+          context: dockerhub
+          filters: *filter_rc_tags
+          requires:
+            - push_rc_image
+          image_name: anchore/anchore-cli-dev:${CIRCLE_TAG}
+          private_registry: true
+          timeout: '2000'
+          policy_failure: true
+
+  prod_image_workflow:
+    jobs:
+      - e2e_tests:
+          name: prod_e2e_tests
+          context: e2e-testing
+          filters: *filter_semver_tags
+      - hold_for_approval:
+          type: approval
+          filters: *filter_semver_tags
+          requires:
+            - prod_e2e_tests
+      - push_image:
+          name: push_prod_image
+          make_job: push-prod
+          context: dockerhub-prod
+          filters: *filter_semver_tags
+          requires:
+            - hold_for_approval
+
+  rebuild_image_workflow:
+    jobs:
+      - lint:
+          filters: *filter_rebuild_tags
+      - unit_tests:
+          tox_env: "py27 py36"
+          filters: *filter_rebuild_tags
+      - functional_tests:
+          name: functional_tests_latest
+          tox_env: py36-anchore_latest
+          filters: *filter_rebuild_tags
+          requires:
+            - lint
+            - unit_tests
+      - functional_tests:
+          name: functional_tests_060
+          tox_env: py36-anchore_0.6.0
+          filters: *filter_rebuild_tags
+          requires:
+            - lint
+            - unit_tests
+      - functional_tests:
+          name: functional_tests_051
+          tox_env: py36-anchore_0.5.1
+          filters: *filter_rebuild_tags
+          requires:
+            - lint
+            - unit_tests
+      - build:
+          filters: *filter_rebuild_tags
+          requires:
+            - functional_tests_latest
+            - functional_tests_060
+            - functional_tests_051
+      - e2e_tests:
+          context: e2e-testing
+          filters: *filter_rebuild_tags
+          requires:
+            - build
+      - push_image:
+          name: push_dev_image
+          make_job: push-dev
+          context: dockerhub
+          filters: *filter_rebuild_tags
+          requires:
+            - e2e_tests
+      - anchore/image_scan:
+          name: anchore_image_scan
+          context: dockerhub
+          filters: *filter_rebuild_tags
+          requires:
+            - push_dev_image
+          image_name: anchore/anchore-cli-dev:${CIRCLE_SHA1}
+          private_registry: true
+          timeout: '2000'
+          policy_failure: true
+      - hold_for_approval:
+          type: approval
+          filters: *filter_rebuild_tags
+          requires:
+            - anchore_image_scan
+      - push_image:
+          name: push_rebuild_image
+          make_job: push-rebuild
+          context: dockerhub-prod
+          filters: *filter_rebuild_tags
+          requires:
+            - hold_for_approval
