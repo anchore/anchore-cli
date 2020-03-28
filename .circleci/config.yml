@@ -229,10 +229,14 @@ workflows:
 
   rc_image_workflow:
     jobs:
+      - build:
+          filters: *filter_rc_tags
       - e2e_tests:
           name: rc_e2e_tests
           context: e2e-testing
           filters: *filter_rc_tags
+          requires:
+            - build
       - push_image:
           name: push_rc_image
           make_job: push-rc
