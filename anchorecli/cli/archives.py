@@ -2,13 +2,11 @@ import sys
 import re
 import json
 import click
-import logging
 
 import anchorecli.clients.apiexternal
 import anchorecli.cli.utils
 
 config = {}
-_logger = logging.getLogger(__name__)
 
 digest_regex = '^sha256:[abcdef0-9]+$'
 
@@ -93,7 +91,7 @@ def image_get(digest):
     INPUT_IMAGE: Input image can be in the following formats: Image Digest, ImageID or registry/repo:tag
     """
     ecode = 0
-    
+
     try:
         ret = anchorecli.clients.apiexternal.get_archived_analysis(config, digest)
 
@@ -145,7 +143,7 @@ def image_delete(digest, force):
     INPUT_IMAGE: Input image can be in the following formats: Image Digest, ImageID or registry/repo:tag
     """
     ecode = 0
-    
+
     try:
         ret = anchorecli.clients.apiexternal.delete_archived_analysis(config, digest)
 

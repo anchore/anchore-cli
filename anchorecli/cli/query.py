@@ -1,13 +1,12 @@
 import sys
 import json
 import click
-import logging
 
 import anchorecli.clients.apiexternal
 import anchorecli.cli.utils
 
 config = {}
-_logger = logging.getLogger(__name__)
+
 
 @click.group(name='query', short_help='Query operations')
 @click.pass_obj

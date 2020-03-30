@@ -1,13 +1,12 @@
 import sys
 import json
 import click
-import logging
 
 import anchorecli.clients.apiexternal
 import anchorecli.cli.utils
 
 config = {}
-_logger = logging.getLogger(__name__)
+
 
 @click.group(name='repo', short_help='Repository operations')
 @click.pass_obj
@@ -79,7 +78,7 @@ def get(input_repo):
 
     image_info = anchorecli.cli.utils.parse_dockerimage_string(input_repo)
     input_repo = image_info['registry'] + "/" + image_info['repo']
-    
+
     try:
         ret = anchorecli.clients.apiexternal.get_repo(config, input_repo=input_repo)
         if ret:
@@ -108,7 +107,7 @@ def delete(input_repo):
 
     image_info = anchorecli.cli.utils.parse_dockerimage_string(input_repo)
     input_repo = image_info['registry'] + "/" + image_info['repo']
-    
+
     try:
         ret = anchorecli.clients.apiexternal.delete_repo(config, input_repo)
         ecode = anchorecli.cli.utils.get_ecode(ret)
@@ -137,7 +136,7 @@ def unwatch(input_repo):
 
     image_info = anchorecli.cli.utils.parse_dockerimage_string(input_repo)
     input_repo = image_info['registry'] + "/" + image_info['repo']
-    
+
     try:
         ret = anchorecli.clients.apiexternal.unwatch_repo(config, input_repo)
         ecode = anchorecli.cli.utils.get_ecode(ret)
@@ -166,7 +165,7 @@ def watch(input_repo):
 
     image_info = anchorecli.cli.utils.parse_dockerimage_string(input_repo)
     input_repo = image_info['registry'] + "/" + image_info['repo']
-    
+
     try:
         ret = anchorecli.clients.apiexternal.watch_repo(config, input_repo)
         ecode = anchorecli.cli.utils.get_ecode(ret)
