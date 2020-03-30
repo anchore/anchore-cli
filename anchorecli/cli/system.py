@@ -81,8 +81,9 @@ def wait(timeout, interval, feedsready, servicesready):
         sys.stderr.write("Starting checks to wait for anchore-engine to be available timeout={} interval={}\n".format(timeout, interval))
         ts = time.time()
         while timeout < 0 or time.time() - ts < timeout:
+            _logger.debug("Checking API availability for anchore-engine URL (%s)", config['url'])
+            # FIXME this can still break when formatting
             sys.stderr.write("API availability: Checking anchore-engine URL ({})...\n".format(config['url']))
-            _logger.debug("Checking API availability for anchore-engine URL ({})".format(config['url']))
             try:
                 anchorecli.cli.utils.check_access(config)
                 _logger.debug("check access success")
@@ -104,8 +105,9 @@ def wait(timeout, interval, feedsready, servicesready):
             except:
                 all_up = {}
 
+            _logger.debug("Checking service set availability for anchore-engine URL (%s)", config['url'])
+            # FIXME this can still break when formatting
             sys.stderr.write("Service availability: Checking for service set ({})...\n".format(','.join(all_up.keys())))
-            _logger.debug("Checking service set availability for anchore-engine URL ({})".format(config['url']))
             try:
                 ret = anchorecli.clients.apiexternal.system_status(config)
                 ecode = anchorecli.cli.utils.get_ecode(ret)
@@ -127,7 +129,7 @@ def wait(timeout, interval, feedsready, servicesready):
                         _logger.debug("full set of available engine services detected")
                         break
                     else:
-                        _logger.debug("service set not yet available {}".format(all_up))
+                        _logger.debug("service set not yet available %s", all_up)
                 elif ret.get('httpcode', 500) in [401]:
                     raise Exception("service responded with 401 Unauthorized - please check anchore-engine credentials and try again")
             except Exception as err:
@@ -148,13 +150,14 @@ def wait(timeout, interval, feedsready, servicesready):
                 all_up = {}
 
             while timeout < 0 or time.time() - ts < timeout:
+                _logger.debug("Checking feed sync status for anchore-engine URL (%s)", config['url'])
+                # FIXME string substitution can still break this
                 sys.stderr.write("Feed sync: Checking sync completion for feed set ({})...\n".format(','.join(all_up.keys())))
-                _logger.debug("Checking feed sync status for anchore-engine URL ({})".format(config['url']))
                 try:
                     ret = anchorecli.clients.apiexternal.system_feeds_list(config)
                     if ret['success']:
                         for feed_record in ret.get('payload', []):
-                            _logger.debug("response show feed name={} was last_full_sync={}".format(feed_record.get('name'), feed_record.get('last_full_sync')))
+                            _logger.debug("response show feed name=%s was last_full_sync=%s", feed_record.get('name'), feed_record.get('last_full_sync'))
                             if feed_record.get('name', None) in all_up:
                                 if feed_record.get('last_full_sync', None):
                                     all_up[feed_record.get('name')] = True
@@ -163,7 +166,7 @@ def wait(timeout, interval, feedsready, servicesready):
                             _logger.debug("all requests feeds have been synced")
                             break
                         else:
-                            _logger.debug("some feeds not yet synced {}".format(all_up))
+                            _logger.debug("some feeds not yet synced %s", all_up)
                 except Exception as err:
                     print ("service feeds list failed {}".format(err))
                 time.sleep(interval)

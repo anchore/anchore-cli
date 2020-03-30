@@ -1047,7 +1047,7 @@ def get_ecode(response):
     ecode = 2
     try:
         httpcode = response['httpcode']
-        _logger.debug("fetched httpcode from response: " + str(httpcode))
+        _logger.debug("fetched httpcode from response: %s", str(httpcode))
         if httpcode in range(200, 299):
             ecode = 0
         elif httpcode in [401, 500]:
