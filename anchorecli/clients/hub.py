@@ -1,6 +1,5 @@
 import re
 import requests
-import logging
 import urllib3
 import requests.packages.urllib3
 
@@ -8,8 +7,6 @@ requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 import anchorecli.clients.common
-
-_logger = logging.getLogger(__name__)
 
 
 def _get_hub_index(config, auth=(None, None)):

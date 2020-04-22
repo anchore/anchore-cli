@@ -21,7 +21,7 @@ header_overrides = {'Content-Type': 'application/json'}
 
 
 def set_account_header(config):
-    _logger.debug('As Account = {}'.format(config.get('as_account')))
+    _logger.debug('As Account = %s', config.get('as_account'))
     if config['as_account'] is not None:
         header_overrides['x-anchore-account'] = config['as_account']
     else:
@@ -57,8 +57,8 @@ def system_feeds_list(config):
     set_account_header(config)
 
     try:
-        _logger.debug("GET url="+str(url))
-        _logger.debug("GET insecure="+str(config['ssl_verify']))
+        _logger.debug("GET url=%s", str(url))
+        _logger.debug("GET insecure=%s", str(config['ssl_verify']))
         r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
@@ -77,8 +77,8 @@ def system_feeds_sync(config, flush=False):
     url = '/'.join([base_url, "system/feeds?flush={}".format(flush)])
     set_account_header(config)
     try:
-        _logger.debug("POST url="+str(url))
-        _logger.debug("POST insecure="+str(config['ssl_verify']))
+        _logger.debug("POST url=%s", str(url))
+        _logger.debug("POST insecure=%s", str(config['ssl_verify']))
         r = requests.post(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
@@ -98,8 +98,8 @@ def system_feed_enable_toggle(config, feed, enabled):
     url = '/'.join([base_url, "system/feeds/{}?enabled={}".format(feed, enabled)])
     set_account_header(config)
     try:
-        _logger.debug("PUT url="+str(url))
-        _logger.debug("PUT insecure="+str(config['ssl_verify']))
+        _logger.debug("PUT url=%s", str(url))
+        _logger.debug("PUT insecure=%s", str(config['ssl_verify']))
         r = requests.put(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
@@ -119,8 +119,8 @@ def system_feed_group_enable_toggle(config, feed, group, enabled):
     url = '/'.join([base_url, "system/feeds/{}/{}?enabled={}".format(feed, group, enabled)])
     set_account_header(config)
     try:
-        _logger.debug("PUT url="+str(url))
-        _logger.debug("PUT insecure="+str(config['ssl_verify']))
+        _logger.debug("PUT url=%s", str(url))
+        _logger.debug("PUT insecure=%s", str(config['ssl_verify']))
         r = requests.put(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
@@ -140,8 +140,8 @@ def system_feed_delete(config, feed):
     url = '/'.join([base_url, "system/feeds/{}".format(feed)])
     set_account_header(config)
     try:
-        _logger.debug("DELETE url="+str(url))
-        _logger.debug("DELETE insecure="+str(config['ssl_verify']))
+        _logger.debug("DELETE url=%s", str(url))
+        _logger.debug("DELETE insecure=%s", str(config['ssl_verify']))
         r = requests.delete(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
@@ -161,8 +161,8 @@ def system_feed_group_delete(config, feed, group):
     url = '/'.join([base_url, "system/feeds/{}/{}".format(feed, group)])
     set_account_header(config)
     try:
-        _logger.debug("DELETE url="+str(url))
-        _logger.debug("DELETE insecure="+str(config['ssl_verify']))
+        _logger.debug("DELETE url=%s", str(url))
+        _logger.debug("DELETE insecure=%s", str(config['ssl_verify']))
         r = requests.delete(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
@@ -182,8 +182,8 @@ def system_status(config):
     url = '/'.join([base_url, "system"])
     set_account_header(config)
     try:
-        _logger.debug("GET url="+str(url))
-        _logger.debug("GET insecure="+str(config['ssl_verify']))
+        _logger.debug("GET url=%s", str(url))
+        _logger.debug("GET insecure=%s", str(config['ssl_verify']))
         r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
@@ -206,7 +206,7 @@ def delete_system_service(config, host_id, servicename):
     set_account_header(config)
 
     try:
-        _logger.debug("DELETE url="+str(url))
+        _logger.debug("DELETE url=%s", str(url))
         r = requests.delete(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
@@ -247,7 +247,7 @@ def add_image(config, tag=None, digest=None, dockerfile=None, force=False, annot
     set_account_header(config)
 
     try:
-        _logger.debug("POST url="+str(url))
+        _logger.debug("POST url=%s", str(url))
         r = requests.post(url, data=json.dumps(payload), auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
@@ -277,7 +277,7 @@ def restore_archived_image(config, digest):
         }
     }
     try:
-        _logger.debug("POST url=" + str(url))
+        _logger.debug("POST url=%s",  str(url))
         r = requests.post(url, data=json.dumps(payload), auth=(userId, password), verify=config['ssl_verify'],
                           headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
@@ -367,10 +367,10 @@ def get_image(config, tag=None, image_id=None, imageDigest=None, history=False):
     set_account_header(config)
 
     try:
-        _logger.debug("GET url="+str(url))
-        _logger.debug("GET params="+str(params))
-        _logger.debug("Use get body because detected api version {} < {}? {}".format(api_version, api_version_query_support, (payload is not None)))
-        _logger.debug("GET insecure="+str(config['ssl_verify']))
+        _logger.debug("GET url=%s", str(url))
+        _logger.debug("GET params=%s", str(params))
+        _logger.debug("Use get body because detected api version %s < %s? %s", api_version, api_version_query_support, (payload is not None))
+        _logger.debug("GET insecure=%s", str(config['ssl_verify']))
         if payload:
             r = requests.get(url, data=json.dumps(payload), params=params, auth=(userId, password), verify=config['ssl_verify'],
                              headers=header_overrides)
@@ -394,13 +394,13 @@ def get_images(config):
     ret = {}
 
     base_url = re.sub("/$", "", base_url)
-    _logger.info("Base = " + base_url)
+    _logger.info("Base = %s", base_url)
     url = '/'.join([base_url, "images"])
-    _logger.info("Url = " + url)
+    _logger.info("Url = %s", url)
     set_account_header(config)
 
     try:
-        _logger.debug("GET url="+str(url))
+        _logger.debug("GET url=%s", str(url))
         r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
@@ -422,7 +422,7 @@ def import_image(config, anchore_data=[]):
     set_account_header(config)
 
     try:
-        _logger.debug("POST url="+str(url))
+        _logger.debug("POST url=%s", str(url))
 
         r = requests.post(url, data=json.dumps(payload), auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
@@ -455,7 +455,7 @@ def query_image(config, imageDigest=None, query_group=None, query_type=None, ven
     set_account_header(config)
 
     try:
-        _logger.debug("GET url="+str(url))
+        _logger.debug("GET url=%s", str(url))
         r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
@@ -480,7 +480,7 @@ def delete_image(config, imageDigest=None, force=False):
     set_account_header(config)
 
     try:
-        _logger.debug("DELETE url="+str(url))
+        _logger.debug("DELETE url=%s", str(url))
         r = requests.delete(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
@@ -510,7 +510,7 @@ def add_policy(config, policybundle={}, detail=False):
     set_account_header(config)
 
     try:
-        _logger.debug("POST url="+str(url))
+        _logger.debug("POST url=%s", str(url))
         r = requests.post(url, data=json.dumps(payload), auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
@@ -539,7 +539,7 @@ def get_policy(config, policyId=None, detail=False):
     set_account_header(config)
 
     try:
-        _logger.debug("GET url="+str(url))
+        _logger.debug("GET url=%s", str(url))
         r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
 
@@ -566,7 +566,7 @@ def get_policies(config, detail=False):
     set_account_header(config)
 
     try:
-        _logger.debug("GET url="+str(url))
+        _logger.debug("GET url=%s", str(url))
         r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
@@ -588,7 +588,7 @@ def update_policy(config, policyId, policy_record={}):
     set_account_header(config)
 
     try:
-        _logger.debug("PUT url="+str(url))
+        _logger.debug("PUT url=%s", str(url))
         r = requests.put(url, data=json.dumps(payload), auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
@@ -608,7 +608,7 @@ def delete_policy(config, policyId):
     set_account_header(config)
 
     try:
-        _logger.debug("DELETE url="+str(url))
+        _logger.debug("DELETE url=%s", str(url))
         r = requests.delete(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
@@ -645,7 +645,7 @@ def check_eval(config, imageDigest=None, history=False, detail=False, tag=None, 
     set_account_header(config)
 
     try:
-        _logger.debug("GET url="+str(url))
+        _logger.debug("GET url=%s", str(url))
         r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
@@ -683,7 +683,7 @@ def activate_subscription(config, subscription_type, subscription_key):
     set_account_header(config)
 
     try:
-        _logger.debug("PUT url="+str(url))
+        _logger.debug("PUT url=%s", str(url))
         r = requests.put(url, data=json.dumps(payload), auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
@@ -719,7 +719,7 @@ def deactivate_subscription(config, subscription_type, subscription_key):
     set_account_header(config)
 
     try:
-        _logger.debug("PUT url="+str(url))
+        _logger.debug("PUT url=%s", str(url))
         r = requests.put(url, data=json.dumps(payload), auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
@@ -741,7 +741,7 @@ def add_subscription(config, subscription_type, subscription_key, active=True):
     set_account_header(config)
 
     try:
-        _logger.debug("POST url="+str(url))
+        _logger.debug("POST url=%s", str(url))
         r = requests.post(url, data=json.dumps(payload), auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
@@ -775,7 +775,7 @@ def delete_subscription(config, subscription_type=None, subscription_key=None):
     set_account_header(config)
 
     try:
-        _logger.debug("DELETE url="+str(url))
+        _logger.debug("DELETE url=%s", str(url))
         r = requests.delete(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
@@ -802,7 +802,7 @@ def get_subscription(config, subscription_type=None, subscription_key=None):
             url = url + "subscription_type="+subscription_type+"&"
 
     try:
-        _logger.debug("GET url="+str(url))
+        _logger.debug("GET url=%s", str(url))
         r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
@@ -822,7 +822,7 @@ def get_subscription_types(config):
     set_account_header(config)
 
     try:
-        _logger.debug("GET url="+str(url))
+        _logger.debug("GET url=%s", str(url))
         r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
@@ -847,7 +847,7 @@ def add_repo(config, input_repo, autosubscribe=False, lookuptag=None):
     set_account_header(config)
 
     try:
-        _logger.debug("POST url="+str(url))
+        _logger.debug("POST url=%s", str(url))
         r = requests.post(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
@@ -905,7 +905,7 @@ def interactive(config, op_type, payload={}):
     set_account_header(config)
 
     try:
-        _logger.debug("GET url="+str(url))
+        _logger.debug("GET url=%s", str(url))
         r = requests.get(url, data=json.dumps(payload), auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
@@ -930,7 +930,7 @@ def get_registry(config, registry=None):
     set_account_header(config)
 
     try:
-        _logger.debug("GET url="+str(url))
+        _logger.debug("GET url=%s", str(url))
         r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
@@ -956,7 +956,7 @@ def add_registry(config, registry=None, registry_user=None, registry_pass=None, 
     set_account_header(config)
 
     try:
-        _logger.debug("POST url="+str(url))
+        _logger.debug("POST url=%s", str(url))
         r = requests.post(url, data=json.dumps(payload), auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
@@ -981,7 +981,7 @@ def update_registry(config, registry=None, registry_user=None, registry_pass=Non
     set_account_header(config)
 
     try:
-        _logger.debug("PUT url="+str(url))
+        _logger.debug("PUT url=%s", str(url))
         r = requests.put(url, data=json.dumps(payload), auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
@@ -1001,7 +1001,7 @@ def delete_registry(config, registry=None):
     set_account_header(config)
 
     try:
-        _logger.debug("DELETE url="+str(url))
+        _logger.debug("DELETE url=%s", str(url))
         r = requests.delete(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
@@ -1021,7 +1021,7 @@ def describe_error_codes(config):
     set_account_header(config)
 
     try:
-        _logger.debug("GET url="+str(url))
+        _logger.debug("GET url=%s", str(url))
         r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
@@ -1041,7 +1041,7 @@ def describe_policy_spec(config):
     set_account_header(config)
 
     try:
-        _logger.debug("GET url="+str(url))
+        _logger.debug("GET url=%s", str(url))
         r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
@@ -1097,9 +1097,9 @@ def list_events(config, since=None, before=None, level=None, service=None, host=
                 if ret and ret['payload']['next_page'] is True:
                     params['page'] = int(ret['payload']['page']) + 1
 
-                _logger.debug("GET url=" + str(url))
-                _logger.debug("GET params=" + str(params))
-                _logger.debug("GET insecure=" + str(config['ssl_verify']))
+                _logger.debug("GET url=%s", str(url))
+                _logger.debug("GET params=%s", str(params))
+                _logger.debug("GET insecure=%s", str(config['ssl_verify']))
 
                 r = requests.get(url, params=params, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
                 ret = anchorecli.clients.common.make_client_result(r, raw=False)
@@ -1113,9 +1113,9 @@ def list_events(config, since=None, before=None, level=None, service=None, host=
                 if ret['payload']['next_page'] is False:
                     break
         else:
-            _logger.debug("GET url=" + str(url))
-            _logger.debug("GET params=" + str(params))
-            _logger.debug("GET insecure=" + str(config['ssl_verify']))
+            _logger.debug("GET url=%s", str(url))
+            _logger.debug("GET params=%s", str(params))
+            _logger.debug("GET insecure=%s", str(config['ssl_verify']))
 
             r = requests.get(url, params=params, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
             ret = anchorecli.clients.common.make_client_result(r, raw=False)
@@ -1141,8 +1141,8 @@ def get_event(config, event_id):
     set_account_header(config)
 
     try:
-        _logger.debug("GET url="+str(url))
-        _logger.debug("GET insecure="+str(config['ssl_verify']))
+        _logger.debug("GET url=%s", str(url))
+        _logger.debug("GET insecure=%s", str(config['ssl_verify']))
 
         r = requests.get(url, params=params, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
@@ -1174,9 +1174,9 @@ def delete_events(config, since=None, before=None):
     set_account_header(config)
 
     try:
-        _logger.debug("DELETE url="+str(url))
-        _logger.debug("DELETE params="+str(params))
-        _logger.debug("DELETE insecure="+str(config['ssl_verify']))
+        _logger.debug("DELETE url=%s", str(url))
+        _logger.debug("DELETE params=%s", str(params))
+        _logger.debug("DELETE insecure=%s", str(config['ssl_verify']))
 
         r = requests.delete(url, params=params, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
@@ -1201,8 +1201,8 @@ def delete_event(config, event_id):
     set_account_header(config)
 
     try:
-        _logger.debug("DELETE url="+str(url))
-        _logger.debug("DELETE insecure="+str(config['ssl_verify']))
+        _logger.debug("DELETE url=%s", str(url))
+        _logger.debug("DELETE insecure=%s", str(config['ssl_verify']))
 
         r = requests.delete(url, params=params, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
@@ -1240,8 +1240,8 @@ def query_images_by_vulnerability(config, vulnerability_id, namespace=None, affe
     set_account_header(config)
 
     try:
-        _logger.debug("GET url="+str(url))
-        _logger.debug("GET insecure="+str(config['ssl_verify']))
+        _logger.debug("GET url=%s", str(url))
+        _logger.debug("GET insecure=%s", str(config['ssl_verify']))
 
         r = requests.get(url, params=params, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
@@ -1275,8 +1275,8 @@ def query_images_by_package(config, name, version=None, package_type=None):
     set_account_header(config)
 
     try:
-        _logger.debug("GET url="+str(url))
-        _logger.debug("GET insecure="+str(config['ssl_verify']))
+        _logger.debug("GET url=%s", str(url))
+        _logger.debug("GET insecure=%s", str(config['ssl_verify']))
 
         r = requests.get(url, params=params, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
@@ -1306,7 +1306,7 @@ def add_account(config, account_name=None, email=None):
     set_account_header(config)
 
     try:
-        _logger.debug("POST url="+str(url))
+        _logger.debug("POST url=%s", str(url))
         r = requests.post(url, data=json.dumps(payload), auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
@@ -1331,7 +1331,7 @@ def get_account(config, account_name=None):
         url = '/'.join([base_url, "account"])
 
     try:
-        _logger.debug("GET url="+str(url))
+        _logger.debug("GET url=%s", str(url))
         r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
@@ -1352,7 +1352,7 @@ def list_accounts(config):
     set_account_header(config)
 
     try:
-        _logger.debug("GET url="+str(url))
+        _logger.debug("GET url=%s", str(url))
         r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
@@ -1373,7 +1373,7 @@ def del_account(config, account_name=None):
     set_account_header(config)
 
     try:
-        _logger.debug("DELETE url="+str(url))
+        _logger.debug("DELETE url=%s", str(url))
         r = requests.delete(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
@@ -1397,7 +1397,7 @@ def enable_account(config, account_name=None):
     set_account_header(config)
 
     try:
-        _logger.debug("PUT url="+str(url))
+        _logger.debug("PUT url=%s", str(url))
         r = requests.put(url, data=json.dumps(payload), auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
@@ -1421,7 +1421,7 @@ def disable_account(config, account_name=None):
     set_account_header(config)
 
     try:
-        _logger.debug("PUT url="+str(url))
+        _logger.debug("PUT url=%s", str(url))
         r = requests.put(url, data=json.dumps(payload), auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
@@ -1446,7 +1446,7 @@ def add_user(config, account_name=None, user_name=None, user_password=None):
     set_account_header(config)
 
     try:
-        _logger.debug("POST url="+str(url))
+        _logger.debug("POST url=%s", str(url))
         r = requests.post(url, data=json.dumps(payload), auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
@@ -1473,7 +1473,7 @@ def get_user(config, account_name=None, user_name=None):
     set_account_header(config)
 
     try:
-        _logger.debug("GET url="+str(url))
+        _logger.debug("GET url=%s", str(url))
         r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
@@ -1495,7 +1495,7 @@ def del_user(config, account_name=None, user_name=None):
     set_account_header(config)
 
     try:
-        _logger.debug("DELETE url="+str(url))
+        _logger.debug("DELETE url=%s", str(url))
         r = requests.delete(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
@@ -1518,7 +1518,7 @@ def list_users(config, account_name=None):
     set_account_header(config)
 
     try:
-        _logger.debug("GET url="+str(url))
+        _logger.debug("GET url=%s", str(url))
         r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
@@ -1542,7 +1542,7 @@ def update_user_password(config, account_name=None, user_name=None, user_passwor
     set_account_header(config)
 
     try:
-        _logger.debug("POST url="+str(url))
+        _logger.debug("POST url=%s", str(url))
         r = requests.post(url, data=json.dumps(payload), auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
     except Exception as err:
@@ -1570,7 +1570,7 @@ def list_archives(config):
     set_account_header(config)
 
     try:
-        _logger.debug("GET url=" + str(url))
+        _logger.debug("GET url=%s", str(url))
         r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'],
                           headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
@@ -1599,7 +1599,7 @@ def list_archived_analyses(config):
     set_account_header(config)
 
     try:
-        _logger.debug("GET url=" + str(url))
+        _logger.debug("GET url=%s", str(url))
         r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'],
                           headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
@@ -1629,7 +1629,7 @@ def get_archived_analysis(config, digest):
     set_account_header(config)
 
     try:
-        _logger.debug("GET url=" + str(url))
+        _logger.debug("GET url=%s", str(url))
         r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'],
                           headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
@@ -1661,7 +1661,7 @@ def archive_analyses(config, digests):
     set_account_header(config)
 
     try:
-        _logger.debug("POST url=" + str(url))
+        _logger.debug("POST url=%s", str(url))
         r = requests.post(url, data=json.dumps(list(digests)), auth=(userId, password), verify=config['ssl_verify'],
                           headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
@@ -1691,7 +1691,7 @@ def delete_archived_analysis(config, digest):
     set_account_header(config)
 
     try:
-        _logger.debug("DELETE url=" + str(url))
+        _logger.debug("DELETE url=%s", str(url))
         r = requests.delete(url, auth=(userId, password), verify=config['ssl_verify'],
                           headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
@@ -1720,7 +1720,7 @@ def list_transition_rules(config):
     set_account_header(config)
 
     try:
-        _logger.debug("GET url=" + str(url))
+        _logger.debug("GET url=%s", str(url))
         r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'],
                             headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
@@ -1749,7 +1749,7 @@ def get_transition_rule(config, rule_id):
     set_account_header(config)
 
     try:
-        _logger.debug("GET url=" + str(url))
+        _logger.debug("GET url=%s", str(url))
         r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'],
                          headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
@@ -1778,7 +1778,7 @@ def delete_transition_rule(config, rule_id):
     set_account_header(config)
 
     try:
-        _logger.debug("DELETE url=" + str(url))
+        _logger.debug("DELETE url=%s", str(url))
         r = requests.delete(url, auth=(userId, password), verify=config['ssl_verify'],
                          headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
@@ -1807,7 +1807,7 @@ def get_transition_rule_history(config, rule_id):
     set_account_header(config)
 
     try:
-        _logger.debug("GET url=" + str(url))
+        _logger.debug("GET url=%s", str(url))
         r = requests.get(url, auth=(userId, password), verify=config['ssl_verify'],
                          headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)
@@ -1865,7 +1865,7 @@ def add_transition_rule(config, analysis_age_days, tag_versions_newer=0, selecto
     }
 
     try:
-        _logger.debug("POST url=" + str(url))
+        _logger.debug("POST url=%s", str(url))
         r = requests.post(url, data=json.dumps(payload), auth=(userId, password), verify=config['ssl_verify'],
                          headers=header_overrides)
         ret = anchorecli.clients.common.make_client_result(r, raw=False)

@@ -44,7 +44,7 @@ def wait(input_image, timeout, interval):
         #timeout = float(timeout)
         t1 = time.time()
         while timeout < 0 or time.time() - t1 < timeout:
-            _logger.debug("discovery from input: " + str(itype) + " : " + str(image))
+            _logger.debug("discovery from input: %s : %s",  str(itype), str(image))
             if itype == 'tag':
                 ret = anchorecli.clients.apiexternal.get_image(config, tag=image, history=False)
             elif itype == 'imageid':
@@ -176,7 +176,7 @@ def get(input_image, show_history):
         itype = anchorecli.cli.utils.discover_inputimage_format(config, input_image)
         image = input_image
 
-        _logger.debug("discovery from input: " + str(itype) + " : " + str(image))
+        _logger.debug("discovery from input: %s : %s", str(itype), str(image))
         if itype == 'tag':
             ret = anchorecli.clients.apiexternal.get_image(config, tag=image, history=show_history)
         elif itype == 'imageid':
@@ -245,7 +245,7 @@ def query_content(input_image, content_type):
 
     try:
         itype, image, imageDigest = anchorecli.cli.utils.discover_inputimage(config, input_image)
-        _logger.debug("discovery from input: " + str(itype) + " : " + str(image) + " : " + str(imageDigest))
+        _logger.debug("discovery from input: %s : %s : %s",  str(itype), str(image), str(imageDigest))
 
         if not imageDigest:
             ecode = 1
@@ -282,7 +282,7 @@ def query_metadata(input_image, metadata_type):
 
     try:
         itype, image, imageDigest = anchorecli.cli.utils.discover_inputimage(config, input_image)
-        _logger.debug("discovery from input: " + str(itype) + " : " + str(image) + " : " + str(imageDigest))
+        _logger.debug("discovery from input: %s : %s : %s", str(itype), str(image), str(imageDigest))
 
         if not imageDigest:
             ecode = 1
