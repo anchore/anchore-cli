@@ -123,14 +123,15 @@ def setup_config(cli_opts):
 
 
 def doexit(ecode):
-    try:
-        sys.stdout.close()
-    except Exception:
-        pass
-    try:
-        sys.stderr.close()
-    except Exception:
-        pass
+    if not os.environ.get('ANCHORE_CLI_NO_FDS_CLEANUP'):
+        try:
+            sys.stdout.close()
+        except Exception:
+            pass
+        try:
+            sys.stderr.close()
+        except Exception:
+            pass
     sys.exit(ecode)
 
 
