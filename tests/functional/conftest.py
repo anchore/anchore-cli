@@ -34,6 +34,10 @@ def pytest_sessionstart(session):
 
     root_logger.addHandler(fh)
 
+    # Setup the environment variable for the container
+    image = os.environ.get('PYTEST_CONTAINER', 'anchore/inline-scan:latest')
+    os.environ['PYTEST_CONTAINER'] = image
+
 
 def use_environ():
     """
@@ -142,6 +146,7 @@ def inline_scan(client, request):
     # If the container is already running, this will return the running
     # container identified with `pytest_inline_scan`
     image = os.environ.get('PYTEST_CONTAINER', 'anchore/inline-scan:latest')
+    os.environ['PYTEST_CONTAINER'] = image
     container = start_container(
         client,
         image=image,
