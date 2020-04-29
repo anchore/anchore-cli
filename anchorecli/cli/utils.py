@@ -327,10 +327,7 @@ def format_output(config, op, params, payload):
                         t.add_row(row)
                     obuf = obuf + t.get_string(sortby='Package')
                 elif params['query_type'] in ['manifest', 'dockerfile', 'docker_history']:
-                    try:
-                        obuf = base64.b64decode(payload.get('content', "")).decode('utf-8')
-                    except Exception:
-                        obuf = ""
+                    obuf = format_content_query(payload)
                 else:
                     try:
                         if payload['content']:
@@ -932,6 +929,22 @@ def format_vulnerabilities(payload, params):
         obuf = obuf + t.get_string(sortby='Severity')
 
     return obuf
+
+
+def format_content_query(payload):
+    content = payload.get('content', '')
+    if not content:
+        return ''
+    if isinstance(content, list):
+        # In some situations the `content` key can be a list, not a string
+        content = ''.join(content)
+    try:
+        return base64.b64decode(content).decode('utf-8')
+    except Exception:
+        # This broad exception catching is warranted here because there are all
+        # sort of warts we would need to catch with utf-8 decoding and
+        # b64decode. The actual exception is not that relevant here
+        return ''
 
 
 def string_splitter(input_str, max_length=40):
