@@ -299,10 +299,11 @@ def format_output(config, op, params, payload):
                 obuf = obuf + "\n"
             else:
                 if params['query_type'] == 'os':
-                    header = ['Package', 'Version', 'License']
+                    header = ['Package', 'Version', 'Licenses']
                     t = plain_column_table(header)
                     for el in payload['content']:
-                        row = [el['package'], el['version'], el['license']]
+                        licenses = el.get('licenses', [el.get('license')])
+                        row = [el['package'], el['version'], " ".join(licenses)]
                         t.add_row(row)
                     obuf = obuf + t.get_string(sortby='Package')
                 elif params['query_type'] == 'files':
