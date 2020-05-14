@@ -3,7 +3,28 @@ Overview
 
 The Anchore CLI provides a command line interface on top of the `Anchore Engine <https://github.com/anchore/anchore-engine>`_ REST API.
 
-Using the Anchore CLI users can manage and inspect images, policies, subscriptions and registries.
+Using the Anchore CLI users can manage and inspect images, policies, subscriptions and registries for the following:
+
+**Supported Operating Systems**
+
+* Alpine
+* Amazon Linux 2
+* CentOS
+* Debian
+* Google Distroless
+* Oracle Linux
+* Red Hat Enterprise Linux
+* Red Hat Universal Base Image (UBI)
+* Ubuntu
+
+
+**Supported Packages**
+
+* GEM
+* Java Archive (jar, war, ear)
+* NPM
+* Python (PIP)
+
 
 Installing Anchore CLI from source
 ==================================
@@ -14,7 +35,7 @@ The Anchore CLI can be installed from source using the Python pip utility
 
     git clone https://github.com/anchore/anchore-cli
     cd anchore-cli
-    pip install --user --upgrade . 
+    pip install --user --upgrade .
 
 Or can be installed from the installed form source from the Python `PyPI <https://pypi.python.org/pypi>`_ package repository.
 
@@ -32,7 +53,7 @@ Installing Anchore CLI on Debian and Ubuntu
 
 .. code::
 
-    apt-get update 
+    apt-get update
     apt-get install python-pip
     pip install anchorecli
     Note make sure ~/.local/bin is part of your PATH or just export it directly: export PATH="$HOME/.local/bin/:$PATH"
@@ -68,7 +89,7 @@ The username, password and URL for the server can be passed to the Anchore CLI a
     --u   TEXT   Username     eg. admin
     --p   TEXT   Password     eg. foobar
     --url TEXT   Service URL  eg. http://localhost:8228/v1
- 
+
 Rather than passing these parameters for every call to the cli they can be stores as environment variables.
 
 .. code::
@@ -84,21 +105,21 @@ Add an image to the Anchore Engine
 
 .. code::
 
-    anchore-cli image add docker.io/library/debian:latest 
+    anchore-cli image add docker.io/library/debian:latest
 
 Wait for an image to transition to ``analyzed``
 
 .. code::
 
-    anchore-cli image wait docker.io/library/debian:latest 
-  
+    anchore-cli image wait docker.io/library/debian:latest
+
 List images analyzed by the Anchore Engine
 
 .. code::
 
-    anchore-cli image list 
+    anchore-cli image list
 
-Get summary information for a specified image 
+Get summary information for a specified image
 
 .. code::
 
@@ -120,8 +141,8 @@ List operating system packages present in an image
 
 .. code::
 
-    anchore-cli image content docker.io/library/debian:latest os 
-  
+    anchore-cli image content docker.io/library/debian:latest os
+
 Subscribe to receive webhook notifications when new CVEs are added to an update
 
 .. code::
