@@ -15,6 +15,9 @@ build() {
     local TEST_IMAGE_NAME="${2:?'required parameter'}"
 
     print_colorized WARN "building image ${TEST_IMAGE_NAME}"
+    # Prevents stale images in CircleCI, but creates another thing to update
+    # when this project moves to a different ubi version
+    docker pull registry.access.redhat.com/ubi8/ubi:8.1
     docker build --target anchore-cli-builder -t anchore-cli:builder -f ./Dockerfile .
     docker build --build-arg CLI_COMMIT="${COMMIT_SHA}" -t "${TEST_IMAGE_NAME}" -f ./Dockerfile .
     print_colorized WARN "successfully built image -- ${TEST_IMAGE_NAME}"
