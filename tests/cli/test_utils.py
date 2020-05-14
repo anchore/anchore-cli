@@ -126,3 +126,28 @@ class TestFormatVulnerabilities:
             'centos:7',
             'None',
         ]
+
+
+class TestFormatContentQuery:
+
+    def test_no_content(self):
+        payload = {}
+        result = utils.format_content_query(payload)
+        assert result == ''
+
+    @pytest.mark.parametrize('content', [[], '', None])
+    def test_content_defined_but_empty(self, content):
+        payload = {'content': content}
+        result = utils.format_content_query(payload)
+        assert result == ''
+
+    def test_content_cannot_be_decoded(self):
+        payload = {'content': b'\t23hsdf'}
+        result = utils.format_content_query(payload)
+        assert result == ''
+
+    @pytest.mark.parametrize('content', [b'RlJPTSBjZW50b3M3', 'RlJPTSBjZW50b3M3'])
+    def test_content_gets_decoded(self, content):
+        payload = {'content': content}
+        result = utils.format_content_query(payload)
+        assert result == 'FROM centos7'

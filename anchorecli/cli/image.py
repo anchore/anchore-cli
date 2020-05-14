@@ -255,7 +255,10 @@ def query_content(input_image, content_type):
             ecode = anchorecli.cli.utils.get_ecode(ret)
             if ret:
                 if ret['success']:
-                    print(anchorecli.cli.utils.format_output(config, 'image_content', {'query_type':content_type}, ret['payload']))
+                    output = anchorecli.cli.utils.format_output(config, 'image_content', {'query_type':content_type}, ret['payload'])
+                    if not output:
+                        raise Exception('There is no image content (%s) to provide for %s' % (content_type, input_image))
+                    print(output)
                 else:
                     raise Exception (json.dumps(ret['error'], indent=4))
             else:

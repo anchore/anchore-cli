@@ -34,6 +34,10 @@ def pytest_sessionstart(session):
 
     root_logger.addHandler(fh)
 
+    # Setup the environment variable for the container
+    image = os.environ.get('PYTEST_CONTAINER', 'anchore/inline-scan:latest')
+    os.environ['PYTEST_CONTAINER'] = image
+
 
 def use_environ():
     """
@@ -131,7 +135,10 @@ def pytest_runtest_logreport(report):
             log_lines = [
                 ("Container ID: {!r}:".format(container.attrs['Id'])),
                 ] + container.logs().decode('utf-8').split('\n')[-10:]
-            report.longrepr.addsection('docker logs', os.linesep.join(log_lines))
+            try:
+                report.longrepr.addsection('docker logs', os.linesep.join(log_lines))
+            except AttributeError:
+                pass
 
 
 @pytest.fixture(scope='session', autouse=True)
@@ -139,6 +146,7 @@ def inline_scan(client, request):
     # If the container is already running, this will return the running
     # container identified with `pytest_inline_scan`
     image = os.environ.get('PYTEST_CONTAINER', 'anchore/inline-scan:latest')
+    os.environ['PYTEST_CONTAINER'] = image
     container = start_container(
         client,
         image=image,
@@ -326,16 +334,36 @@ def call(command, **kw):
     return stdout_stream, stderr_stream, returncode
 
 
+def _call(command, **kw):
+    if command[0] != 'anchore-cli':
+        command.insert(0, 'anchore-cli')
+    return call(
+        command,
+        env={'ANCHORE_CLI_USER': 'admin', 'ANCHORE_CLI_PASS': 'foobar'},
+        **kw
+    )
+
+
+@pytest.fixture(scope='session')
+def session_admin_call():
+    """
+    Same as a plain admin call, but scoped for the session (runs once per test
+    session)
+    """
+    return _call
+
+
+@pytest.fixture(scope='class')
+def class_admin_call():
+    """
+    Same as a plain admin call, but scoped for a class (runs once for a whole
+    class)
+    """
+    return _call
+
+
 @pytest.fixture
 def admin_call():
-    def _call(command, **kw):
-        if command[0] != 'anchore-cli':
-            command.insert(0, 'anchore-cli')
-        return call(
-            command,
-            env={'ANCHORE_CLI_USER': 'admin', 'ANCHORE_CLI_PASS': 'foobar'},
-            **kw
-        )
     return _call
 
 
