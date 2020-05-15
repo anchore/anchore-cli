@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+COMMIT_SHA="${1:?'required parameter'}"
+GIT_REPO="${2:?'required parameter'}"
+TEST_IMAGE_NAME="${3:?'required parameter'}"
+
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/utils"
+
+setup_colors
+
+print_colorized INFO "Building Anchore CLI image -- ${TEST_IMAGE_NAME}..."; echo
+
+docker build --target base-builder -t "${GIT_REPO}":builder -f ./Dockerfile .
+docker build --build-arg CLI_COMMIT="${COMMIT_SHA}" -t "${TEST_IMAGE_NAME}" -f ./Dockerfile .
+
+print_colorized INFO "Successfully built Anchore CLI image -- ${TEST_IMAGE_NAME}."; echo

@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/utils"
+
+PYTHON="${1:?'required parameter'}"
+
+hash tox || "${PYTHON}" -m pip install -q tox
+
+setup_colors
+
+print_colorized INFO "Linting Anchore CLI code..."; echo
+
+tox -e flake8
+
+print_colorized INFO "Finished linting Anchore CLI code."; echo

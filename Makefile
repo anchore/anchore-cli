@@ -1,37 +1,64 @@
-# Project Environment Variables
-DEV_IMAGE_REPO := anchore/anchore-cli-dev
+# Makefile for the Anchore CLI, a simple command line interface to the
+# Anchore Engine service. The rules, directives, and variables in this
+# Makefile enable testing, Docker image generation, and pushing Docker
+# images.
 
-# Environment variables set in CircleCI environment
+# Docker Hub repos
+DEV_IMAGE_REPO := robertprince/anchore-cli-dev
+PROD_IMAGE_REPO := robertprince/anchore-cli
+
+# Environment variables; set by/in CircleCI environment
 export VERBOSE ?= false
 export CI ?= false
-# DOCKER_USER & DOCKER_PASS are declared in CircleCI contexts
 export DOCKER_PASS ?=
 export DOCKER_USER ?=
-# LATEST_RELEASE_BRANCH is declared in the CircleCI project environment variables settings
 export LATEST_RELEASE_BRANCH ?=
 export PROD_IMAGE_REPO ?=
 export RELEASE_BRANCHES ?=
 
 # Use $CIRCLE_BRANCH if it's set, otherwise use current HEAD branch
 GIT_BRANCH := $(shell echo $${CIRCLE_BRANCH:=$$(git rev-parse --abbrev-ref HEAD)})
+
 # Use $CIRCLE_PROJECT_REPONAME if it's set, otherwise the git project top level dir name
 GIT_REPO := $(shell echo $${CIRCLE_PROJECT_REPONAME:=$$(basename `git rev-parse --show-toplevel`)})
 TEST_IMAGE_NAME := $(GIT_REPO):dev
+
 # Use $CIRCLE_SHA if it's set, otherwise use SHA from HEAD
 COMMIT_SHA := $(shell echo $${CIRCLE_SHA:=$$(git rev-parse HEAD)})
+
 # Use $CIRCLE_TAG if it's set
 GIT_TAG ?= $(shell echo $${CIRCLE_TAG:=null})
 
+# TODO set the kind cluster name in the test-infra container
+# instead of passing it in from here; the context is well
+# known from the caller (this code) so it doesn't need to
+# be explicitly labeled also by the caller
+CLUSTER_NAME := e2e-testing
+
 # Make environment configuration
+SHELL := /usr/bin/env bash
 VENV := venv
+ACTIVATE_VENV := source $(VENV)/bin/activate
 PYTHON := $(VENV)/bin/python3
-.DEFAULT_GOAL := help # Running `Make` will run the help target
-.NOTPARALLEL: # wait for targets to finish
 
-# RUN_TASK is a wrapper script used to invoke commands found in scripts/ci/make/*_tasks
-# These scripts are where all individual tasks for the pipeline belong
-RUN_TASK := scripts/ci/run_make_task
+# Running make will invoke the help target
+.DEFAULT_GOAL := help
 
+# Run make serially. Note that recursively invoked make will still
+# run recipes in parallel (unless they also contain .NOTPARALLEL)
+.NOTPARALLEL:
+
+# Setup a mock CI environment for running Make commands in the same environment as CircleCI
+CI_RUNNER_IMAGE := docker.io/anchore/test-infra:python36
+DOCKER_RUN_CMD = docker run -it --rm --network host -e WORKING_DIRECTORY=/home/circleci/project -e CI=false -e VERBOSE=$(VERBOSE) --entrypoint /anchore-ci/run_make_command.sh -v $(PWD):/home/circleci/project -v /var/run/docker.sock:/var/run/docker.sock $(CI_RUNNER_IMAGE)
+
+# If running in CI, make is invoked from the test-infra container, so run commands directly
+ifeq ($(CI), true)
+  RUN_CMD := /anchore-ci/run_make_command.sh
+  DOCKER_RUN_CMD := /anchore-ci/run_make_command.sh
+else
+  RUN_CMD = $(SHELL)
+endif
 
 # Define available make commands -- use ## on target names to create 'help' text
 
@@ -39,84 +66,97 @@ RUN_TASK := scripts/ci/run_make_task
 ci: VERBOSE := true
 ci: lint build test push
 
+# build dev image
 .PHONY: build
-build: Dockerfile ## build dev image
-	@$(RUN_TASK) build "$(COMMIT_SHA)" "$(TEST_IMAGE_NAME)"
-
-.PHONY: cluster-up
-cluster-up: venv tests/e2e/kind-config.yaml ## run kind testing k8s cluster
-	@$(RUN_TASK) install_cluster_deps "$(VENV)"
-	@$(RUN_TASK) kind_cluster_up "$(VENV)"
-
-.PHONY: cluster-down
-cluster-down: venv ## delete kind testing k8s cluster
-	@$(RUN_TASK) install_cluster_deps "$(VENV)"
-	@$(RUN_TASK) kind_cluster_down "$(VENV)"
+build: Dockerfile
+	@$(RUN_CMD) scripts/ci/build $(COMMIT_SHA) $(GIT_REPO) $(TEST_IMAGE_NAME)
 
 .PHONY: push push-dev
 push: push-dev ## push dev image to dockerhub
-push-dev: 
+push-dev:
 	@$(RUN_TASK) push_dev_image "$(COMMIT_SHA)" "$(DEV_IMAGE_REPO)" "$(GIT_BRANCH)" "$(TEST_IMAGE_NAME)"
 
 .PHONY: push-rc
-push-rc: 
+push-rc:
 	@$(RUN_TASK) push_rc_image "$(DEV_IMAGE_REPO)" "$(GIT_TAG)" "$(TEST_IMAGE_NAME)"
 
 .PHONY: push-prod
-push-prod: 
+push-prod:
 	@$(RUN_TASK) push_prod_image_release "$(DEV_IMAGE_REPO)" "$(GIT_BRANCH)" "$(GIT_TAG)"
 
 .PHONY: push-rebuild
-push-rebuild: 
+push-rebuild:
 	@$(RUN_TASK) push_prod_image_rebuild "$(COMMIT_SHA)" "$(DEV_IMAGE_REPO)" "$(GIT_TAG)"
 
+# Set up a virtual environment
 .PHONY: venv
-venv: $(VENV)/bin/activate ## setup virtual environment
+venv: $(VENV)/bin/activate
 $(VENV)/bin/activate:
-	@$(RUN_TASK) setup_venv "$(VENV)"
+	python3 -m venv $(VENV)
 
+# Install to virtual environment
 .PHONY: install
-install: venv setup.py requirements.txt ## install project to virtual environment
-	@$(RUN_TASK) install "$(GIT_REPO)" "$(PYTHON)" "$(VENV)"
+install: venv setup.py requirements.txt
+	@$(ACTIVATE_VENV) && $(PYTHON) setup.py install
 
+# Install to virtual environment in editable mode
 .PHONY: install-dev
-install-dev: venv setup.py requirements.txt ## install project to virtual environment in editable mode
-	@$(RUN_TASK) install_dev "$(GIT_REPO)" "$(PYTHON)" "$(VENV)"
+install-dev: venv setup.py requirements.txt
+	@$(ACTIVATE_VENV) && $(PYTHON) setup.py install --editable
 
+# Lint code (currently using flake8)
 .PHONY: lint
-lint: venv ## lint code using pylint
-	@$(RUN_TASK) lint "$(PYTHON)" "$(VENV)"
+lint: venv
+	@$(ACTIVATE_VENV) && $(RUN_CMD) scripts/ci/lint $(PYTHON)
 
+# Bring up a kind (Kubernetes IN Docker) cluster to use for testing
+# Note that the cluster will be run on the $CI_RUNNER_IMAGE that gets
+# specified above
+.PHONY: cluster-up
+cluster-up: CLUSTER_CONFIG := tests/e2e/kind-config.yaml
+cluster-up: KUBERNETES_VERSION := 1.15.7
+cluster-up: tests/e2e/kind-config.yaml
+	$(DOCKER_RUN_CMD) kind_cluster_up $(CLUSTER_NAME) $(CLUSTER_CONFIG) $(KUBERNETES_VERSION)
+
+# Tear down/shut down the kind cluster
+.PHONY: cluster-down
+cluster-down:
+	$(DOCKER_RUN_CMD) kind_cluster_down $(CLUSTER_NAME)
+
+# Run all tests: unit, functional, and e2e
 .PHONY: test
-test: test-unit test-functional test-e2e ## run all test make recipes -- test-unit, test-functional, test-e2e
+test: test-unit test-functional test-e2e
 
+# Run unit tests (tox)
 .PHONY: test-unit
 test-unit: venv
-	@$(RUN_TASK) unit_tests "$(PYTHON)" "$(VENV)"
+	@$(ACTIVATE_VENV) && $(RUN_CMD) scripts/ci/unit-tests $(PYTHON)
 
+# Run functional tests (tox)
 .PHONY: test-functional
 test-functional: venv
-	@$(RUN_TASK) functional_tests "$(PYTHON)" "$(VENV)"
+	@$(ACTIVATE_VENV) && $(RUN_CMD) scripts/ci/functional-tests $(PYTHON)
 
+# Set up, run end to end tests, then tear down the cluster
 .PHONY: test-e2e
-test-e2e: setup-test-e2e
+test-e2e: cluster-up
+	$(DOCKER_RUN_CMD) setup_e2e_tests $(CLUSTER_NAME) $(COMMIT_SHA) $(DEV_IMAGE_REPO) $(GIT_BRANCH) $(GIT_REPO) $(GIT_TAG) $(TEST_IMAGE_NAME)
 	@$(MAKE) run-test-e2e
 	@$(MAKE) cluster-down
 
-.PHONY: setup-test-e2e
-setup-test-e2e: cluster-up
-	@$(RUN_TASK) setup_e2e_tests "$(COMMIT_SHA)" "$(DEV_IMAGE_REPO)" "$(GIT_TAG)" "$(TEST_IMAGE_NAME)" "$(VENV)"
-
+# Run end to end tests
 .PHONY: run-test-e2e
 run-test-e2e: venv
-	@$(RUN_TASK) run_e2e_tests "$(PYTHON)" "$(VENV)"
+	$(ACTIVATE_VENV) && $(DOCKER_RUN_CMD) scripts/ci/e2e-tests.sh
 
+# Clean up the project directory; delete dev image
 .PHONY: clean
-clean: ## clean up project directory & delete dev image
+clean:
 	@$(RUN_TASK) clean_project_dir "$(TEST_IMAGE_NAME)" "$(VENV)"
 
+# Print make variables
 .PHONY: printvars
-printvars: ## print configured make environment vars
+printvars:
 	@$(foreach V,$(sort $(.VARIABLES)),$(if $(filter-out environment% default automatic,$(origin $V)),$(warning $V=$($V) ($(value $V)))))
 
 .PHONY: help
