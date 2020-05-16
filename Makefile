@@ -66,13 +66,12 @@ endif
 ci: VERBOSE := true
 ci: lint build test push
 
-# build dev image
 .PHONY: build
-build: Dockerfile
+build: Dockerfile ## Build dev Anchore CLI Docker image
 	@$(RUN_CMD) scripts/ci/build $(COMMIT_SHA) $(GIT_REPO) $(TEST_IMAGE_NAME)
 
 .PHONY: push push-dev
-push: push-dev ## push dev image to dockerhub
+push: push-dev ## Push dev Anchore CLI Docker image to Docker Hub
 push-dev:
 	@$(RUN_TASK) push_dev_image "$(COMMIT_SHA)" "$(DEV_IMAGE_REPO)" "$(GIT_BRANCH)" "$(TEST_IMAGE_NAME)"
 
@@ -88,78 +87,69 @@ push-prod:
 push-rebuild:
 	@$(RUN_TASK) push_prod_image_rebuild "$(COMMIT_SHA)" "$(DEV_IMAGE_REPO)" "$(GIT_TAG)"
 
-# Set up a virtual environment
 .PHONY: venv
-venv: $(VENV)/bin/activate
+venv: $(VENV)/bin/activate ## Set up a virtual environment
 $(VENV)/bin/activate:
 	python3 -m venv $(VENV)
 
-# Install to virtual environment
 .PHONY: install
-install: venv setup.py requirements.txt
+install: venv setup.py requirements.txt ## Install to virtual environment
 	@$(ACTIVATE_VENV) && $(PYTHON) setup.py install
 
-# Install to virtual environment in editable mode
 .PHONY: install-dev
-install-dev: venv setup.py requirements.txt
+install-dev: venv setup.py requirements.txt ## Install to virtual environment in editable mode
 	@$(ACTIVATE_VENV) && $(PYTHON) setup.py install --editable
 
-# Lint code (currently using flake8)
 .PHONY: lint
-lint: venv
+lint: venv ## Lint code (currently using flake8)
 	@$(ACTIVATE_VENV) && $(RUN_CMD) scripts/ci/lint $(PYTHON)
 
-# Bring up a kind (Kubernetes IN Docker) cluster to use for testing
-# Note that the cluster will be run on the $CI_RUNNER_IMAGE that gets
-# specified above
+# Note that the kind cluster will be run on the $CI_RUNNER_IMAGE that gets specified above
 .PHONY: cluster-up
-cluster-up: CLUSTER_CONFIG := tests/e2e/kind-config.yaml
+cluster-up: CLUSTER_CONFIG := tests/e2e/kind-config.yaml ## Bring up a kind (Kubernetes IN Docker) cluster to use for testing 
 cluster-up: KUBERNETES_VERSION := 1.15.7
 cluster-up: tests/e2e/kind-config.yaml
 	$(DOCKER_RUN_CMD) kind_cluster_up $(CLUSTER_NAME) $(CLUSTER_CONFIG) $(KUBERNETES_VERSION)
 
-# Tear down/shut down the kind cluster
 .PHONY: cluster-down
-cluster-down:
+cluster-down: ## Tear down/shut down the kind cluster
 	$(DOCKER_RUN_CMD) kind_cluster_down $(CLUSTER_NAME)
 
-# Run all tests: unit, functional, and e2e
 .PHONY: test
-test: test-unit test-functional test-e2e
+test: test-unit test-functional test-e2e ## Run all tests: unit, functional, and e2e
 
-# Run unit tests (tox)
 .PHONY: test-unit
-test-unit: venv
+test-unit: venv ## Run unit tests (tox)
 	@$(ACTIVATE_VENV) && $(RUN_CMD) scripts/ci/unit-tests $(PYTHON)
 
-# Run functional tests (tox)
 .PHONY: test-functional
-test-functional: venv
+test-functional: venv ## Run functional tests (tox)
 	@$(ACTIVATE_VENV) && $(RUN_CMD) scripts/ci/functional-tests $(PYTHON)
 
-# Set up, run end to end tests, then tear down the cluster
 .PHONY: test-e2e
-test-e2e: cluster-up
+test-e2e: cluster-up ## Set up, run end to end tests, then tear down the cluster
 	$(DOCKER_RUN_CMD) setup_e2e_tests $(CLUSTER_NAME) $(COMMIT_SHA) $(DEV_IMAGE_REPO) $(GIT_BRANCH) $(GIT_REPO) $(GIT_TAG) $(TEST_IMAGE_NAME)
 	@$(MAKE) run-test-e2e
 	@$(MAKE) cluster-down
 
-# Run end to end tests
 .PHONY: run-test-e2e
-run-test-e2e: venv
+run-test-e2e: venv ## Run end to end tests
 	$(ACTIVATE_VENV) && $(DOCKER_RUN_CMD) scripts/ci/e2e-tests.sh
 
-# Clean up the project directory; delete dev image
 .PHONY: clean
-clean:
+clean: ## Clean up the project directory; delete dev image
 	@$(RUN_TASK) clean_project_dir "$(TEST_IMAGE_NAME)" "$(VENV)"
 
-# Print make variables
 .PHONY: printvars
-printvars:
+printvars: ## Print make variables
 	@$(foreach V,$(sort $(.VARIABLES)),$(if $(filter-out environment% default automatic,$(origin $V)),$(warning $V=$($V) ($(value $V)))))
 
+#.PHONY: help
+#help:
+#	@$(RUN_TASK) help
+#	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[0;36m%-30s\033[0m %s\n", $$1, $$2}'
+
 .PHONY: help
-help:
-	@$(RUN_TASK) help
+help: ## Show this usage message
+	@printf "\n%s\n\n" "usage: make <target>"
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[0;36m%-30s\033[0m %s\n", $$1, $$2}'
