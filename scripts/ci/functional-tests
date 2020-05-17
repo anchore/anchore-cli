@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-PYTHON="${1:?'required parameter'}"
+PYTHON="${1:?'required parameter: PYTHON'}"
 
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/utils"
 
@@ -16,7 +16,7 @@ print_colorized INFO "Running Anchore CLI functional tests..."; echo
 
 for e in $(echo "${tox_env}"); do
     print_colorized INFO "Running functional tests using tox env $e..."
-    tox -c tests/functional/tox.ini -e "$e" --result-json .tox/functional-test-report.log
+    tox -c test/functional/tox.ini -e "$e" --result-json .tox/functional-test-report.log
     print_colorized INFO "Finished running functional tests using tox env $e."
 done
 

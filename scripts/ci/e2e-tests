@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-PYTHON="${1:?'required parameter'}"
+PYTHON="${1:?'required parameter: PYTHON'}"
 
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/utils"
 
@@ -14,7 +14,7 @@ eval "${exec_anchorecli} --version"
 eval "${exec_anchorecli} system wait --timeout 300 --interval 10 --feedsready '' --servicesready 'catalog,apiext,policy_engine,simplequeue,analyzer'"
 eval "${exec_anchorecli} system status"
 
-"${PYTHON}" tests/e2e/aetest.py docker.io/alpine:latest "${exec_anchorecli}"
-"${PYTHON}" tests/e2e/aefailtest.py docker.io/alpine:latest "${exec_anchorecli}"
+"${PYTHON}" test/e2e/aetest.py docker.io/alpine:latest "${exec_anchorecli}"
+"${PYTHON}" test/e2e/aefailtest.py docker.io/alpine:latest "${exec_anchorecli}"
 
 print_colorized INFO "Finished running Anchore CLI end-to-end tests."; echo

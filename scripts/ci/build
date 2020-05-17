@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-COMMIT_SHA="${1:?'required parameter'}"
-GIT_REPO="${2:?'required parameter'}"
-TEST_IMAGE_NAME="${3:?'required parameter'}"
+COMMIT_SHA="${1:?'required parameter: COMMIT_SHA'}"
+GIT_REPO="${2:?'required parameter: GIT_REPO'}"
+TEST_IMAGE_NAME="${3:?'required parameter: TEST_IMAGE_NAME'}"
 
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/utils"
 

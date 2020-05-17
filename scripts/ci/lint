@@ -2,7 +2,7 @@
 
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/utils"
 
-PYTHON="${1:?'required parameter'}"
+PYTHON="${1:?'required parameter: PYTHON'}"
 
 hash tox || "${PYTHON}" -m pip install -q tox
 
