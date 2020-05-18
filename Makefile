@@ -49,7 +49,7 @@ VENV := venv
 ACTIVATE_VENV := source $(VENV)/bin/activate
 PYTHON := $(VENV)/bin/python3
 CI_USER := circleci
-DOCKER_GID := $(shell getent group docker | cut -d: -f3)
+DOCKER_GID := $(shell ./scripts/ci/docker_gid_for_host_os)
 
 # Running make will invoke the help target
 .DEFAULT_GOAL := help
@@ -62,7 +62,10 @@ DOCKER_GID := $(shell getent group docker | cut -d: -f3)
 # CI_RUNNER_IMAGE := docker.io/anchore/test-infra:python36
 CI_RUNNER_IMAGE := test-infra:python36
 
-# The Docker image invocation to be used when CI/build tasks are run in a container
+# The Docker image invocation to be used when CI/build tasks are run
+# locally; note that the GID of the group on the host that owns the
+# Docker daemon's IPC socket should match in the host and container
+# so that the container has access to the daemon.
 DOCKER_RUN_CMD = docker run -it --rm --user $(CI_USER):$(DOCKER_GID) --network host -e WORKING_DIRECTORY=/home/circleci/project -e CI=false -e VERBOSE=$(VERBOSE) -e DOCKER_GROUP_ID=$(DOCKER_GID) --entrypoint /anchore-ci/run_make_command.sh -v $(PWD):/home/circleci/project -v /var/run/docker.sock:/var/run/docker.sock $(CI_RUNNER_IMAGE)
 
 # If running in CI, make is invoked from the test-infra container, so run commands directly
