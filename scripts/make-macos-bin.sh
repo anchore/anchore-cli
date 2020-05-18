@@ -1,7 +1,12 @@
 #!/bin/bash -x
 set -e
 
-echo "Check we're on Mac OS before continuing..."
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/ci/utils"
+
+print_colorized INFO "Package Anchore CLI for MacOS."; echo
+
+print_colorized INFO "Check whether we are executing on MacOS. Exit/fail if not."; echo
+
 uname -s | grep Darwin
 
 export VIRTUALENV_DIR="anchore_virtualenv"
@@ -9,20 +14,23 @@ export DIST_PATH="macos-bin"
 
 # Install pip if not installed
 if ! which pip > /dev/null; then
+    print_colorized INFO "Installing pip."; echo
     sudo easy_install pip
 fi
 
 # Install virtualenv if not installed
 if ! which virtualenv > /dev/null; then
+    print_colorized INFO "Installing virtualenv."; echo
     sudo easy_install virtualenv
 fi
 
-# Create a new python virtual environment
+print_colorized INFO "Creating virtualenv."; echo
 virtualenv $VIRTUALENV_DIR
 
-# Install required packages into the virtual environment
+print_colorized INFO "Setting up virtualenv."; echo
 $VIRTUALENV_DIR/bin/pip install pyinstaller anchorecli
 
+print_colorized INFO "Installing for distribution."; echo
 # Compile anchore-cli script into distributable bundle
 $VIRTUALENV_DIR/bin/pyinstaller --log-level=ERROR --noconfirm --onefile --distpath $DIST_PATH $VIRTUALENV_DIR/bin/anchore-cli
 
@@ -32,6 +40,7 @@ $VIRTUALENV_DIR/bin/pyinstaller --log-level=ERROR --noconfirm --onefile --distpa
 # fi
 # zip -r -X anchore-cli-macos.zip $DIST_PATH
 
-# Cleanup
+print_colorized INFO "Cleaning up."; echo
+
 rm -rf $VIRTUALENV_DIR build
 rm anchore-cli.spec

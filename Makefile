@@ -145,6 +145,18 @@ run-test-e2e: venv ## Run end to end tests (set up done/cluster assumed to be ru
 clean: ## Clean up the project directory and delete dev image
 	@$(RUN_CMD) scripts/ci/clean $(TEST_IMAGE_NAME)
 
+.PHONY: dist-deb
+dist-deb: ## Package Anchore CLI for Debian-based distros
+	@$(RUN_CMD) scripts/make-dpkg.sh
+
+.PHONY: dist-mac
+dist-mac: ## Package Anchore CLI for MacOS
+	@$(RUN_CMD) scripts/make-macos-bin.sh
+
+.PHONY: dist-rpm
+dist-rpm: ## Package Anchore CLI for RH-based distros
+	@$(RUN_CMD) scripts/make-rpm.sh
+
 .PHONY: printvars
 printvars: ## Print make variables
 	@$(foreach V,$(sort $(.VARIABLES)),$(if $(filter-out environment% default automatic,$(origin $V)),$(warning $V=$($V) ($(value $V)))))
