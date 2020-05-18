@@ -57,8 +57,8 @@
 
 # Start circleci configuration
 version: 2.1
-#orbs:
-#  anchore: anchore/anchore-engine@1.6.5
+orbs:
+  anchore: anchore/anchore-engine@1.6.5
 
 commands:
   run_tests:
