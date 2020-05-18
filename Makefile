@@ -148,11 +148,11 @@ push-rc: ## Push RC Anchore CLI Docker image to Docker Hub (not available outsid
 
 .PHONY: push-prod
 push-prod: ## Push release Anchore CLI Docker image to Docker Hub (not available outside of CI)
-	@$(RUN_CMD) push-prod-image-release "$(DEV_IMAGE_REPO)" "$(GIT_BRANCH)" "$(GIT_TAG)"
+	@$(RUN_CMD) scripts/ci/push-prod-image-release "$(DEV_IMAGE_REPO)" "$(GIT_BRANCH)" "$(GIT_TAG)"
 
 .PHONY: push-rebuild
 push-rebuild: ## Rebuild and push prod Anchore CLI docker image to DOcker Hub (not available outside of CI)
-	@$(RUN_CMD) push-prod-image-rebuild "$(COMMIT_SHA)" "$(DEV_IMAGE_REPO)" "$(GIT_TAG)"
+	@$(RUN_CMD) scripts/ci/push-prod-image-rebuild "$(COMMIT_SHA)" "$(DEV_IMAGE_REPO)" "$(GIT_TAG)"
 
 .PHONY: dist-deb
 dist-deb: ## Package Anchore CLI for Debian-based distros
