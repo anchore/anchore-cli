@@ -224,7 +224,7 @@ workflows:
           context: dockerhub
           requires:
             - push_dev_image
-          image_name: anchore/anchore-cli-dev:${CIRCLE_SHA1}
+          image_name: robertprince/anchore-cli-dev:${CIRCLE_SHA1}
           private_registry: true
           timeout: '2000'
 
