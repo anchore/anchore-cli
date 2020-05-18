@@ -88,7 +88,7 @@ commands:
 jobs:
   lint:
     docker:
-      - image: circleci/python:3.6
+      - image: anchore/test-infra:python36
     environment: *global_environment_vars
     steps:
       - checkout
@@ -102,7 +102,7 @@ jobs:
       tox_env:
         type: string
     docker:
-      - image: circleci/python:3.6
+      - image: anchore/test-infra:python36
     environment: *global_environment_vars
     steps:
       - checkout
@@ -115,7 +115,7 @@ jobs:
       tox_env:
         type: string
     docker:
-      - image: circleci/python:3.6
+      - image: anchore/test-infra:python36
     resource_class: large
     environment: *global_environment_vars
     steps:
@@ -127,7 +127,7 @@ jobs:
 
   build:
     docker:
-      - image: circleci/python:3.6
+      - image: anchore/test-infra:python36
     resource_class: large
     environment: *global_environment_vars
     steps:
@@ -149,7 +149,7 @@ jobs:
 
   e2e_tests:
     docker:
-      - image: circleci/python:3.6
+      - image: anchore/test-infra:python36
     resource_class: large
     environment: *global_environment_vars
     steps:
@@ -168,7 +168,7 @@ jobs:
       make_job:
         type: string
     docker:
-      - image: circleci/python:3.6
+      - image: anchore/test-infra:python36
     environment: *global_environment_vars
     steps:
       - setup_remote_docker
