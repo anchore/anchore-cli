@@ -1,22 +1,8 @@
 #!/usr/bin/env bash
 
-#########################################################
-###   COMMON UTILITY FUNCTIONS - ALPHABETICAL ORDER   ###
-#########################################################
+# Utility functions, helpful for the CI process
 
-activate_venv() {
-    local VENV="${1:?'Missing required parameter: VENV'}"
-
-    # activate virtual environment if it is available
-    if [[ -f "${VENV}/bin/activate" ]]; then
-        # shellcheck source=/dev/null
-        source "${VENV}/bin/activate"
-        print_colorized WARN "using virtual environment - ${VENV}"
-    else
-        print_colorized WARN "virtual environment - ${VENV} - not found"
-    fi
-}
-
+# A simple y/n prompt
 continue_prompt() {
     while true; do
         read -rp "Do you want to continue? " yn
@@ -28,22 +14,27 @@ continue_prompt() {
     done
 }
 
+# Prints a message using the specified color code, resetting afterwards
+# One of OK, WARN, INFO, ERROR
 print_colorized() {
-    # Prints a message using the specified color code (OK, WARN, INFO, ERROR, NORMAL)
     local color_code="${1:?'Missing required parameter: color_code'}"
     local message="${2:?'Missing required parameter: message'}"
 
     printf "\n${!color_code}%s${NORMAL}\n" "${message}"
 }
 
+# Setup shell colors for print statements
+# OK:     green
+# WARN:   yellow
+# INFO:   cyan
+# ERROR:  red
+# RESET:  reset colors
 setup_colors() {
-    # Setup shell colors for print statements
-    # ${OK}=green, ${WARN}=yellow, ${INFO}=cyan, ${ERROR}=red, ${NORMAL}=normal
     export OK="\033[0;32m" \
         WARN="\033[0;33m" \
         INFO="\033[0;36m" \
         ERROR="\033[0;31m" \
-        NORMAL="\033[0m"
+        RESET="\033[0m"
 }
 
 setup_colors
