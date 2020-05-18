@@ -5,10 +5,6 @@ DEV_IMAGE_REPO="${2:?'Missing required parameter: DEV_IMAGE_REPO'}"
 GIT_BRANCH="${3:?'Missing required parameter: GIT_BRANCH'}"
 TEST_IMAGE_NAME="${4:?'Missing required parameter: TEST_IMAGE_NAME'}"
 
-local dev_image
-local latest_image
-local branch_image
-
 dev_image="${DEV_IMAGE_REPO}:${COMMIT_SHA}"
 latest_image="${DEV_IMAGE_REPO}:latest"
 branch_image="${DEV_IMAGE_REPO}:${GIT_BRANCH}"

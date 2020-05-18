@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+DEV_IMAGE_REPO="${1:?'required parameter'}"
+GIT_BRANCH="${2:-'required parameter'}"
+GIT_TAG="${3:?'required parameter'}"
+
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/utils"
+
+print_colorized WARN "Tagging and pushing Anchore CLI production image."; echo
+
+latest_image="${PROD_IMAGE_REPO}:latest"
+prod_image="${PROD_IMAGE_REPO}:${GIT_TAG}"
+rc_image="${DEV_IMAGE_REPO}:$(git describe --match "${GIT_TAG}-rc*" --tags --abbrev=0)"
+
+if [[ "${CI:-false}" == true ]]; then
+    # Test for required environment variables exported in CI jobs
+    test "${DOCKER_USER:?'Missing required environment variable: DOCKER_USER'}"
+    test "${DOCKER_PASS:?'Missing required environment variable: DOCKER_PASS'}"
+    test "${LATEST_RELEASE_BRANCH:?'Missing required environment variable: LATEST_RELEASE_BRANCH'}"
+    test "${PROD_IMAGE_REPO:?'Missing required environment variable: PROD_IMAGE_REPO'}"
+
+    echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
+
+    print_colorized WARN "Pulling RC image for release ${rc_image}."; echo
+    docker pull "${rc_image}"
+
+    print_colorized WARN "Tagging and pushing production image ${prod_image}."; echo
+    docker tag "${rc_image}" "${prod_image}"
+    docker push "${prod_image}"
+
+    if [[ "${GIT_BRANCH}" == "${LATEST_RELEASE_BRANCH}" ]] || [[ "${GIT_BRANCH}" == "master" ]]; then
+        print_colorized WARN "Tagging and pushing production image ${latest_image}."; echo
+        docker tag "${prod_image}" "${latest_image}"
+        docker push "${latest_image}"
+    fi
+else
+    print_colorized ERROR "Anchore CLI production images can only be pushed in the CI environment."; echo
+fi

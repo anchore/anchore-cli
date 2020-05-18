@@ -4,7 +4,7 @@ TEST_IMAGE_NAME="${1:?'Missing required parameter: TEST_IMAGE_NAME'}"
 
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/utils"
 
-print_colorized INFO "Cleanup Anchore CLI: Deleting virtualenv, cache, build and testing temp data"; echo
+print_colorized WARN "Cleanup Anchore CLI: Deleting virtualenv, cache, build and testing temp data"; echo
 
 continue_prompt
 
@@ -16,7 +16,7 @@ rm -rf "${VENV}" \
 
 find . \( -type f -name "*.py[co]" -o -type d -name "__pycache__" \) -delete
 
-print_colorized INFO "Deleting Docker image '${TEST_IMAGE_NAME}'"
+print_colorized WARN "Deleting Docker image '${TEST_IMAGE_NAME}'"
 
 continue_prompt
 

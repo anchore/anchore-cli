@@ -6,10 +6,7 @@ GIT_TAG="${3:?'required parameter'}"
 
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/utils"
 
-print_colorized INFO "Rebuilding Anchore CLI image '${TEST_IMAGE_NAME}'."; echo
-
-local dev_image
-local rebuild_image
+print_colorized WARN "Rebuilding Anchore CLI image '${TEST_IMAGE_NAME}'."; echo
 
 dev_image="${DEV_IMAGE_REPO}:${COMMIT_SHA}"
 rebuild_image="${PROD_IMAGE_REPO}:${GIT_TAG}"
@@ -22,12 +19,12 @@ if [[ "${CI:-false}" == true ]]; then
 
     echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
 
-    print_colorized INFO "Pulling dev image for release candidate ${dev_image}."; echo
+    print_colorized WARN "Pulling dev image for release candidate ${dev_image}."; echo
     docker pull "${dev_image}"
 
-    print_colorized INFO "Tagging and pushing image ${rebuild_image}."; echo
+    print_colorized WARN "Tagging and pushing image ${rebuild_image}."; echo
     docker tag "${dev_image}" "${rebuild_image}"
     docker push "${rebuild_image}"
 else
-    print_colorized WARN "Anchore CLI production images can only be pushed in the CI environment."; echo
+    print_colorized ERROR "Anchore CLI production images can only be pushed in the CI environment."; echo
 fi

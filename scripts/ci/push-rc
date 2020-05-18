@@ -6,10 +6,7 @@ TEST_IMAGE_NAME="${3:?'required parameter'}"
 
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/utils"
 
-print_colorized INFO "Tagging and pushing Anchore CLI RC image(s)."; echo
-
-local rc_image
-local rc_latest_image
+print_colorized WARN "Tagging and pushing Anchore CLI RC image(s)."; echo
 
 rc_image="${DEV_IMAGE_REPO}:${GIT_TAG}"
 rc_latest_image="${DEV_IMAGE_REPO}:rc"
@@ -21,14 +18,14 @@ if [[ "${CI:-false}" == true ]]; then
 
     echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
 
-    print_colorized INFO "Tagging and pushing image ${rc_image}."; echo
+    print_colorized WARN "Tagging and pushing image ${rc_image}."; echo
     docker tag "${TEST_IMAGE_NAME}" "${rc_image}"
     docker push "${rc_image}"
 
-    print_colorized INFO "Tagging and pushing image ${rc_latest_image}."; echo
+    print_colorized WARN "Tagging and pushing image ${rc_latest_image}."; echo
     docker tag "${rc_image}" "${rc_latest_image}"
     docker push "${rc_latest_image}"
 else
-    print_colorized WARN "Anchore CLI RC images can only be pushed in the CI environment."; echo
+    print_colorized ERROR "Anchore CLI RC images can only be pushed in the CI environment."; echo
 fi
 
