@@ -7,7 +7,8 @@
 #
 # Define YAML anchors
 .global_environment_vars: &global_environment_vars
-  PROD_IMAGE_REPO: anchore/anchore-cli-dev
+# PROD_IMAGE_REPO: anchore/anchore-cli-dev
+  PROD_IMAGE_REPO: robertprince/anchore-cli-dev
   RELEASE_BRANCHES: 0.2 0.3 0.4 0.5 0.6 0.7
   VERBOSE: true
   TERM: xterm
@@ -56,8 +57,8 @@
 
 # Start circleci configuration
 version: 2.1
-orbs:
-  anchore: anchore/anchore-engine@1.6.5
+#orbs:
+#  anchore: anchore/anchore-engine@1.6.5
 
 commands:
   run_tests:
