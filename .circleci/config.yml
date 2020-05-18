@@ -250,7 +250,7 @@ workflows:
           filters: *filter_rc_tags
           requires:
             - push_rc_image
-          image_name: anchore/anchore-cli-dev:${CIRCLE_TAG}
+          image_name: robertprince/anchore-cli-dev:${CIRCLE_TAG}
           private_registry: true
           timeout: '2000'
           policy_failure: true
