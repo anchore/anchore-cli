@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+
+COMMIT_SHA="${1:?'Missing required parameter: COMMIT_SHA'}"
+DEV_IMAGE_REPO="${2:?'Missing required parameter: DEV_IMAGE_REPO'}"
+GIT_BRANCH="${3:?'Missing required parameter: GIT_BRANCH'}"
+TEST_IMAGE_NAME="${4:?'Missing required parameter: TEST_IMAGE_NAME'}"
+
+local dev_image
+local latest_image
+local branch_image
+
+dev_image="${DEV_IMAGE_REPO}:${COMMIT_SHA}"
+latest_image="${DEV_IMAGE_REPO}:latest"
+branch_image="${DEV_IMAGE_REPO}:${GIT_BRANCH}"
+
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/utils"
+
+print_colorized INFO "Tagging and pushing Anchore CLI dev image(s)."; echo
+
+if [[ "${CI:-false}" == true ]]; then
+    # Test for required environment variables exported in CI jobs
+    test "${DOCKER_USER:?'Missing required env variable: DOCKER_USER'}"
+    test "${DOCKER_PASS:?'Missing required env variable: DOCKER_PASS'}"
+    test "${RELEASE_BRANCHES:?'Missing required env variable: RELEASE_BRANCHES'}"
+
+    echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
+
+    print_colorized INFO "Tagging and pushing dev image ${dev_image}."; echo
+    docker tag "${TEST_IMAGE_NAME}" "${dev_image}"
+    docker push "${dev_image}"
+
+    if [[ "${GIT_BRANCH}" == 'master' ]]; then
+        print_colorized INFO "Tagging and pushing image ${latest_image}."; echo
+        docker tag "${dev_image}" "${latest_image}"
+        docker push "${latest_image}"
+
+    elif [[ "${RELEASE_BRANCHES}" == *"${GIT_BRANCH}"* ]]; then
+        print_colorized INFO "Tagging and pushing image ${branch_image}."; echo
+        docker tag "${dev_image}" "${branch_image}"
+        docker push "${branch_image}"
+    fi
+else
+    print_colorized INFO "Tagging and pushing image ${dev_image}."; echo
+    continue_prompt
+    docker tag "${TEST_IMAGE_NAME}" "${dev_image}"
+    docker push "${dev_image}"
+fi
+
+print_colorized INFO "Finished tagging and pushing Anchore CLI dev image(s)."; echo

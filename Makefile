@@ -1,13 +1,17 @@
+###############################
 # Makefile for the Anchore CLI, a simple command line interface to the
 # Anchore Engine service. The rules, directives, and variables in this
 # Makefile enable testing, Docker image generation, and pushing Docker
 # images.
+###############################
 
-# Docker Hub repos
+#### Docker Hub repos
+###############################
 DEV_IMAGE_REPO := robertprince/anchore-cli-dev
 PROD_IMAGE_REPO := robertprince/anchore-cli
 
-# Environment variables; set by/in CircleCI environment
+#### CircleCI environment variables
+###############################
 export VERBOSE ?= false
 export CI ?= false
 export DOCKER_PASS ?=
@@ -35,7 +39,8 @@ GIT_TAG ?= $(shell echo $${CIRCLE_TAG:=null})
 # be explicitly labeled also by the caller
 CLUSTER_NAME := e2e-testing
 
-# Make environment configuration
+# Environment configuration for make
+###############################
 SHELL := /usr/bin/env bash
 VENV := venv
 ACTIVATE_VENV := source $(VENV)/bin/activate
@@ -54,10 +59,12 @@ DOCKER_GID := $(shell getent group docker | cut -d: -f3)
 # CI_RUNNER_IMAGE := docker.io/anchore/test-infra:python36
 CI_RUNNER_IMAGE := test-infra:python36
 
-# The Docker image invocation to be used when CI/build tasks are run in a container
+#### The Docker image invocation to be used when CI/build tasks are run in a container
+###############################
 DOCKER_RUN_CMD = docker run -it --rm --user $(CI_USER):$(DOCKER_GID) --network host -e WORKING_DIRECTORY=/home/circleci/project -e CI=false -e VERBOSE=$(VERBOSE) -e DOCKER_GROUP_ID=$(DOCKER_GID) --entrypoint /anchore-ci/run_make_command.sh -v $(PWD):/home/circleci/project -v /var/run/docker.sock:/var/run/docker.sock $(CI_RUNNER_IMAGE)
 
-# If running in CI, make is invoked from the test-infra container, so run commands directly
+#### If running in CI, make is invoked from the test-infra container, so run commands directly
+###############################
 ifeq ($(CI), true)
   RUN_CMD := /anchore-ci/run_make_command.sh
   DOCKER_RUN_CMD := /anchore-ci/run_make_command.sh
@@ -65,32 +72,12 @@ else
   RUN_CMD = $(SHELL)
 endif
 
-# Define available make commands -- use ## on target names to create 'help' text
+#### Make targets
+###############################
 
 .PHONY: ci ## run full ci pipeline locally
 ci: VERBOSE := true
 ci: lint build test push
-
-.PHONY: build
-build: Dockerfile ## Build dev Anchore CLI Docker image
-	@$(RUN_CMD) scripts/ci/build $(COMMIT_SHA) $(GIT_REPO) $(TEST_IMAGE_NAME)
-
-.PHONY: push push-dev
-push: push-dev ## Push dev Anchore CLI Docker image to Docker Hub
-push-dev:
-	@$(RUN_TASK) push_dev_image "$(COMMIT_SHA)" "$(DEV_IMAGE_REPO)" "$(GIT_BRANCH)" "$(TEST_IMAGE_NAME)"
-
-.PHONY: push-rc
-push-rc:
-	@$(RUN_TASK) push_rc_image "$(DEV_IMAGE_REPO)" "$(GIT_TAG)" "$(TEST_IMAGE_NAME)"
-
-.PHONY: push-prod
-push-prod:
-	@$(RUN_TASK) push_prod_image_release "$(DEV_IMAGE_REPO)" "$(GIT_BRANCH)" "$(GIT_TAG)"
-
-.PHONY: push-rebuild
-push-rebuild:
-	@$(RUN_TASK) push_prod_image_rebuild "$(COMMIT_SHA)" "$(DEV_IMAGE_REPO)" "$(GIT_TAG)"
 
 .PHONY: venv
 venv: $(VENV)/bin/activate ## Set up a virtual environment
@@ -109,6 +96,10 @@ install-dev: venv setup.py requirements.txt ## Install to virtual environment in
 lint: venv ## Lint code (currently using flake8)
 	@$(ACTIVATE_VENV) && $(RUN_CMD) scripts/ci/lint $(PYTHON)
 
+.PHONY: build
+build: Dockerfile ## Build dev Anchore CLI Docker image
+	@$(RUN_CMD) scripts/ci/build $(COMMIT_SHA) $(GIT_REPO) $(TEST_IMAGE_NAME)
+
 # Note that the kind cluster will be run on the $CI_RUNNER_IMAGE that gets specified above
 .PHONY: cluster-up
 cluster-up: CLUSTER_CONFIG := test/e2e/kind-config.yaml ## Bring up a kind (Kubernetes IN Docker) cluster to use for testing
@@ -120,9 +111,6 @@ cluster-up: test/e2e/kind-config.yaml
 cluster-down: ## Tear down/shut down the kind cluster
 	$(DOCKER_RUN_CMD) kind_cluster_down $(CLUSTER_NAME)
 
-.PHONY: test
-test: test-unit test-functional test-e2e ## Run all tests: unit, functional, and e2e
-
 .PHONY: test-unit
 test-unit: venv ## Run unit tests (tox)
 	@$(ACTIVATE_VENV) && $(RUN_CMD) scripts/ci/unit-tests $(PYTHON)
@@ -132,7 +120,7 @@ test-functional: venv ## Run functional tests (tox)
 	@$(ACTIVATE_VENV) && $(RUN_CMD) scripts/ci/functional-tests $(PYTHON)
 
 .PHONY: test-e2e
-test-e2e: cluster-up ## Set up, run end to end tests, then tear down the cluster
+test-e2e: cluster-up ## Set up and run end to end tests
 	$(DOCKER_RUN_CMD) setup_e2e_tests $(CLUSTER_NAME) $(COMMIT_SHA) $(DEV_IMAGE_REPO) $(GIT_BRANCH) $(GIT_REPO) $(GIT_TAG) $(TEST_IMAGE_NAME)
 	@$(MAKE) run-test-e2e
 	@$(MAKE) cluster-down
@@ -141,9 +129,25 @@ test-e2e: cluster-up ## Set up, run end to end tests, then tear down the cluster
 run-test-e2e: venv ## Run end to end tests (set up done/cluster assumed to be running)
 	$(ACTIVATE_VENV) && $(DOCKER_RUN_CMD) scripts/ci/e2e-tests $(PYTHON)
 
-.PHONY: clean
-clean: ## Clean up the project directory and delete dev image
-	@$(RUN_CMD) scripts/ci/clean $(TEST_IMAGE_NAME)
+.PHONY: test
+test: test-unit test-functional test-e2e ## Run all tests: unit, functional, and e2e
+
+.PHONY: push push-dev
+push: push-dev ## Push dev Anchore CLI Docker image to Docker Hub
+push-dev:
+	@$(RUN_CMD) scripts/ci/push-dev "$(COMMIT_SHA)" "$(DEV_IMAGE_REPO)" "$(GIT_BRANCH)" "$(TEST_IMAGE_NAME)"
+
+.PHONY: push-rc
+push-rc: ## Push RC Anchore CLI Docker image to Docker Hub (not available outside of CI)
+	@$(RUN_CMD) scripts/ci/push_rc "$(DEV_IMAGE_REPO)" "$(GIT_TAG)" "$(TEST_IMAGE_NAME)"
+
+.PHONY: push-prod
+push-prod: ## Push release Anchore CLI Docker image to Docker Hub (not available outside of CI)
+	@$(RUN_CMD) push_prod_image_release "$(DEV_IMAGE_REPO)" "$(GIT_BRANCH)" "$(GIT_TAG)"
+
+.PHONY: push-rebuild
+push-rebuild: ## Rebuild and push prod Anchore CLI docker image to DOcker Hub (not available outside of CI)
+	@$(RUN_CMD) push_prod_image_rebuild "$(COMMIT_SHA)" "$(DEV_IMAGE_REPO)" "$(GIT_TAG)"
 
 .PHONY: dist-deb
 dist-deb: ## Package Anchore CLI for Debian-based distros
@@ -156,6 +160,10 @@ dist-mac: ## Package Anchore CLI for MacOS
 .PHONY: dist-rpm
 dist-rpm: ## Package Anchore CLI for RH-based distros
 	@$(RUN_CMD) scripts/make-rpm.sh
+
+.PHONY: clean
+clean: ## Clean up the project directory and delete dev image
+	@$(RUN_CMD) scripts/ci/clean $(TEST_IMAGE_NAME)
 
 .PHONY: printvars
 printvars: ## Print make variables
