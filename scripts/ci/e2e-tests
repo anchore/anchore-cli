@@ -1,14 +1,12 @@
 #!/usr/bin/env bash
 
-PYTHON="${1:?'required parameter: PYTHON'}"
+PYTHON="${1:?'Missing required parameter: PYTHON'}"
 
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/utils"
 
-setup_colors
-
 exec_anchorecli="kubectl exec anchore-cli -- anchore-cli --u admin --p foobar --url http://e2e-testing-anchore-engine-api:8228/v1/"
 
-print_colorized INFO "Running Anchore CLI end-to-end tests"; echo
+print_colorized INFO "Running Anchore CLI end-to-end tests."; echo
 
 eval "${exec_anchorecli} --version"
 eval "${exec_anchorecli} system wait --timeout 300 --interval 10 --feedsready '' --servicesready 'catalog,apiext,policy_engine,simplequeue,analyzer'"

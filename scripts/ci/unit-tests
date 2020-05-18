@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
 
-PYTHON="${1:?'required parameter'}"
+PYTHON="${1:?'Missing required parameter'}"
 
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/utils"
-
-setup_colors
 
 # Declare default tox envs, but allow TOX_ENV to override
 default_tox_envs="py27 py36"
@@ -12,10 +10,10 @@ tox_env="${TOX_ENV:-$default_tox_envs}"
 
 hash tox || "${PYTHON}" -m pip install -q tox
 
-print_colorized INFO "Running Anchore CLI unit tests..."; echo
+print_colorized INFO "Running Anchore CLI unit tests."; echo
 
 for e in $(echo "${tox_env}"); do
-    print_colorized INFO "Running unit tests using tox env $e..."
+    print_colorized INFO "Running unit tests using tox env $e."
     tox -e "$e" --result-json .tox/unit-test-report.log
     print_colorized INFO "Finished running unit tests using tox env $e."
 done

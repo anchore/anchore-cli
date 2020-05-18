@@ -2,13 +2,11 @@
 
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/utils"
 
-PYTHON="${1:?'required parameter: PYTHON'}"
+PYTHON="${1:?'Missing required parameter: PYTHON'}"
 
 hash tox || "${PYTHON}" -m pip install -q tox
 
-setup_colors
-
-print_colorized INFO "Linting Anchore CLI code..."; echo
+print_colorized INFO "Linting Anchore CLI code."; echo
 
 tox -e flake8
 

@@ -40,6 +40,8 @@ SHELL := /usr/bin/env bash
 VENV := venv
 ACTIVATE_VENV := source $(VENV)/bin/activate
 PYTHON := $(VENV)/bin/python3
+CI_USER := circleci
+DOCKER_GID := $(shell getent group docker | cut -d: -f3)
 
 # Running make will invoke the help target
 .DEFAULT_GOAL := help
@@ -48,9 +50,12 @@ PYTHON := $(VENV)/bin/python3
 # run recipes in parallel (unless they also contain .NOTPARALLEL)
 .NOTPARALLEL:
 
-# Setup a mock CI environment for running Make commands in the same environment as CircleCI
-CI_RUNNER_IMAGE := docker.io/anchore/test-infra:python36
-DOCKER_RUN_CMD = docker run -it --rm --network host -e WORKING_DIRECTORY=/home/circleci/project -e CI=false -e VERBOSE=$(VERBOSE) --entrypoint /anchore-ci/run_make_command.sh -v $(PWD):/home/circleci/project -v /var/run/docker.sock:/var/run/docker.sock $(CI_RUNNER_IMAGE)
+# Specify the Docker image to use in CI commands
+# CI_RUNNER_IMAGE := docker.io/anchore/test-infra:python36
+CI_RUNNER_IMAGE := test-infra:python36
+
+# The Docker image invocation to be used when CI/build tasks are run in a container
+DOCKER_RUN_CMD = docker run -it --rm --user $(CI_USER):$(DOCKER_GID) --network host -e WORKING_DIRECTORY=/home/circleci/project -e CI=false -e VERBOSE=$(VERBOSE) -e DOCKER_GROUP_ID=$(DOCKER_GID) --entrypoint /anchore-ci/run_make_command.sh -v $(PWD):/home/circleci/project -v /var/run/docker.sock:/var/run/docker.sock $(CI_RUNNER_IMAGE)
 
 # If running in CI, make is invoked from the test-infra container, so run commands directly
 ifeq ($(CI), true)
@@ -106,9 +111,9 @@ lint: venv ## Lint code (currently using flake8)
 
 # Note that the kind cluster will be run on the $CI_RUNNER_IMAGE that gets specified above
 .PHONY: cluster-up
-cluster-up: CLUSTER_CONFIG := tests/e2e/kind-config.yaml ## Bring up a kind (Kubernetes IN Docker) cluster to use for testing 
+cluster-up: CLUSTER_CONFIG := test/e2e/kind-config.yaml ## Bring up a kind (Kubernetes IN Docker) cluster to use for testing
 cluster-up: KUBERNETES_VERSION := 1.15.7
-cluster-up: tests/e2e/kind-config.yaml
+cluster-up: test/e2e/kind-config.yaml
 	$(DOCKER_RUN_CMD) kind_cluster_up $(CLUSTER_NAME) $(CLUSTER_CONFIG) $(KUBERNETES_VERSION)
 
 .PHONY: cluster-down
@@ -133,21 +138,16 @@ test-e2e: cluster-up ## Set up, run end to end tests, then tear down the cluster
 	@$(MAKE) cluster-down
 
 .PHONY: run-test-e2e
-run-test-e2e: venv ## Run end to end tests
-	$(ACTIVATE_VENV) && $(DOCKER_RUN_CMD) scripts/ci/e2e-tests.sh
+run-test-e2e: venv ## Run end to end tests (set up done/cluster assumed to be running)
+	$(ACTIVATE_VENV) && $(DOCKER_RUN_CMD) scripts/ci/e2e-tests $(PYTHON)
 
 .PHONY: clean
-clean: ## Clean up the project directory; delete dev image
-	@$(RUN_TASK) clean_project_dir "$(TEST_IMAGE_NAME)" "$(VENV)"
+clean: ## Clean up the project directory and delete dev image
+	@$(RUN_CMD) scripts/ci/clean $(TEST_IMAGE_NAME)
 
 .PHONY: printvars
 printvars: ## Print make variables
 	@$(foreach V,$(sort $(.VARIABLES)),$(if $(filter-out environment% default automatic,$(origin $V)),$(warning $V=$($V) ($(value $V)))))
-
-#.PHONY: help
-#help:
-#	@$(RUN_TASK) help
-#	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[0;36m%-30s\033[0m %s\n", $$1, $$2}'
 
 .PHONY: help
 help: ## Show this usage message
