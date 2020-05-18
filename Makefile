@@ -5,10 +5,12 @@
 # images.
 ###############################
 
+
 #### Docker Hub repos
 ###############################
 DEV_IMAGE_REPO := robertprince/anchore-cli-dev
 PROD_IMAGE_REPO := robertprince/anchore-cli
+
 
 #### CircleCI environment variables
 ###############################
@@ -39,6 +41,7 @@ GIT_TAG ?= $(shell echo $${CIRCLE_TAG:=null})
 # be explicitly labeled also by the caller
 CLUSTER_NAME := e2e-testing
 
+
 # Environment configuration for make
 ###############################
 SHELL := /usr/bin/env bash
@@ -59,9 +62,11 @@ DOCKER_GID := $(shell getent group docker | cut -d: -f3)
 # CI_RUNNER_IMAGE := docker.io/anchore/test-infra:python36
 CI_RUNNER_IMAGE := test-infra:python36
 
+
 #### The Docker image invocation to be used when CI/build tasks are run in a container
 ###############################
 DOCKER_RUN_CMD = docker run -it --rm --user $(CI_USER):$(DOCKER_GID) --network host -e WORKING_DIRECTORY=/home/circleci/project -e CI=false -e VERBOSE=$(VERBOSE) -e DOCKER_GROUP_ID=$(DOCKER_GID) --entrypoint /anchore-ci/run_make_command.sh -v $(PWD):/home/circleci/project -v /var/run/docker.sock:/var/run/docker.sock $(CI_RUNNER_IMAGE)
+
 
 #### If running in CI, make is invoked from the test-infra container, so run commands directly
 ###############################
@@ -71,6 +76,7 @@ ifeq ($(CI), true)
 else
   RUN_CMD = $(SHELL)
 endif
+
 
 #### Make targets
 ###############################
