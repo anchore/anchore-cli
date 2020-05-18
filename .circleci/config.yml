@@ -269,7 +269,7 @@ workflows:
       - push_image:
           name: push_prod_image
           make_job: push-prod
-          context: dockerhub-prod
+          context: dockerhub-fake-prod
           filters: *filter_semver_tags
           requires:
             - hold_for_approval
