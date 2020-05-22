@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+
+COMMIT_SHA="${1:?'Missing required parameter: COMMIT_SHA'}"
+DEV_IMAGE_REPO="${2:?'Missing required parameter: DEV_IMAGE_REPO'}"
+GIT_TAG="${3:?'Missing required parameter: GIT_TAG'}"
+TEST_IMAGE_NAME="${4:?'Missing required parameter: TEST_IMAGE_NAME'}"
+
+source anchore-ci/utils
+
+print_colorized INFO "Setting up Anchore CLI end-to-end tests."; echo
+
+# Get the latest RC git tag for this semver & use it for the image tag
+if [[ "${GIT_TAG}" =~ ^v[0-9]+(\.[0-9]+)*$ ]]; then
+    cli_image="${DEV_IMAGE_REPO}:$(git describe --match "${GIT_TAG}-rc*" --tags --abbrev=0)"
+    print_colorized INFO "Detected semver git tag, using RC image for e2e testing: ${cli_image}."
+elif docker inspect "${TEST_IMAGE_NAME}" &> /dev/null; then
+    cli_image="${TEST_IMAGE_NAME}"
+    print_colorized INFO "Using local dev image for e2e testing: ${cli_image}."
+    kind load docker-image "${cli_image}" --name e2e-testing
+else
+    cli_image="${DEV_IMAGE_REPO}:${COMMIT_SHA}"
+    print_colorized INFO "Using remote dev image for e2e testing: ${cli_image}."
+fi
+
+# Test for required environment variables exported in CI jobs
+if [[ "${CI:-false}" == true ]]; then
+    test "${DOCKER_USER:?'Missing required environment variable: DOCKER_USER'}"
+    test "${DOCKER_PASS:?'Missing required environment variable: DOCKER_PASS'}"
+
+    # Create k8s secret using $DOCKER_USER & $DOCKER_PASS and set as default imagePullCreds
+    kubectl create secret docker-registry anchore-enterprise-pullcreds --docker-server=docker.io --docker-username="${DOCKER_USER}" --docker-password="${DOCKER_PASS}" --docker-email=anchoreci@anchore.com
+    kubectl patch serviceaccount default --type=merge --patch '{"imagePullSecrets":[{"name": "anchore-enterprise-pullcreds"}]}'
+fi
+
+if ! helm list | grep e2e-testing; then
+    helm repo add stable https://kubernetes-charts.storage.googleapis.com
+    helm install e2e-testing -f test/e2e/base-values.yaml --set anchoreGlobal.image=anchore/anchore-engine-dev:latest stable/anchore-engine | head -n6
+fi
+
+if ! kubectl get pods | grep anchore-cli; then
+    kubectl run anchore-cli --image=${cli_image} --restart=Never --command -- tail -f /dev/null
+    while [[ $(kubectl get pods anchore-cli -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]] &> /dev/null; do echo "waiting for anchore-cli pod" && sleep 3; done
+fi
+
+print_colorized INFO "Finished setting up Anchore CLI end-to-end tests."; echo

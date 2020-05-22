@@ -2,7 +2,7 @@
 
 PYTHON="${1:?'Missing required parameter: PYTHON'}"
 
-source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/utils"
+source anchore-ci/utils
 
 exec_anchorecli="kubectl exec anchore-cli -- anchore-cli --u admin --p foobar --url http://e2e-testing-anchore-engine-api:8228/v1/"
 
