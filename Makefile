@@ -101,7 +101,8 @@ lint: venv anchore-ci ## Lint code (currently using flake8)
 	@$(ACTIVATE_VENV) && $(CI_CMD) lint $(PYTHON)
 
 # Local CI script
-build: Dockerfile anchore-ci ## Build dev Anchore CLI Docker image
+build: Dockerfile anchore-ci venv ## Build dev Anchore CLI Docker image
+	@$(CI_CMD) install-cluster-deps $(VENV)
 	@$(CI_CMD) scripts/ci/build $(COMMIT_SHA) $(GIT_REPO) $(TEST_IMAGE_NAME)
 
 test-unit: anchore-ci venv ## Run unit tests (tox)
@@ -111,7 +112,7 @@ test-functional: anchore-ci venv ## Run functional tests (tox)
 	@$(ACTIVATE_VENV) && $(CI_CMD) test-functional $(PYTHON)
 
 # Local CI scripts (set-e2e-tests and e2e-tests)
-test-e2e: anchore-ci ## Set up and run end to end tests
+test-e2e: anchore-ci venv ## Set up and run end to end tests
 test-e2e: CLUSTER_CONFIG := test/e2e/kind-config.yaml
 test-e2e: KUBERNETES_VERSION := 1.15.7
 test-e2e: test/e2e/kind-config.yaml
