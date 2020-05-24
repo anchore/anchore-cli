@@ -66,7 +66,7 @@ CI_CMD = anchore-ci/local_ci
 
 # If running in CI, make is invoked from the test-infra container, so run commands directly
 ifeq ($(CI), true)
-  CI_CMD := /anchore-ci/run_make_command.sh
+  CI_CMD := /anchore-ci/local_ci
   RUN_CMD := $(CI_CMD)
 else
   RUN_CMD = $(SHELL)
@@ -95,7 +95,7 @@ install: venv setup.py requirements.txt ## Install to virtual environment
 	@$(ACTIVATE_VENV) && $(PYTHON) setup.py install
 
 install-dev: venv setup.py requirements.txt ## Install to virtual environment in editable mode
-	$(ACTIVATE_VENV) && $(PYTHON) -m pip install --editable .
+	@$(ACTIVATE_VENV) && $(PYTHON) -m pip install --editable .
 
 lint: venv anchore-ci ## Lint code (currently using flake8)
 	@$(ACTIVATE_VENV) && $(CI_CMD) lint $(PYTHON)
