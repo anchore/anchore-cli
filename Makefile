@@ -66,7 +66,7 @@ CI_CMD = anchore-ci/local_ci
 
 # If running in CI, make is invoked from the test-infra container, so run commands directly
 ifeq ($(CI), true)
-  CI_CMD := /anchore-ci/local_ci
+  CI_CMD := anchore-ci/local_ci
   RUN_CMD := $(CI_CMD)
 else
   RUN_CMD = $(SHELL)
