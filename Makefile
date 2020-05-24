@@ -36,10 +36,6 @@ COMMIT_SHA := $(shell echo $${CIRCLE_SHA:=$$(git rev-parse HEAD)})
 # Use $CIRCLE_TAG if it's set
 GIT_TAG ?= $(shell echo $${CIRCLE_TAG:=null})
 
-# TODO set the kind cluster name in the test-infra container
-# instead of passing it in from here; the context is well
-# known from the caller (this code) so it doesn't need to
-# be explicitly labeled also by the caller
 CLUSTER_NAME := e2e-testing
 
 
@@ -76,7 +72,7 @@ endif
 #### Make targets
 ############################################################
 
-.PHONY: all venv install install-dev lint build cluster-up cluster-down
+.PHONY: all venv install install-dev lint build
 .PHONY: test-unit test-functional test-e2e run-test-e2e test push push-dev push-rc
 .PHONY: push-prod push-rebuild dist-deb dist-rpm dist-mac clean printvars help
 
@@ -98,15 +94,19 @@ install-dev: venv setup.py requirements.txt ## Install to virtual environment in
 	@$(ACTIVATE_VENV) && $(PYTHON) -m pip install --editable .
 
 lint: venv anchore-ci ## Lint code (currently using flake8)
-	@$(ACTIVATE_VENV) && $(CI_CMD) lint $(PYTHON)
+	@$(ACTIVATE_VENV) && $(CI_CMD) lint
 
 # Local CI script
 build: Dockerfile anchore-ci venv ## Build dev Anchore CLI Docker image
-	@$(CI_CMD) install-cluster-deps $(VENV)
 	@$(CI_CMD) scripts/ci/build $(COMMIT_SHA) $(GIT_REPO) $(TEST_IMAGE_NAME)
 
+test: ## Run all tests: unit, functional, and e2e
+	@$(MAKE) test-unit
+	@$(MAKE) test-functional
+	@$(MAKE) test-e2e
+
 test-unit: anchore-ci venv ## Run unit tests (tox)
-	@$(ACTIVATE_VENV) && $(CI_CMD) test-unit $(PYTHON)
+	@$(ACTIVATE_VENV) && $(CI_CMD) test-unit
 
 test-functional: anchore-ci venv ## Run functional tests (tox)
 	@$(ACTIVATE_VENV) && $(CI_CMD) test-functional $(PYTHON)
@@ -116,16 +116,11 @@ test-e2e: anchore-ci venv ## Set up and run end to end tests
 test-e2e: CLUSTER_CONFIG := test/e2e/kind-config.yaml
 test-e2e: KUBERNETES_VERSION := 1.15.7
 test-e2e: test/e2e/kind-config.yaml
-	$(CI_CMD) install-cluster-deps $(VENV)
-	$(CI_CMD) cluster-up $(VENV) $(CLUSTER_NAME) $(CLUSTER_CONFIG) $(KUBERNETES_VERSION)
+	$(ACTIVATE_VENV) && $(CI_CMD) install-cluster-deps $(VENV)
+	$(ACTIVATE_VENV) && $(CI_CMD) cluster-up $(CLUSTER_NAME) $(CLUSTER_CONFIG) $(KUBERNETES_VERSION)
 	$(ACTIVATE_VENV) && $(CI_CMD) setup-e2e-tests $(COMMIT_SHA) $(DEV_IMAGE_REPO) $(GIT_TAG) $(TEST_IMAGE_NAME)
-	$(ACTIVATE_VENV) && $(CI_CMD) e2e-tests $(PYTHON)
-	#$(CI_CMD) cluster-down $(CLUSTER_NAME)
-
-test: ## Run all tests: unit, functional, and e2e
-	@$(MAKE) test-unit
-	@$(MAKE) test-functional
-	@$(MAKE) test-e2e
+	$(ACTIVATE_VENV) && $(CI_CMD) e2e-tests
+	$(ACTIVATE_VENV) && $(CI_CMD) cluster-down $(CLUSTER_NAME)
 
 push: anchore-ci push-dev ## Push dev Anchore CLI Docker image to Docker Hub
 push-dev:
