@@ -4,6 +4,7 @@ COMMIT_SHA="${1:?'Missing required parameter: COMMIT_SHA'}"
 GIT_REPO="${2:?'Missing required parameter: GIT_REPO'}"
 TEST_IMAGE_NAME="${3:?'Missing required parameter: TEST_IMAGE_NAME'}"
 
+# Optional - only used for print_colorized
 source anchore-ci/utils
 
 print_colorized INFO "Building Anchore CLI image '${TEST_IMAGE_NAME}'."; echo
