@@ -102,17 +102,7 @@ lint: venv anchore-ci ## Lint code (currently using flake8)
 
 # Local CI script
 build: Dockerfile anchore-ci ## Build dev Anchore CLI Docker image
-	@$(RUN_CMD) scripts/ci/build $(COMMIT_SHA) $(GIT_REPO) $(TEST_IMAGE_NAME)
-
-cluster-up: anchore-ci ## Bring up a kind (Kubernetes IN Docker) cluster to use for testing
-cluster-up: CLUSTER_CONFIG := test/e2e/kind-config.yaml
-cluster-up: KUBERNETES_VERSION := 1.15.7
-cluster-up: test/e2e/kind-config.yaml
-	$(CI_CMD) install-cluster-deps $(VENV)
-	$(CI_CMD) cluster-up $(CLUSTER_NAME) $(CLUSTER_CONFIG) $(KUBERNETES_VERSION)
-
-cluster-down: anchore-ci ## Tear down/shut down the kind cluster
-	$(CI_CMD) cluster-down $(CLUSTER_NAME)
+	@$(CI_CMD) scripts/ci/build $(COMMIT_SHA) $(GIT_REPO) $(TEST_IMAGE_NAME)
 
 test-unit: anchore-ci venv ## Run unit tests (tox)
 	@$(ACTIVATE_VENV) && $(CI_CMD) test-unit $(PYTHON)
@@ -120,15 +110,16 @@ test-unit: anchore-ci venv ## Run unit tests (tox)
 test-functional: anchore-ci venv ## Run functional tests (tox)
 	@$(ACTIVATE_VENV) && $(CI_CMD) test-functional $(PYTHON)
 
-# Local CI script
-test-e2e: anchore-ci cluster-up ## Set up and run end to end tests
+# Local CI scripts (set-e2e-tests and e2e-tests)
+test-e2e: anchore-ci ## Set up and run end to end tests
+test-e2e: CLUSTER_CONFIG := test/e2e/kind-config.yaml
+test-e2e: KUBERNETES_VERSION := 1.15.7
+test-e2e: test/e2e/kind-config.yaml
+	$(CI_CMD) install-cluster-deps $(VENV)
+	$(CI_CMD) cluster-up $(VENV) $(CLUSTER_NAME) $(CLUSTER_CONFIG) $(KUBERNETES_VERSION)
 	$(ACTIVATE_VENV) && $(CI_CMD) setup-e2e-tests $(COMMIT_SHA) $(DEV_IMAGE_REPO) $(GIT_TAG) $(TEST_IMAGE_NAME)
-	@$(MAKE) run-test-e2e
-	@$(MAKE) cluster-down
-
-# Local CI script
-run-test-e2e: venv
-	$(ACTIVATE_VENV) && $(RUN_CMD) scripts/ci/e2e-tests $(PYTHON)
+	$(ACTIVATE_VENV) && $(CI_CMD) e2e-tests $(PYTHON)
+	#$(CI_CMD) cluster-down $(CLUSTER_NAME)
 
 test: ## Run all tests: unit, functional, and e2e
 	@$(MAKE) test-unit
