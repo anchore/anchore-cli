@@ -101,7 +101,7 @@ lint: venv anchore-ci ## Lint code (currently using flake8)
 	@$(ACTIVATE_VENV) && $(CI_CMD) lint $(PYTHON)
 
 # Local CI script
-build: Dockerfile ## Build dev Anchore CLI Docker image
+build: Dockerfile anchore-ci ## Build dev Anchore CLI Docker image
 	@$(RUN_CMD) scripts/ci/build $(COMMIT_SHA) $(GIT_REPO) $(TEST_IMAGE_NAME)
 
 cluster-up: anchore-ci ## Bring up a kind (Kubernetes IN Docker) cluster to use for testing
