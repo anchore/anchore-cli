@@ -23,6 +23,12 @@ export LATEST_RELEASE_BRANCH ?=
 export PROD_IMAGE_REPO ?=
 export RELEASE_BRANCHES ?=
 
+# without the following line, the line below
+# (ACTIVATE_VENV := source $(VENV)/bin/activate)
+# fails, oddly. when i change source to . it works
+# even if SHELL := ... is commented out
+#SHELL := /usr/bin/env bash
+
 # Use $CIRCLE_BRANCH if it's set, otherwise use current HEAD branch
 GIT_BRANCH := $(shell echo $${CIRCLE_BRANCH:=$$(git rev-parse --abbrev-ref HEAD)})
 
@@ -41,9 +47,8 @@ CLUSTER_NAME := e2e-testing
 
 # Environment configuration for make
 ############################################################
-SHELL := /usr/bin/env bash
 VENV := venv
-ACTIVATE_VENV := source $(VENV)/bin/activate
+ACTIVATE_VENV := . $(VENV)/bin/activate
 PYTHON := $(VENV)/bin/python3
 CI_USER := circleci
 
@@ -58,23 +63,16 @@ CI_USER := circleci
 # CI_RUNNER_IMAGE := docker.io/anchore/test-infra:python36
 CI_RUNNER_IMAGE := test-infra:python36
 
-CI_CMD = anchore-ci/local_ci
-
-# If running in CI, make is invoked from the test-infra container, so run commands directly
-ifeq ($(CI), true)
-  CI_CMD := anchore-ci/local_ci
-  RUN_CMD := $(CI_CMD)
-else
-  RUN_CMD = $(SHELL)
-endif
+CI_CMD := anchore-ci/local_ci
 
 
 #### Make targets
 ############################################################
 
-.PHONY: all venv install install-dev lint build
-.PHONY: test-unit test-functional test-e2e run-test-e2e test push push-dev push-rc
-.PHONY: push-prod push-rebuild dist-deb dist-rpm dist-mac clean printvars help
+.PHONY: all venv install install-dev build clean printvars help
+.PHONY: test test-unit test-functional test-e2e lint
+.PHONY: push push-dev push-rc push-prod push-rebuild
+.PHONY: dist-deb dist-rpm dist-mac
 
 all: VERBOSE := true ## Run Anchore CLI full CI pipeline locally (lint, build, test, push)
 all: lint build test push
@@ -136,13 +134,13 @@ push-rebuild: anchore-ci ## Rebuild and push prod Anchore CLI docker image to DO
 	@$(CI_CMD) push-prod-image-rebuild "$(DEV_IMAGE_REPO)" "$(GIT_BRANCH)" "$(GIT_TAG)" "$(PROD_IMAGE_REPO)"
 
 dist-deb: ## Package Anchore CLI for Debian-based distros
-	@$(RUN_CMD) scripts/make-dpkg.sh
+	@$(CI_CMD) make-dpkg
 
 dist-mac: ## Package Anchore CLI for MacOS
-	@$(RUN_CMD) scripts/make-macos-bin.sh
+	@$(CI_CMD) make-macos-bin
 
 dist-rpm: ## Package Anchore CLI for RH-based distros
-	@$(RUN_CMD) scripts/make-rpm.sh
+	@$(CI_CMD) make-rpm
 
 clean: anchore-ci ## Clean up the project directory and delete dev image
 	@$(CI_CMD) clean $(TEST_IMAGE_NAME)
