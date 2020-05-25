@@ -120,8 +120,7 @@ test-e2e: test/e2e/kind-config.yaml
 	$(ACTIVATE_VENV) && $(CI_CMD) e2e-tests
 	$(ACTIVATE_VENV) && $(CI_CMD) cluster-down $(CLUSTER_NAME)
 
-push: anchore-ci push-dev ## Push dev Anchore CLI Docker image to Docker Hub
-push-dev:
+push-dev: anchore-ci ## Push dev Anchore CLI Docker image to Docker Hub
 	@$(CI_CMD) push-dev-image "$(COMMIT_SHA)" "$(DEV_IMAGE_REPO)" "$(GIT_BRANCH)" "$(TEST_IMAGE_NAME)"
 
 push-rc: anchore-ci ## Push RC Anchore CLI Docker image to Docker Hub (not available outside of CI)
