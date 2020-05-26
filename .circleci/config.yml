@@ -7,8 +7,7 @@
 #
 # Define YAML anchors
 .global_environment_vars: &global_environment_vars
-# PROD_IMAGE_REPO: anchore/anchore-cli-dev
-  PROD_IMAGE_REPO: robertprince/anchore-cli-dev
+  PROD_IMAGE_REPO: anchore/anchore-cli-dev
   RELEASE_BRANCHES: 0.2 0.3 0.4 0.5 0.6 0.7
   VERBOSE: true
   TERM: xterm
@@ -224,7 +223,7 @@ workflows:
           context: dockerhub
           requires:
             - push_dev_image
-          image_name: robertprince/anchore-cli-dev:${CIRCLE_SHA1}
+          image_name: anchore/anchore-cli-dev:${CIRCLE_SHA1}
           private_registry: true
           timeout: '2000'
 
@@ -250,7 +249,7 @@ workflows:
           filters: *filter_rc_tags
           requires:
             - push_rc_image
-          image_name: robertprince/anchore-cli-dev:${CIRCLE_TAG}
+          image_name: anchore/anchore-cli-dev:${CIRCLE_TAG}
           private_registry: true
           timeout: '2000'
           policy_failure: true
@@ -269,7 +268,7 @@ workflows:
       - push_image:
           name: push_prod_image
           make_job: push-prod
-          context: dockerhub-fake-prod
+          context: dockerhub-prod
           filters: *filter_semver_tags
           requires:
             - hold_for_approval
