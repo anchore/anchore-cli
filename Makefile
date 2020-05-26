@@ -96,7 +96,7 @@ lint: venv anchore-ci ## Lint code (currently using flake8)
 
 # Local CI script
 build: Dockerfile anchore-ci venv ## Build dev Anchore CLI Docker image
-	@$(CI_CMD) scripts/ci/build $(COMMIT_SHA) $(GIT_REPO) $(TEST_IMAGE_NAME)
+	@$(CI_CMD) scripts/ci/build "$(COMMIT_SHA)" "$(GIT_REPO)" "$(TEST_IMAGE_NAME)"
 
 test: ## Run all tests: unit, functional, and e2e
 	@$(MAKE) test-unit
@@ -114,11 +114,11 @@ test-e2e: anchore-ci venv ## Set up and run end to end tests
 test-e2e: CLUSTER_CONFIG := test/e2e/kind-config.yaml
 test-e2e: KUBERNETES_VERSION := 1.15.7
 test-e2e: test/e2e/kind-config.yaml
-	$(ACTIVATE_VENV) && $(CI_CMD) install-cluster-deps $(VENV)
-	$(ACTIVATE_VENV) && $(CI_CMD) cluster-up $(CLUSTER_NAME) $(CLUSTER_CONFIG) $(KUBERNETES_VERSION)
-	$(ACTIVATE_VENV) && $(CI_CMD) setup-e2e-tests $(COMMIT_SHA) $(DEV_IMAGE_REPO) $(GIT_TAG) $(TEST_IMAGE_NAME)
+	$(CI_CMD) install-cluster-deps "$(VENV)"
+	$(ACTIVATE_VENV) && $(CI_CMD) cluster-up "$(CLUSTER_NAME)" "$(CLUSTER_CONFIG)" "$(KUBERNETES_VERSION)"
+	$(ACTIVATE_VENV) && $(CI_CMD) setup-e2e-tests "$(COMMIT_SHA)" "$(DEV_IMAGE_REPO)" "$(GIT_TAG)" "$(TEST_IMAGE_NAME)"
 	$(ACTIVATE_VENV) && $(CI_CMD) e2e-tests
-	$(ACTIVATE_VENV) && $(CI_CMD) cluster-down $(CLUSTER_NAME)
+	$(ACTIVATE_VENV) && $(CI_CMD) cluster-down "$(CLUSTER_NAME)"
 
 push-dev: anchore-ci ## Push dev Anchore CLI Docker image to Docker Hub
 	@$(CI_CMD) push-dev-image "$(COMMIT_SHA)" "$(DEV_IMAGE_REPO)" "$(GIT_BRANCH)" "$(TEST_IMAGE_NAME)"
@@ -142,7 +142,7 @@ dist-rpm: ## Package Anchore CLI for RH-based distros
 	@$(CI_CMD) make-rpm
 
 clean: anchore-ci ## Clean up the project directory and delete dev image
-	@$(CI_CMD) clean $(TEST_IMAGE_NAME)
+	@$(CI_CMD) clean "$(TEST_IMAGE_NAME)"
 
 printvars: ## Print make variables
 	@$(foreach V,$(sort $(.VARIABLES)),$(if $(filter-out environment% default automatic,$(origin $V)),$(warning $V=$($V) ($(value $V)))))
