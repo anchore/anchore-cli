@@ -10,7 +10,7 @@
 ############################################################
 DEV_IMAGE_REPO := robertprince/anchore-cli-dev
 PROD_IMAGE_REPO := robertprince/anchore-cli
-TEST_INFRA_REPO_URL := https://github.com/robertp/test-infra.git
+TEST_HARNESS_REPO := https://github.com/robertp/test-infra.git
 
 
 #### CircleCI environment variables
@@ -78,8 +78,8 @@ all: VERBOSE := true ## Run Anchore CLI full CI pipeline locally (lint, build, t
 all: lint build test push
 
 anchore-ci: ## Fetch test artifacts for local CI
-	git clone $(TEST_INFRA_REPO_URL) /tmp/test-infra
-	rm -rf ./anchore-ci && mv /tmp/test-infra/anchore-ci . && rm -rf /tmp/test-infra
+	rm -rf /tmp/test-infra; git clone $(TEST_HARNESS_REPO) /tmp/test-infra
+	mv ./anchore-ci ./anchore-ci-`date +%F-%H-%M-%S`; mv /tmp/test-infra/anchore-ci .
 
 venv: $(VENV)/bin/activate ## Set up a virtual environment
 $(VENV)/bin/activate:
@@ -107,7 +107,7 @@ test-unit: anchore-ci venv ## Run unit tests (tox)
 	@$(ACTIVATE_VENV) && $(CI_CMD) test-unit
 
 test-functional: anchore-ci venv ## Run functional tests (tox)
-	@$(ACTIVATE_VENV) && $(CI_CMD) test-functional $(PYTHON)
+	@$(ACTIVATE_VENV) && $(CI_CMD) test-functional
 
 # Local CI scripts (set-e2e-tests and e2e-tests)
 test-e2e: anchore-ci venv ## Set up and run end to end tests
