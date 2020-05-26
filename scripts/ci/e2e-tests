@@ -11,7 +11,7 @@ eval "${exec_anchorecli} --version"
 eval "${exec_anchorecli} system wait --timeout 300 --interval 10 --feedsready '' --servicesready 'catalog,apiext,policy_engine,simplequeue,analyzer'"
 eval "${exec_anchorecli} system status"
 
-python test/e2e/aetest.py docker.io/alpine:latest "${exec_anchorecli}"
-python test/e2e/aefailtest.py docker.io/alpine:latest "${exec_anchorecli}"
+python tests/e2e/aetest.py docker.io/alpine:latest "${exec_anchorecli}"
+python tests/e2e/aefailtest.py docker.io/alpine:latest "${exec_anchorecli}"
 
 print_colorized INFO "Finished running Anchore CLI end-to-end tests."; echo

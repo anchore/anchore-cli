@@ -111,9 +111,9 @@ test-functional: anchore-ci venv ## Run functional tests (tox)
 
 # Local CI scripts (set-e2e-tests and e2e-tests)
 test-e2e: anchore-ci venv ## Set up and run end to end tests
-test-e2e: CLUSTER_CONFIG := test/e2e/kind-config.yaml
+test-e2e: CLUSTER_CONFIG := tests/e2e/kind-config.yaml
 test-e2e: KUBERNETES_VERSION := 1.15.7
-test-e2e: test/e2e/kind-config.yaml
+test-e2e: tests/e2e/kind-config.yaml
 	$(CI_CMD) install-cluster-deps "$(VENV)"
 	$(ACTIVATE_VENV) && $(CI_CMD) cluster-up "$(CLUSTER_NAME)" "$(CLUSTER_CONFIG)" "$(KUBERNETES_VERSION)"
 	$(ACTIVATE_VENV) && $(CI_CMD) setup-e2e-tests "$(COMMIT_SHA)" "$(DEV_IMAGE_REPO)" "$(GIT_TAG)" "$(TEST_IMAGE_NAME)"
