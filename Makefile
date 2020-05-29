@@ -130,19 +130,19 @@ setup-and-test-e2e: anchore-ci venv ## Set up and run end to end tests
 push-dev: anchore-ci ## Push dev Anchore CLI Docker image to Docker Hub
 	@$(CI_CMD) push-dev-image "$(COMMIT_SHA)" "$(DEV_IMAGE_REPO)" "$(GIT_BRANCH)" "$(TEST_IMAGE_NAME)"
 
-push-rc: anchore-ci ## Push RC Anchore CLI Docker image to Docker Hub (not available outside of CI)
+push-rc: anchore-ci ## (Not available outside of CI) Push RC Anchore CLI Docker image to Docker Hub
 	@$(CI_CMD) push-rc-image "$(COMMIT_SHA)" "$(DEV_IMAGE_REPO)" "$(GIT_TAG)"
 
-push-prod: anchore-ci ## Push release Anchore CLI Docker image to Docker Hub (not available outside of CI)
+push-prod: anchore-ci ## (Not available outside of CI) Push release Anchore CLI Docker image to Docker Hub
 	@$(CI_CMD) push-prod-image-release "$(DEV_IMAGE_REPO)" "$(GIT_BRANCH)" "$(GIT_TAG)"
 
-push-rebuild: anchore-ci ## Rebuild and push prod Anchore CLI docker image to Docker Hub (not available outside of CI)
+push-rebuild: anchore-ci ## (Not available outside of CI) Rebuild and push prod Anchore CLI docker image to Docker Hub
 	@$(CI_CMD) push-prod-image-rebuild "$(DEV_IMAGE_REPO)" "$(GIT_BRANCH)" "$(GIT_TAG)"
 
 clean: ## Clean everything (with prompts)
 	@$(CI_CMD) clean "$(VENV)" "$(TEST_IMAGE_NAME)"
 
-clean-noprompt: ## Clean everything, without prompts
+clean-noprompt: ## Clean everything (without prompts)
 	@$(CI_CMD) clean-noprompt "$(VENV)" "$(TEST_IMAGE_NAME)"
 
 clean-venv: ## Delete virtual environment
