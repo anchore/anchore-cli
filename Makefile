@@ -124,7 +124,7 @@ test-e2e: anchore-ci venv ## Run end to end tests (assuming cluster is running a
 # Local CI scripts (setup-e2e-tests and e2e-tests)
 setup-and-test-e2e: anchore-ci venv ## Set up and run end to end tests
 	@$(MAKE) setup-e2e-tests
-	@$(MAKE) e2e-tests
+	@$(MAKE) test-e2e
 	@$(MAKE) cluster-down
 
 push-dev: anchore-ci ## Push dev Anchore CLI Docker image to Docker Hub
