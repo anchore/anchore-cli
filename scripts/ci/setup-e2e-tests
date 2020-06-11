@@ -23,16 +23,6 @@ else
     print_colorized INFO "Using remote dev image for e2e testing: ${cli_image}."
 fi
 
-# Test for required environment variables exported in CI jobs
-if [[ "${CI:-false}" == true ]]; then
-    test "${DOCKER_USER:?'Missing required environment variable: DOCKER_USER'}"
-    test "${DOCKER_PASS:?'Missing required environment variable: DOCKER_PASS'}"
-
-    # Create k8s secret using $DOCKER_USER & $DOCKER_PASS and set as default imagePullCreds
-    kubectl create secret docker-registry anchore-enterprise-pullcreds --docker-server=docker.io --docker-username="${DOCKER_USER}" --docker-password="${DOCKER_PASS}" --docker-email=anchoreci@anchore.com
-    kubectl patch serviceaccount default --type=merge --patch '{"imagePullSecrets":[{"name": "anchore-enterprise-pullcreds"}]}'
-fi
-
 if ! helm list | grep e2e-testing; then
     helm repo add stable https://kubernetes-charts.storage.googleapis.com
     helm install e2e-testing -f tests/e2e/base-values.yaml --set anchoreGlobal.image=anchore/anchore-engine-dev:latest stable/anchore-engine | head -n6
