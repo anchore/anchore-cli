@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+# Optional - only used for print_colorized
+source anchore-ci/utils
+
+exec_anchorecli="kubectl exec anchore-cli -- anchore-cli --u admin --p foobar --url http://e2e-testing-anchore-engine-api:8228/v1/"
+
+print_colorized INFO "Running Anchore CLI end-to-end tests."; echo
+
+eval "${exec_anchorecli} --version"
+eval "${exec_anchorecli} system wait --timeout 300 --interval 10 --feedsready '' --servicesready 'catalog,apiext,policy_engine,simplequeue,analyzer'"
+eval "${exec_anchorecli} system status"
+
+python tests/e2e/aetest.py docker.io/alpine:latest "${exec_anchorecli}"
+python tests/e2e/aefailtest.py docker.io/alpine:latest "${exec_anchorecli}"
+
+print_colorized INFO "Finished running Anchore CLI end-to-end tests."; echo
