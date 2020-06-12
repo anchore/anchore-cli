@@ -20,7 +20,7 @@ RUN set -ex && \
     echo "installing anchore" && \
     pip3 wheel --wheel-dir=/build_output/wheels . && \
     cp ./LICENSE /build_output/ && \
-    cp ./docker-entrypoint.sh /build_output/configs/docker-entrypoint.sh 
+    cp ./docker-entrypoint.sh /build_output/configs/docker-entrypoint.sh
 
 RUN tar -z -c -v -C /build_output -f /anchore-buildblob.tgz .
 
@@ -70,8 +70,8 @@ RUN set -ex && \
     useradd --uid 1000 --gid anchore --shell /bin/bash --create-home anchore && \
     mkdir -p /licenses/ && \
     cp /build_output/LICENSE /licenses/ && \
-    cp /build_output/configs/docker-entrypoint.sh /docker-entrypoint.sh 
-   
+    cp /build_output/configs/docker-entrypoint.sh /docker-entrypoint.sh
+
 # Perform any base OS specific setup
 
 # Perform the anchore-cli build and install

@@ -159,7 +159,7 @@ jobs:
       - <<: *ssh_forward_port
       - run:
           name: Run e2e tests
-          command: make test-e2e
+          command: make setup-and-test-e2e
 
   push_image:
     description: Uses make script to push images to DockerHub - dev, rc, prod
