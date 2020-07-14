@@ -24,6 +24,7 @@ _logger = logging.getLogger(__name__)
 
 def setup_config(cli_opts):
     ret = {
+        'config': None,
         'user': None,
         'pass': None,
         'url': "http://localhost:8228/v1",
@@ -37,10 +38,18 @@ def setup_config(cli_opts):
 
     settings = {}
 
+    # load environment if present
+    for e in ['ANCHORE_CLI_USER', 'ANCHORE_CLI_PASS', 'ANCHORE_CLI_URL', 'ANCHORE_CLI_HUB_URL', 'ANCHORE_CLI_API_VERSION', 'ANCHORE_CLI_SSL_VERIFY', 'ANCHORE_CLI_JSON', 'ANCHORE_CLI_DEBUG', 'ANCHORE_CLI_ACCOUNT', 'ANCHORE_CLI_CONFIG']:
+        if e in os.environ:
+            settings[e] = os.environ[e]
+
     # load up credentials file if present
     try:
-        home = os.path.expanduser('~')
-        credential_file = os.path.join(home, '.anchore', 'credentials.yaml')
+        if 'ANCHORE_CLI_CONFIG' in settings:
+            credential_file = settings['ANCHORE_CLI_CONFIG']
+        else:
+            home = os.path.expanduser('~')
+            credential_file = os.path.join(home, '.anchore', 'credentials.yaml')
         if os.path.exists(credential_file):
             ydata = {}
             with open(credential_file, 'r') as FH:
@@ -63,12 +72,9 @@ def setup_config(cli_opts):
     except Exception as err:
         raise Exception("error while processing credentials file, please check format and read permissions - exception: " + str(err))
 
-    # load environment if present
-    for e in ['ANCHORE_CLI_USER', 'ANCHORE_CLI_PASS', 'ANCHORE_CLI_URL', 'ANCHORE_CLI_HUB_URL', 'ANCHORE_CLI_API_VERSION', 'ANCHORE_CLI_SSL_VERIFY', 'ANCHORE_CLI_JSON', 'ANCHORE_CLI_DEBUG', 'ANCHORE_CLI_ACCOUNT']:
-        if e in os.environ:
-            settings[e] = os.environ[e]
-
     # load cmdline options
+    if cli_opts['config']:
+        settings['ANCHORE_CLI_CONFIG'] = cli_opts['config']
     if cli_opts['u']:
         settings['ANCHORE_CLI_USER'] = cli_opts['u']
 
@@ -96,6 +102,8 @@ def setup_config(cli_opts):
     if cli_opts.get('as_account') is not None:
         settings['ANCHORE_CLI_ACCOUNT'] = cli_opts['as_account']
 
+    if 'ANCHORE_CLI_CONFIG' in settings:
+        ret['config'] = settings['ANCHORE_CLI_CONFIG']
     if 'ANCHORE_CLI_USER' in settings:
         ret['user'] = settings['ANCHORE_CLI_USER']
     if 'ANCHORE_CLI_PASS' in settings:
@@ -120,7 +128,6 @@ def setup_config(cli_opts):
         ret['as_account'] = settings['ANCHORE_CLI_ACCOUNT']
 
     return ret
-
 
 def doexit(ecode):
     if not os.environ.get('ANCHORE_CLI_NO_FDS_CLEANUP'):
