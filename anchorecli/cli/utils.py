@@ -259,9 +259,9 @@ def format_output(config, op, params, payload):
                 filtered_records = list(latest_records.values())
 
             if params['full']:
-                header = ['Full Tag', 'Image Digest', 'Analysis Status', 'Image ID']
+                header = ['Full Tag', 'Image Digest', 'Analysis Status', 'Image Status', 'Image ID']
             else:
-                header = ['Full Tag', 'Image Digest', 'Analysis Status']
+                header = ['Full Tag', 'Image Digest', 'Analysis Status', 'Image Status']
 
             t = plain_column_table(header)
 
@@ -276,9 +276,9 @@ def format_output(config, op, params, payload):
                     fulltag = image_detail.pop('registry', "None") + "/" + image_detail.pop('repo', "None") + ":" + image_detail.pop('tag', "None")
 
                     if params['full']:
-                        row = [fulltag, image_record['imageDigest'], image_record['analysis_status'], imageId]
+                        row = [fulltag, image_record['imageDigest'], image_record['analysis_status'], image_record['image_status'], imageId]
                     else:
-                        row = [fulltag, image_record['imageDigest'], image_record['analysis_status']]
+                        row = [fulltag, image_record['imageDigest'], image_record['analysis_status'], image_record['image_status']]
                     if row not in add_rows:
                         add_rows.append(row)
             for row in add_rows:
@@ -364,6 +364,7 @@ def format_output(config, op, params, payload):
                 if image_record.get('parentDigest', None):
                     outdict['Parent Digest'] = str(image_record['parentDigest'])
                 outdict['Analysis Status'] = str(image_record['analysis_status'])
+                outdict['Image Status'] = str(image_record['image_status'])
                 outdict['Image Type'] = str(image_record['image_type'])
                 outdict['Analyzed At'] = str(image_record['analyzed_at'])
 
