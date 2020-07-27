@@ -488,6 +488,32 @@ def delete_image(config, imageDigest=None, force=False):
 
     return(ret)
 
+def delete_images(config, imageDigests=None, force=False):
+    userId = config['user']
+    password = config['pass']
+    base_url = config['url']
+
+    if not imageDigests:
+        raise Exception("must specify a valid imageDigest to delete")
+
+    base_url = re.sub("/$", "", base_url)
+    url = '/'.join([base_url, "images"])
+    url = url + "?imageDigests={}".format(','.join(imageDigests))
+
+    if force:
+        url = url+"&force=True"
+
+    set_account_header(config)
+
+    try:
+        _logger.debug("DELETE url=%s", str(url))
+        r = requests.delete(url, auth=(userId, password), verify=config['ssl_verify'], headers=header_overrides)
+        ret = anchorecli.clients.common.make_client_result(r, raw=False)
+    except Exception as err:
+        raise err
+
+    return(ret)
+
 # policy clients
 
 def add_policy(config, policybundle={}, detail=False):
