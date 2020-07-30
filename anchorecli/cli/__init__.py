@@ -8,6 +8,7 @@ import anchorecli.clients # noqa
 
 
 @click.group(context_settings=dict(help_option_names=['-h', '--help', 'help']))
+@click.option('--config', help='Set the location of the anchore-cli yaml configuration file')
 @click.option('--debug', is_flag=True, help='Debug output to stderr')
 @click.option('--u', help='Username (or use environment variable ANCHORE_CLI_USER)')
 @click.option('--p', help='Password (or use environment variable ANCHORE_CLI_PASS)')
@@ -19,11 +20,12 @@ import anchorecli.clients # noqa
 @click.option('--as-account', help='Set account context for the command to another account than the one the user belongs to. Subject to authz', default=None)
 @click.version_option(version=version.version)
 @click.pass_context
-def main_entry(ctx, debug, u, p, url, hub_url, api_version, insecure, json, as_account):
+def main_entry(ctx, debug, config, u, p, url, hub_url, api_version, insecure, json, as_account):
     if debug:
         logging.basicConfig(level=logging.DEBUG)
 
     cli_opts = {
+        'config': config,
         'u': u,
         'p': p,
         'url': url,
