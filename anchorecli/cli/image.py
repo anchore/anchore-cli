@@ -8,6 +8,8 @@ import base64
 import anchorecli.clients.apiexternal
 import anchorecli.cli.utils
 
+from collections import OrderedDict
+
 config = {}
 _logger = logging.getLogger(__name__)
 
@@ -354,18 +356,21 @@ def query_vuln(input_image, vuln_type, vendor_only):
     anchorecli.cli.utils.doexit(ecode)
 
 
-@image.command(name='del', short_help="Delete an image")
-@click.argument('input_image', required=False)
+@image.command(name='del', short_help="Delete one or more images")
+@click.argument('input_images', required=False, nargs=-1)
 @click.option('--force', is_flag=True, help="Force deletion of image by cancelling any subscription/notification settings prior to image delete")
 @click.option('--all', is_flag=True, help="Delete all images")
-def delete(input_image, force, all):
+def delete(input_images, force, all):
     """
     INPUT_IMAGE: Input image can be in the following formats: Image Digest, ImageID or registry/repo:tag
     """
     ecode = 0
 
-    if all:
-        try:
+    try:
+        image_digests = set()  # gathering image digests to be bundled into delete request
+        input_list = list()  # for preserving same order as input in the output
+
+        if all:
             ret = anchorecli.clients.apiexternal.get_images(config)
             ecode = anchorecli.cli.utils.get_ecode(ret)
             if not ret['success']:
@@ -373,43 +378,47 @@ def delete(input_image, force, all):
 
             for image in ret['payload']:
                 if image['imageDigest']:
-                    ret = anchorecli.clients.apiexternal.delete_image(config, imageDigest=image['imageDigest'], force=force)
-                    if ret['success']:
-                        for image_detail in image['image_detail']:
-                            fulltag = image_detail.pop('registry', "None") + "/" + image_detail.pop('repo', "None") + ":" + image_detail.pop('tag', "None")
-                            print(fulltag)
-                    else:
-                        raise Exception(json.dumps(ret['error'], indent=4))
+                    image_digests.add(image['imageDigest'])
+                    for image_detail in image['image_detail']:
+                        fulltag = image_detail.pop('registry', "None") + "/" + image_detail.pop('repo', "None") + ":" + image_detail.pop('tag', "None")
+                        input_list.append((fulltag, image['imageDigest']))
 
-        except Exception as err:
-            print(anchorecli.cli.utils.format_error_output(config, 'image_delete_all', {}, err))
-            if not ecode:
-                ecode = 2
-    else:
-        try:
-            if input_image is None:
+        else:
+            if not input_images:
                 raise Exception("Missing argument INPUT_IMAGE")
 
-            itype, image, imageDigest = anchorecli.cli.utils.discover_inputimage(config, input_image)
+            for input_image in OrderedDict.fromkeys(input_images).keys():
+                itype, image, imageDigest = anchorecli.cli.utils.discover_inputimage(config, input_image)
 
-            if imageDigest:
-                ret = anchorecli.clients.apiexternal.delete_image(config, imageDigest=imageDigest, force=force)
-                ecode = anchorecli.cli.utils.get_ecode(ret)
-            else:
-                ecode = 1
-                raise Exception("cannot use input image string: no discovered imageDigest")
+                if imageDigest:
+                    # ret = anchorecli.clients.apiexternal.delete_image(config, imageDigest=imageDigest, force=force)
+                    input_list.append((image, imageDigest))
+                    image_digests.add(imageDigest)
+                else:
+                    input_list.append((image, imageDigest))
 
+        if image_digests:
+            # TODO batch them into groups of 100 or so?
+            ret = anchorecli.clients.apiexternal.delete_images(config, imageDigests=list(image_digests), force=force)
+            ecode = anchorecli.cli.utils.get_ecode(ret)
             if ret:
                 if ret['success']:
-                    print(anchorecli.cli.utils.format_output(config, 'image_delete', {}, ret['payload']))
+                    print(anchorecli.cli.utils.format_output(config, 'image_delete', input_list, ret['payload']))
                 else:
                     raise Exception(json.dumps(ret['error'], indent=4))
             else:
                 raise Exception("operation failed with empty response")
+        elif input_list:
+            print(anchorecli.cli.utils.format_output(config, 'image_delete', input_list, []))
+        else:
+            raise Exception("operation failed")
 
-        except Exception as err:
+    except Exception as err:
+        if all:
+            print(anchorecli.cli.utils.format_error_output(config, 'image_delete_all', {}, err))
+        else:
             print(anchorecli.cli.utils.format_error_output(config, 'image_delete', {}, err))
-            if not ecode:
-                ecode = 2
+        if not ecode:
+            ecode = 2
 
     anchorecli.cli.utils.doexit(ecode)

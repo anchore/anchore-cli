@@ -843,6 +843,23 @@ def format_output(config, op, params, payload):
             ret = t.get_string(sortby='Created')+"\n"
         elif op in ['user_setpassword']:
             ret = "Password (re)set success"
+        elif op == 'image_delete':
+            header = ['Input', 'Image Digest', 'Delete Status', 'Details']
+            t = plain_column_table(header)
+            if isinstance(payload, list):
+                for input_image, image_digest in params:
+                    if image_digest:
+                        record = next((item for item in payload if item['digest'] == image_digest), None)
+                        if record:
+                            row = [str(input_image), str(image_digest), str(record['status']), str(record['detail'])]
+                        else:
+                            row = [str(input_image), str(image_digest), 'delete_failed', 'cannot delete input image, no response from server']
+                    else:
+                        row = [str(input_image), str(image_digest), 'delete_failed', 'cannot use input image string, no discovered imageDigest']
+                    t.add_row(row)
+                ret = t.get_string() + "\n"
+            else:
+                ret = 'Success'
         elif op in ['delete_system_service'] or re.match(".*_delete$", op) or re.match(".*_activate$", op) or re.match(".*_deactivate$", op) or re.match(".*_enable$", op) or re.match(".*_disable$", op):
             # NOTE this should always be the last in the if/elif conditional
             ret = 'Success'
