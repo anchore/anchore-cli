@@ -846,20 +846,13 @@ def format_output(config, op, params, payload):
         elif op in ['delete_system_service'] or re.match(".*_delete$", op) or re.match(".*_activate$", op) or re.match(".*_deactivate$", op) or re.match(".*_enable$", op) or re.match(".*_disable$", op):
             # NOTE this should always be the last in the if/elif conditional
             ret = 'Success'
-        elif op in ['analysis_archive_list']:
+        elif op in ['analysis_archive_list', 'archived_analysis']:
             header = ['Digest', 'Tags', 'Analyzed At', 'Archived At', 'Status', 'Archive Size Bytes']
             t = plain_column_table(header)
             for record in payload:
                 row = [str(record['imageDigest']), str(','.join([x['pullstring'] for x in record.get('image_detail', [])])), str(record['analyzed_at']), str(record['created_at']), str(record['status']), str(record['archive_size_bytes'])]
                 t.add_row(row)
             ret = t.get_string(sortby='Archived At', reversesort=True)+"\n"
-        elif op in ['archived_analysis']:
-            header = ['Digest', 'Tags', 'Analyzed At', 'Archived At', 'Status', 'Archive Size Bytes']
-            t = plain_column_table(header)
-            for record in payload:
-                row = [str(record['imageDigest']), str(','.join([x['pullstring'] for x in record.get('image_detail', [])])), str(record['analyzed_at']), str(record['created_at']), str(record['status']), str(record['archive_size_bytes'])]
-                t.add_row(row)
-            ret = t.get_string(sortby='Archived At', reversesort=True) + "\n"
         elif op in ['archive_analysis']:
             header = ['Image Digest', 'Archive Status', 'Details']
             t = plain_column_table(header)
