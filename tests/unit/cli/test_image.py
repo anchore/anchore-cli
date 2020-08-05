@@ -118,3 +118,70 @@ class TestQueryVuln:
         result = runner.invoke(image.query_vuln, ['centos/centos:8', 'all'])
         assert result.exit_code == 0
         assert item in result.stdout
+
+
+class TestDeleteImage:
+    def test_deleted_pre_v080(self, monkeypatch, response):
+        monkeypatch.setattr(image.anchorecli.cli.utils, 'discover_inputimage', lambda *a, **kw: (None, None, '<digest>'))
+        monkeypatch.setattr(image, 'config', {'jsonmode': False})
+        monkeypatch.setattr(image.anchorecli.clients.apiexternal, 'delete_image', lambda *a, **kw: {
+            'success': True,
+            'httpcode': 200,
+            'payload': {},
+            'error': {}
+        })
+        runner = CliRunner()
+        response(success=True)
+        result = runner.invoke(image.delete, ['centos/centos:8'])
+        assert result.exit_code == 0
+
+    def test_delete_failed_pre_v080(self, monkeypatch, response):
+        monkeypatch.setattr(image.anchorecli.cli.utils, 'discover_inputimage', lambda *a, **kw: (None, None, '<digest>'))
+        monkeypatch.setattr(image, 'config', {'jsonmode': False})
+        monkeypatch.setattr(image.anchorecli.clients.apiexternal, 'delete_image', lambda *a, **kw: {
+            'success': False,
+            'httpcode': 409,
+            'payload': {},
+            'error': 'cannot delete image'
+        })
+        runner = CliRunner()
+        response(success=True)
+        result = runner.invoke(image.delete, ['centos/centos:8'])
+        assert result.exit_code == 1
+
+    def test_is_deleting(self, monkeypatch, response):
+        monkeypatch.setattr(image.anchorecli.cli.utils, 'discover_inputimage', lambda *a, **kw: (None, None, '<digest>'))
+        monkeypatch.setattr(image, 'config', {'jsonmode': False})
+        monkeypatch.setattr(image.anchorecli.clients.apiexternal, 'delete_image', lambda *a, **kw: {
+            'success': True,
+            'httpcode': 200,
+            'payload': {
+                'detail': None,
+                'digest': '<digest>',
+                'status': 'deleting'
+            },
+            'error': {}
+        })
+        runner = CliRunner()
+        response(success=True)
+        result = runner.invoke(image.delete, ['centos/centos:8'])
+        assert result.exit_code == 0
+
+    def test_delete_failed(self, monkeypatch, response):
+        monkeypatch.setattr(image.anchorecli.cli.utils, 'discover_inputimage', lambda *a, **kw: (None, None, '<digest>'))
+        monkeypatch.setattr(image, 'config', {'jsonmode': False})
+        monkeypatch.setattr(image.anchorecli.clients.apiexternal, 'delete_image', lambda *a, **kw: {
+            'success': True,
+            'httpcode': 200,
+            'payload': {
+                'detail': 'cannot delete image',
+                'digest': '<digest>',
+                'status': 'delete_failed'
+            },
+            'error': {}
+        })
+        runner = CliRunner()
+        response(success=True)
+        result = runner.invoke(image.delete, ['centos/centos:8'])
+        assert result.exit_code == 1
+

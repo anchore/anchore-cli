@@ -375,6 +375,10 @@ def delete(input_image, force, all):
                 if image['imageDigest']:
                     ret = anchorecli.clients.apiexternal.delete_image(config, imageDigest=image['imageDigest'], force=force)
                     if ret['success']:
+                        payload = ret.get('payload')
+                        if payload and payload.get('status') != 'deleting':
+                            raise Exception(payload.get('details'))
+
                         for image_detail in image['image_detail']:
                             fulltag = image_detail.pop('registry', "None") + "/" + image_detail.pop('repo', "None") + ":" + image_detail.pop('tag', "None")
                             print(fulltag)
@@ -401,7 +405,12 @@ def delete(input_image, force, all):
 
             if ret:
                 if ret['success']:
-                    print(anchorecli.cli.utils.format_output(config, 'image_delete', {}, ret['payload']))
+                    payload = ret.get('payload')
+                    if payload and payload.get('status') != 'deleting':
+                        ecode = 1  # backwards compatibility with pre v0.8.0 error
+                        raise Exception(payload.get('details', 'cannot delete image'))
+                    else:
+                        print(anchorecli.cli.utils.format_output(config, 'image_delete', {}, ret['payload']))
                 else:
                     raise Exception(json.dumps(ret['error'], indent=4))
             else:
