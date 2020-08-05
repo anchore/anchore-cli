@@ -336,6 +336,8 @@ def format_output(config, op, params, payload):
                     obuf = obuf + t.get_string(sortby='Package')
                 elif params['query_type'] in ['manifest', 'dockerfile', 'docker_history']:
                     obuf = format_content_query(payload)
+                elif params['query_type'] in ['malware']:
+                    obuf = format_malware_scans(payload, params)
                 else:
                     try:
                         if payload['content']:
@@ -846,20 +848,13 @@ def format_output(config, op, params, payload):
         elif op in ['delete_system_service'] or re.match(".*_delete$", op) or re.match(".*_activate$", op) or re.match(".*_deactivate$", op) or re.match(".*_enable$", op) or re.match(".*_disable$", op):
             # NOTE this should always be the last in the if/elif conditional
             ret = 'Success'
-        elif op in ['analysis_archive_list']:
+        elif op in ['analysis_archive_list', 'archived_analysis']:
             header = ['Digest', 'Tags', 'Analyzed At', 'Archived At', 'Status', 'Archive Size Bytes']
             t = plain_column_table(header)
             for record in payload:
                 row = [str(record['imageDigest']), str(','.join([x['pullstring'] for x in record.get('image_detail', [])])), str(record['analyzed_at']), str(record['created_at']), str(record['status']), str(record['archive_size_bytes'])]
                 t.add_row(row)
             ret = t.get_string(sortby='Archived At', reversesort=True)+"\n"
-        elif op in ['archived_analysis']:
-            header = ['Digest', 'Tags', 'Analyzed At', 'Archived At', 'Status', 'Archive Size Bytes']
-            t = plain_column_table(header)
-            for record in payload:
-                row = [str(record['imageDigest']), str(','.join([x['pullstring'] for x in record.get('image_detail', [])])), str(record['analyzed_at']), str(record['created_at']), str(record['status']), str(record['archive_size_bytes'])]
-                t.add_row(row)
-            ret = t.get_string(sortby='Archived At', reversesort=True) + "\n"
         elif op in ['archive_analysis']:
             header = ['Image Digest', 'Archive Status', 'Details']
             t = plain_column_table(header)
@@ -905,6 +900,59 @@ def format_output(config, op, params, payload):
         except Exception:
             ret = str(payload)
     return ret
+
+
+def format_malware_scans(payload, params):
+    """
+    Example response:
+    {
+        "content": [
+            {
+                "enabled": true,
+                "findings": [
+                    {
+                        "path": "/elf_payload1",
+                        "signature": "Unix.Trojan.MSShellcode-40"
+                    }
+                ],
+                "metadata": {
+                    "db_version": {
+                        "bytecode": "331",
+                        "daily": "25890",
+                        "main": "59"
+                    }
+                },
+                "name": "clamav"
+            }
+        ],
+        "content_type": "malware",
+        "imageDigest": "sha256:0eb874fcad5414762a2ca5b2496db5291aad7d3b737700d05e45af43bad3ce4d"
+    }
+
+    :param payload:
+    :param params:
+    :return:
+    """
+    obuf = ""
+
+    # Handle error
+    if 'query_type' not in params or not params['query_type']:
+        # payload will be a list with what is available as a query for the
+        # given image
+        for query in payload:
+            obuf += "%s: available\n" % query
+        return obuf + "\n"
+
+    if params['query_type'] in ['malware']:
+        header = ['Scanner', 'Matched Signature', 'Path']
+        t = plain_column_table(header)
+        for el in payload['content']:
+            scanner = el.get('name')
+            for row in [[scanner, x.get('signature', 'unknown'), x.get('path', 'unknown')] for x in el.get('findings', {})]:
+                t.add_row(row)
+        obuf = obuf + t.get_string(sortby='Path')
+
+    return obuf
 
 
 def format_vulnerabilities(payload, params):

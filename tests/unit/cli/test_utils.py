@@ -1,6 +1,6 @@
 import pytest
 from anchorecli.cli import utils
-
+import prettytable
 
 class TestFormatErrorOutput:
 
@@ -151,3 +151,71 @@ class TestFormatContentQuery:
         payload = {'content': content}
         result = utils.format_content_query(payload)
         assert result == 'FROM centos7'
+
+
+class TestFormatContentMalware:
+
+    @pytest.mark.parametrize('content, expected', [({
+        "content": [
+            {
+                "enabled": True,
+                "findings": [
+                    {
+                        "path": "/elf_payload1",
+                        "signature": "Unix.Trojan.MSShellcode-40"
+                    }
+                ],
+                "metadata": {
+                    "db_version": {
+                        "bytecode": "331",
+                        "daily": "25890",
+                        "main": "59"
+                    }
+                },
+                "name": "clamav"
+            }
+        ],
+        "content_type": "malware",
+        "imageDigest": "sha256:0eb874fcad5414762a2ca5b2496db5291aad7d3b737700d05e45af43bad3ce4d"
+    }, [['clamav', "Unix.Trojan.MSShellcode-40", '/elf_payload1']]),
+    ({
+             "content": [
+                 {
+                     "enabled": True,
+                     "findings": [
+                         {
+                             "path": "/elf_payload1",
+                             "signature": "Unix.Trojan.MSShellcode-40"
+                         },
+                         {
+                             "path": "/some/dir/path/corrupted",
+                             "signature": "Unix.Trojan.MSShellcode-40"
+                         }
+
+                     ],
+                     "metadata": {
+                         "db_version": {
+                             "bytecode": "331",
+                             "daily": "25890",
+                             "main": "59"
+                         }
+                     },
+                     "name": "clamav"
+                 }
+             ],
+             "content_type": "malware",
+             "imageDigest": "sha256:0eb874fcad5414762a2ca5b2496db5291aad7d3b737700d05e45af43bad3ce4d"
+         }, [['clamav', "Unix.Trojan.MSShellcode-40", '/elf_payload1'], ['clamav', "Unix.Trojan.MSShellcode-40", '/some/dir/path/corrupted']]),
+    ({'content': []}, None)])
+    def test_scan_results(self, content, expected):
+        params = {'query_type': 'malware'}
+        result = utils.format_malware_scans(content, params)
+        assert result is not None
+        if expected:
+            t = utils.plain_column_table(['Scanner', 'Matched Signature', 'Path'])
+            for r in expected:
+                t.add_row(r)
+            assert result == t.get_string(sortby='Path')
+
+
+
