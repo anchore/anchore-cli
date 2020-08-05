@@ -377,7 +377,7 @@ def delete(input_image, force, all):
                     if ret['success']:
                         payload = ret.get('payload')
                         if payload and payload.get('status') != 'deleting':
-                            raise Exception(payload.get('details'))
+                            raise Exception(payload.get('detail'))
 
                         for image_detail in image['image_detail']:
                             fulltag = image_detail.pop('registry', "None") + "/" + image_detail.pop('repo', "None") + ":" + image_detail.pop('tag', "None")
@@ -408,7 +408,7 @@ def delete(input_image, force, all):
                     payload = ret.get('payload')
                     if payload and payload.get('status') != 'deleting':
                         ecode = 1  # backwards compatibility with pre v0.8.0 error
-                        raise Exception(payload.get('details', 'cannot delete image'))
+                        raise Exception(payload.get('detail', 'cannot delete image'))
                     else:
                         print(anchorecli.cli.utils.format_output(config, 'image_delete', {}, ret['payload']))
                 else:
