@@ -336,6 +336,8 @@ def format_output(config, op, params, payload):
                     obuf = obuf + t.get_string(sortby='Package')
                 elif params['query_type'] in ['manifest', 'dockerfile', 'docker_history']:
                     obuf = format_content_query(payload)
+                elif params['query_type'] in ['malware']:
+                    obuf = format_malware_scans(payload, params)
                 else:
                     try:
                         if payload['content']:
@@ -898,6 +900,59 @@ def format_output(config, op, params, payload):
         except Exception:
             ret = str(payload)
     return ret
+
+
+def format_malware_scans(payload, params):
+    """
+    Example response:
+    {
+        "content": [
+            {
+                "enabled": true,
+                "findings": [
+                    {
+                        "path": "/elf_payload1",
+                        "signature": "Unix.Trojan.MSShellcode-40"
+                    }
+                ],
+                "metadata": {
+                    "db_version": {
+                        "bytecode": "331",
+                        "daily": "25890",
+                        "main": "59"
+                    }
+                },
+                "name": "clamav"
+            }
+        ],
+        "content_type": "malware",
+        "imageDigest": "sha256:0eb874fcad5414762a2ca5b2496db5291aad7d3b737700d05e45af43bad3ce4d"
+    }
+
+    :param payload:
+    :param params:
+    :return:
+    """
+    obuf = ""
+
+    # Handle error
+    if 'query_type' not in params or not params['query_type']:
+        # payload will be a list with what is available as a query for the
+        # given image
+        for query in payload:
+            obuf += "%s: available\n" % query
+        return obuf + "\n"
+
+    if params['query_type'] in ['malware']:
+        header = ['Scanner', 'Matched Signature', 'Path']
+        t = plain_column_table(header)
+        for el in payload['content']:
+            scanner = el.get('name')
+            for row in [[scanner, x.get('signature', 'unknown'), x.get('path', 'unknown')] for x in el.get('findings', {})]:
+                t.add_row(row)
+        obuf = obuf + t.get_string(sortby='Path')
+
+    return obuf
 
 
 def format_vulnerabilities(payload, params):
