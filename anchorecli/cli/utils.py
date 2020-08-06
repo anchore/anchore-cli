@@ -922,7 +922,7 @@ def format_malware_scans(payload, params):
                         "main": "59"
                     }
                 },
-                "name": "clamav"
+                "scanner": "clamav"
             }
         ],
         "content_type": "malware",
@@ -947,7 +947,7 @@ def format_malware_scans(payload, params):
         header = ['Scanner', 'Matched Signature', 'Path']
         t = plain_column_table(header)
         for el in payload['content']:
-            scanner = el.get('name')
+            scanner = el.get('scanner')
             for row in [[scanner, x.get('signature', 'unknown'), x.get('path', 'unknown')] for x in el.get('findings', {})]:
                 t.add_row(row)
         obuf = obuf + t.get_string(sortby='Path')
