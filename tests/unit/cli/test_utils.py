@@ -172,7 +172,7 @@ class TestFormatContentMalware:
                         "main": "59"
                     }
                 },
-                "name": "clamav"
+                "scanner": "clamav"
             }
         ],
         "content_type": "malware",
@@ -200,7 +200,7 @@ class TestFormatContentMalware:
                              "main": "59"
                          }
                      },
-                     "name": "clamav"
+                     "scanner": "clamav"
                  }
              ],
              "content_type": "malware",
