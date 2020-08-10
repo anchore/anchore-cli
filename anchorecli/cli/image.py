@@ -376,7 +376,7 @@ def delete(input_image, force, all):
                     ret = anchorecli.clients.apiexternal.delete_image(config, imageDigest=image['imageDigest'], force=force)
                     if ret['success']:
                         payload = ret.get('payload')
-                        if payload and payload.get('status') != 'deleting':
+                        if isinstance(payload, dict) and payload.get('status') != 'deleting':  # >= v.0.8.8
                             raise Exception(payload.get('detail'))
 
                         for image_detail in image['image_detail']:
@@ -406,7 +406,7 @@ def delete(input_image, force, all):
             if ret:
                 if ret['success']:
                     payload = ret.get('payload')
-                    if payload and payload.get('status') != 'deleting':
+                    if isinstance(payload, dict) and payload.get('status') != 'deleting':  # >= v.0.8.8
                         ecode = 1  # backwards compatibility with pre v0.8.0 error
                         raise Exception(payload.get('detail', 'cannot delete image'))
                     else:
