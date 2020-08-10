@@ -127,7 +127,7 @@ class TestDeleteImage:
         monkeypatch.setattr(image.anchorecli.clients.apiexternal, 'delete_image', lambda *a, **kw: {
             'success': True,
             'httpcode': 200,
-            'payload': {},
+            'payload': True,
             'error': {}
         })
         runner = CliRunner()
