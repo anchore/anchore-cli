@@ -1158,6 +1158,16 @@ def format_output(config, op, params, payload):
                 ]
                 t.add_row(row)
             ret = t.get_string(sortby="Transition Date", reversesort=True) + "\n"
+        elif (
+            op in ["delete_system_service", "test_webhook"]
+            or re.match(".*_delete$", op)
+            or re.match(".*_activate$", op)
+            or re.match(".*_deactivate$", op)
+            or re.match(".*_enable$", op)
+            or re.match(".*_disable$", op)
+        ):
+            # NOTE this should always be the last in the if/elif conditional
+            ret = "Success"
         else:
             raise Exception("no output handler for this operation ({})".format(op))
     except Exception as err:
