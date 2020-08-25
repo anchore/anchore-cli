@@ -70,7 +70,7 @@ GIT_TAG := $(shell echo $${CIRCLE_TAG:=null})
 .PHONY: ci build install install-dev
 .PHONY: lint clean clean-all test
 .PHONY: test-unit test-functional setup-and-test-e2e test-e2e
-.PHONY: push-dev push-rc push-prod push-rebuild push-redhat
+.PHONY: push-dev push-rc push-prod push-rebuild
 .PHONY: cluster-up cluster-down 
 .PHONY: setup-test-infra venv printvars help
 
@@ -132,9 +132,6 @@ push-rc: anchore-ci ## (Not available outside of CI) Push RC Anchore CLI Docker 
 
 push-prod: anchore-ci ## (Not available outside of CI) Push release Anchore CLI Docker image to Docker Hub
 	@$(CI_CMD) push-prod-image-release "$(DEV_IMAGE_REPO)" "$(GIT_BRANCH)" "$(GIT_TAG)"
-
-push-redhat: setup-test-infra ## (Not available outside of CI) Push prod Anchore Engine docker image to RedHat Connect
-	@$(CI_CMD) push-redhat-image "$(GIT_TAG)"
 
 push-rebuild: anchore-ci ## (Not available outside of CI) Rebuild and push prod Anchore CLI docker image to Docker Hub
 	@$(CI_CMD) push-prod-image-rebuild "$(DEV_IMAGE_REPO)" "$(GIT_BRANCH)" "$(GIT_TAG)"

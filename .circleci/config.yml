@@ -272,13 +272,6 @@ workflows:
           filters: *filter_semver_tags
           requires:
             - hold_for_approval
-      - push_image:
-          name: push_redhat_image
-          make_job: push-redhat
-          context: dockerhub-prod
-          filters: *filter_semver_tags
-          requires:
-            - push_prod_image
 
   rebuild_image_workflow:
     jobs:
