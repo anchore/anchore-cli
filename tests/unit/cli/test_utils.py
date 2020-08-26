@@ -168,6 +168,12 @@ class TestFormatMetadataQuery:
         result = utils.format_metadata_query(payload)
         assert result == ''
 
+    @pytest.mark.parametrize('metadata', ['', None])
+    def test_metadata_defined_but_empty(self, metadata):
+        payload = {'metadata': metadata}
+        result = utils.format_metadata_query(payload)
+        assert result == ''
+
     def test_metadata_cannot_be_decoded(self):
         payload = {'metadata': b'\t23hsdf'}
         result = utils.format_metadata_query(payload)
@@ -177,7 +183,31 @@ class TestFormatMetadataQuery:
     def test_content_gets_decoded(self, metadata):
         payload = {'metadata': metadata}
         result = utils.format_metadata_query(payload)
-        assert result != ''
+        assert result.startswith('Metadata: ')
+
+    @pytest.mark.parametrize('image_digest', ['', None])
+    def test_image_digest_defined_but_empty(self, image_digest):
+        payload = {'imageDigest': image_digest}
+        result = utils.format_metadata_query(payload)
+        assert result == ''
+
+    def test_image_digest_parsed(self):
+        image_digest = 'sha256:0c03ccebef8d908f181a9fbd11eaf84c858be8396c71c89bf1b372ee59852eca'
+        payload = {'imageDigest': image_digest}
+        result = utils.format_metadata_query(payload)
+        assert result == 'Image Digest: {}\n'.format(image_digest)
+
+    @pytest.mark.parametrize('mtype', ['', None])
+    def test_metadata_type_defined_but_empty(self, mtype):
+        payload = {'metadata_type': mtype}
+        result = utils.format_metadata_query(payload)
+        assert result == ''
+
+    @pytest.mark.parametrize('mtype', ['dockerfile', 'docker_history', 'manifest'])
+    def test_metadata_type_parsed(self, mtype):
+        payload = {'metadata_type': mtype}
+        result = utils.format_metadata_query(payload)
+        assert result == 'Metadata Type: {}\n'.format(mtype)
 
 
 class TestFormatContentMalware:
