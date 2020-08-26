@@ -128,6 +128,31 @@ class TestFormatVulnerabilities:
         ]
 
 
+class TestFormatContentQuery:
+
+    def test_no_content(self):
+        payload = {}
+        result = utils.format_content_query(payload)
+        assert result == ''
+
+    @pytest.mark.parametrize('content', [[], '', None])
+    def test_content_defined_but_empty(self, content):
+        payload = {'content': content}
+        result = utils.format_content_query(payload)
+        assert result == ''
+
+    def test_content_cannot_be_decoded(self):
+        payload = {'content': b'\t23hsdf'}
+        result = utils.format_content_query(payload)
+        assert result == ''
+
+    @pytest.mark.parametrize('content', [b'RlJPTSBjZW50b3M3', 'RlJPTSBjZW50b3M3'])
+    def test_content_gets_decoded(self, content):
+        payload = {'content': content}
+        result = utils.format_content_query(payload)
+        assert result == 'FROM centos7'
+
+
 class TestFormatMetadataQuery:
 
     _manifest_metadata = 'eyJzY2hlbWFWZXJzaW9uIjogMiwgIm1lZGlhVHlwZSI6ICJhcHBsaWNhdGlvbi92bmQuZG9ja2Vy\nLmRpc3RyaWJ1dGlvbi5tYW5pZmVzdC52Mitqc29uIiwgImNvbmZpZyI6IHsibWVkaWFUeXBlIjog\nImFwcGxpY2F0aW9uL3ZuZC5kb2NrZXIuY29udGFpbmVyLmltYWdlLnYxK2pzb24iLCAic2l6ZSI6\nIDczMTIsICJkaWdlc3QiOiAic2hhMjU2Ojk1OGQzNDkxYzA5YWU1MDAzNzUwMTFiZTNlZTc3YWVj\nMDIzODdlMTFiYTg1ZDQ4NmZlMzY1ZTY2N2JkNWUyOWEifSwgImxheWVycyI6IFt7Im1lZGlhVHlw\nZSI6ICJhcHBsaWNhdGlvbi92bmQuZG9ja2VyLmltYWdlLnJvb3Rmcy5kaWZmLnRhci5nemlwIiwg\nInNpemUiOiA1MDM5NjAwMCwgImRpZ2VzdCI6ICJzaGEyNTY6ZDZmZjM2YzllYzQ4MjJjOWZmODk1\nMzU2MGY3YmE0MTY1M2IzNDhhOWMxMTM2NzU1ZTY1MzU3NWY1OGZiZGVkNyJ9LCB7Im1lZGlhVHlw\nZSI6ICJhcHBsaWNhdGlvbi92bmQuZG9ja2VyLmltYWdlLnJvb3Rmcy5kaWZmLnRhci5nemlwIiwg\nInNpemUiOiA3ODExNTcwLCAiZGlnZXN0IjogInNoYTI1NjpjOTU4ZDY1YjMwOTBhZWZlYTkxMjg0\nZDAxOGIyYTg2NTMwYTNjODE3NGI3MjYxNmM0ZTc2OTkzYzY5NmE1Nzk3In0sIHsibWVkaWFUeXBl\nIjogImFwcGxpY2F0aW9uL3ZuZC5kb2NrZXIuaW1hZ2Uucm9vdGZzLmRpZmYudGFyLmd6aXAiLCAi\nc2l6ZSI6IDk5OTYzMzcsICJkaWdlc3QiOiAic2hhMjU2OmVkYWYwYTZiMDkyZjU2NzNlYzA1YjQw\nZWRiNjA2Y2U1ODg4MWIyZjQwNDk0MjUxMTE3ZDMxODA1MjI1ZWYwNjQifSwgeyJtZWRpYVR5cGUi\nOiAiYXBwbGljYXRpb24vdm5kLmRvY2tlci5pbWFnZS5yb290ZnMuZGlmZi50YXIuZ3ppcCIsICJz\naXplIjogNTE4Mjk4MjYsICJkaWdlc3QiOiAic2hhMjU2OjgwOTMxY2Y2ODgxNjczZmQxNjFhM2Zk\nNzNlODk3MWZlNGE1NjlmZDdmYmI0NGU5NTZkMjYxY2E1OGQ5N2RmYWIifSwgeyJtZWRpYVR5cGUi\nOiAiYXBwbGljYXRpb24vdm5kLmRvY2tlci5pbWFnZS5yb290ZnMuZGlmZi50YXIuZ3ppcCIsICJz\naXplIjogMTkyMjQzNDk5LCAiZGlnZXN0IjogInNoYTI1NjpiYzFiOGFjYTM4MjVlNmMzYjU3ZTI4\nYzgwNzUxODBmOTc4NzkxNjFkZDU4MzMzZGUxM2Y2YjZkYTBmODQyYWYzIn0sIHsibWVkaWFUeXBl\nIjogImFwcGxpY2F0aW9uL3ZuZC5kb2NrZXIuaW1hZ2Uucm9vdGZzLmRpZmYudGFyLmd6aXAiLCAi\nc2l6ZSI6IDE5OSwgImRpZ2VzdCI6ICJzaGEyNTY6ZTY0ZWRhZmUzZjM1OGZiNmYyMDlmMTQwYWYy\nNGQ5ODM2MjQ3MzYxNzM2MGQ2ZTUxNDFhMGVkZjY5N2E4MjNiYiJ9LCB7Im1lZGlhVHlwZSI6ICJh\ncHBsaWNhdGlvbi92bmQuZG9ja2VyLmltYWdlLnJvb3Rmcy5kaWZmLnRhci5nemlwIiwgInNpemUi\nOiAyMjg3ODEwNiwgImRpZ2VzdCI6ICJzaGEyNTY6NWY3ZTMxYTIyNWJjZDdjZmQ0YzI5MzVhZDc5\nNjQyOTk0NjU3MTJmMmYyMDU2NzlkMzc2NTQ4NGZkZDhjZjJlYiJ9LCB7Im1lZGlhVHlwZSI6ICJh\ncHBsaWNhdGlvbi92bmQuZG9ja2VyLmltYWdlLnJvb3Rmcy5kaWZmLnRhci5nemlwIiwgInNpemUi\nOiAxNDMsICJkaWdlc3QiOiAic2hhMjU2OmE3YTI1ODJlM2EyODFmZmJlY2Y3ZTcxMzgyZGVlNTA0\nNDNkZmM0NzUzNzU2NjgwZjM1YjViZTk5OTEwYzY0NDMifV19\n'
