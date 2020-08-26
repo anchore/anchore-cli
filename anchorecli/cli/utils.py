@@ -335,7 +335,12 @@ def format_output(config, op, params, payload):
                         t.add_row(row)
                     obuf = obuf + t.get_string(sortby='Package')
                 elif params['query_type'] in ['manifest', 'dockerfile', 'docker_history']:
-                    obuf = format_content_query(payload)
+                    if op == 'image_content':
+                        obuf = format_content_query(payload)
+                    else:
+                        # Metadata Query. Note: The design of this whole method is bad, just doing the change in place
+                        # to reduce changes for now, but should refactor this thing later
+                        obuf = format_metadata_query(payload)
                 elif params['query_type'] in ['malware']:
                     obuf = format_malware_scans(payload, params)
                 else:
@@ -1001,6 +1006,31 @@ def format_content_query(payload):
         # sort of warts we would need to catch with utf-8 decoding and
         # b64decode. The actual exception is not that relevant here
         return ''
+
+
+def format_metadata_query(payload):
+    ret = ''
+
+    if not payload:
+        return ret
+
+    image_digest = payload.get('imageDigest', '')
+    if image_digest:
+        ret += 'Image Digest: {}\n'.format(image_digest)
+
+    metadata = payload.get('metadata', '')
+    if metadata:
+        try:
+            ret += 'Metadata: {}\n'.format(base64.b64decode(metadata).decode('utf-8'))
+        except Exception:
+            _logger.warning('Failed to base64 decode Metadata')
+            pass
+
+    metadata_type = payload.get('metadata_type', '')
+    if metadata_type:
+        ret += 'Metadata Type: {}\n'.format(metadata_type)
+
+    return ret
 
 
 def string_splitter(input_str, max_length=40):
