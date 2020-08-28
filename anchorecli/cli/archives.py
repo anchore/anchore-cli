@@ -57,7 +57,10 @@ def image_restore(image_digest):
     anchorecli.cli.utils.doexit(ecode)
 
 
-@images.command(name='add', short_help="Add an image analysis to the archive")
+@images.command(
+    name='add',
+    short_help="Add an image analysis to the archive. NOTE: this does not remove the image from the engine."
+)
 @click.argument('image_digests', nargs=-1)
 def image_add(image_digests):
     """
