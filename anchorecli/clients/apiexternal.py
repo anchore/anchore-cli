@@ -1,4 +1,5 @@
 import json
+import os
 import re
 import requests
 import logging
@@ -1076,45 +1077,32 @@ def get_subscription_types(config):
     return ret
 
 
-# repo clients
-
-
-def add_repo(config, input_repo, autosubscribe=False, lookuptag=None):
-    userId = config["user"]
+def add_repo(config, input_repo, auto_subscribe=False, lookup_tag=None, dry_run=False):
+    user_id = config["user"]
     password = config["pass"]
     base_url = config["url"]
 
-    ret = {}
+    url = os.path.join(base_url, "repositories")
 
-    base_url = re.sub("/$", "", base_url)
-    url = "/".join(
-        [
-            base_url,
-            "repositories?repository="
-            + input_repo
-            + "&autosubscribe="
-            + str(autosubscribe),
-        ]
-    )
-    if lookuptag:
-        url = url + "&lookuptag=" + str(lookuptag)
+    query = {
+        "repository": input_repo,
+        "autosubscribe": str(auto_subscribe),
+        "dryrun": str(dry_run),
+    }
+    if lookup_tag:
+        query["lookuptag"] = lookup_tag
 
     set_account_header(config)
 
-    try:
-        _logger.debug("POST url=%s", str(url))
-        r = requests.post(
-            url,
-            auth=(userId, password),
-            verify=config["ssl_verify"],
-            headers=header_overrides,
-        )
-        ret = anchorecli.clients.common.make_client_result(r, raw=False)
-    except Exception as err:
-        raise err
-
-    return ret
-    # return(add_subscription(config, 'repo_update', input_repo))
+    _logger.debug("POST url=%s", str(url))
+    r = requests.post(
+        url,
+        auth=(user_id, password),
+        verify=config["ssl_verify"],
+        headers=header_overrides,
+        params=query,
+    )
+    return anchorecli.clients.common.make_client_result(r, raw=False)
 
 
 def get_repo(config, input_repo=None):

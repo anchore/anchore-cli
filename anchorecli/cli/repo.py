@@ -1,9 +1,10 @@
-import sys
 import json
+import sys
+
 import click
 
-import anchorecli.clients.apiexternal
 import anchorecli.cli.utils
+import anchorecli.clients.apiexternal
 
 config = {}
 
@@ -31,26 +32,35 @@ def repo(ctx_config):
     "--lookuptag",
     help="Specify a tag to use for repo tag scan if 'latest' tag does not exist in the repo.",
 )
+@click.option(
+    "--dryrun",
+    is_flag=True,
+    help="List which tags would actually be watched if this repo was added (without actually adding the repo)",
+)
 @click.argument("input_repo", nargs=1)
-def add(input_repo, noautosubscribe, lookuptag):
+def add(input_repo, noautosubscribe, lookuptag, dryrun):
     """
     INPUT_REPO: Input repository can be in the following formats: registry/repo
     """
-    ecode = 0
+    response_code = 0
 
-    autosubscribe = not noautosubscribe
+    auto_subscribe = not noautosubscribe
     image_info = anchorecli.cli.utils.parse_dockerimage_string(input_repo)
     input_repo = image_info["registry"] + "/" + image_info["repo"]
 
     try:
         ret = anchorecli.clients.apiexternal.add_repo(
-            config, input_repo, autosubscribe=autosubscribe, lookuptag=lookuptag
+            config,
+            input_repo,
+            auto_subscribe=auto_subscribe,
+            lookup_tag=lookuptag,
+            dry_run=dryrun,
         )
-        ecode = anchorecli.cli.utils.get_ecode(ret)
+        response_code = anchorecli.cli.utils.get_ecode(ret)
         if ret["success"]:
             print(
                 anchorecli.cli.utils.format_output(
-                    config, "repo_add", {}, ret["payload"]
+                    config, "repo_add", {"dry_run": dryrun}, ret["payload"]
                 )
             )
         else:
@@ -58,10 +68,10 @@ def add(input_repo, noautosubscribe, lookuptag):
 
     except Exception as err:
         print(anchorecli.cli.utils.format_error_output(config, "repo_add", {}, err))
-        if not ecode:
-            ecode = 2
+        if not response_code:
+            response_code = 2
 
-    anchorecli.cli.utils.doexit(ecode)
+    anchorecli.cli.utils.doexit(response_code)
 
 
 @repo.command(name="list", short_help="List added repositories")

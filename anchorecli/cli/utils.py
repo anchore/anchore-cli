@@ -562,19 +562,16 @@ def format_output(config, op, params, payload):
             t.align = "l"
             for subscription_record in payload:
                 sval = json.loads(subscription_record["subscription_value"])
-                try:
-                    tagcount = str(sval["tagcount"])
-                except Exception:
-                    tagcount = "N/A"
+                tagcount = str(sval.get("tagcount", "N/A"))
                 row = [
                     subscription_record["subscription_key"],
                     str(subscription_record["active"]),
-                    str(tagcount),
+                    tagcount,
                 ]
                 t.add_row(row)
-
-            ret = t.get_string(sortby="Repository")
-
+            if params.get("dry_run", ""):
+                ret = "DRY RUN: Repository not added\n\n"
+            ret += t.get_string(sortby="Repository")
         elif op in ["policy_add", "policy_get"]:
             if "detail" in params and params["detail"]:
                 try:
