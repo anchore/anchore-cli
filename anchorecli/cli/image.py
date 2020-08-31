@@ -291,17 +291,19 @@ def query_metadata(input_image, metadata_type):
             ecode = 1
             raise Exception("cannot use input image string (no discovered imageDigest)")
         else:
-            ret = anchorecli.clients.apiexternal.query_image(config, imageDigest=imageDigest, query_group='metadata', query_type=metadata_type)
+            ret = anchorecli.clients.apiexternal.query_image(config,
+                                                             imageDigest=imageDigest,
+                                                             query_group='metadata',
+                                                             query_type=metadata_type)
             ecode = anchorecli.cli.utils.get_ecode(ret)
             if ret:
                 if ret['success']:
-                    if metadata_type in ['manifest', 'docker_history']:
-                        o = json.loads(anchorecli.cli.utils.format_output(config, 'image_metadata', {'query_type':metadata_type}, ret['payload']))
-                        print(json.dumps(o, indent=4))
-                    else:
-                        print(anchorecli.cli.utils.format_output(config, 'image_metadata', {'query_type':metadata_type}, ret['payload']))
+                    print(anchorecli.cli.utils.format_output(config,
+                                                             'image_metadata',
+                                                             {'query_type': metadata_type},
+                                                             ret['payload']))
                 else:
-                    raise Exception (json.dumps(ret['error'], indent=4))
+                    raise Exception(json.dumps(ret['error'], indent=4))
             else:
                 raise Exception("operation failed with empty response")
 
