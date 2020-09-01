@@ -669,8 +669,8 @@ def format_output(config, op, params, payload):
                     db_version = service_detail.get('db_version', None)
 
             output_buffer = '\n'.join(out_list)
-            output_buffer += '\n\nEngine DB Version: {}\n'.format(db_version)
-            output_buffer += 'Engine Code Version: {}'.format(code_version)
+            output_buffer += '\n\nEngine DB Version: {}\n'.format(db_version or 'Not Found')
+            output_buffer += 'Engine Code Version: {}'.format(code_version or 'Not Found')
 
             ret = output_buffer
 
