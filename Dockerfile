@@ -13,7 +13,7 @@ RUN set -ex && \
 RUN set -ex && \
     echo "installing OS dependencies" && \
     yum update -y && \
-    yum install -y gcc make python36 python3-wheel
+    yum install -y gcc make python38 python38-wheel
 
 # create anchore binaries
 RUN set -ex && \
@@ -57,7 +57,7 @@ ENV LC_ALL=C.UTF-8
 # Build dependencies
 
 RUN yum update -y && \
-    yum install -y python36 python3-wheel
+    yum install -y python38 python38-wheel
 
 # Setup container default configs and directories
 
