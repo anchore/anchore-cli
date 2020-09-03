@@ -644,15 +644,15 @@ def format_output(config, op, params, payload):
         elif op == 'system_status':
             out_list = []
             db_version = code_version = None
-            for service_record in payload['service_states']:
+            for service_record in payload.get('service_states', []):
                 if service_record.get('status', None):
                     service_status = 'up'
                 else:
-                    service_status = 'down ({})'.format(service_record['status_message'])
+                    service_status = 'down ({})'.format(service_record.get('status_message', 'Status Unknown'))
 
-                out_list.append('Service {} ({}, {}): {}'.format(service_record['servicename'],
-                                                                 service_record['hostid'],
-                                                                 service_record['base_url'],
+                out_list.append('Service {} ({}, {}): {}'.format(service_record.get('servicename', 'ServiceName Unknown'),
+                                                                 service_record.get('hostid', 'HostID Unknown'),
+                                                                 service_record.get('base_url', 'Base URL Unknown'),
                                                                  str(service_status)))
 
                 # This is a fallback mechanism to get the db & code versions from a non-api service
