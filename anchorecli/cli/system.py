@@ -157,10 +157,19 @@ def wait(timeout, interval, feedsready, servicesready):
                     ret = anchorecli.clients.apiexternal.system_feeds_list(config)
                     if ret['success']:
                         for feed_record in ret.get('payload', []):
-                            _logger.debug("response show feed name=%s was last_full_sync=%s", feed_record.get('name'), feed_record.get('last_full_sync'))
+                            _logger.debug("response shows feed name=%s was last_full_sync=%s", feed_record.get('name'), feed_record.get('last_full_sync'))
                             if feed_record.get('name', None) in all_up:
                                 if feed_record.get('last_full_sync', None):
-                                    all_up[feed_record.get('name')] = True
+                                    all_groups_synced = False
+                                    for group_record in feed_record.get('groups', []):
+                                        _logger.debug("response shows group name=%s was last_sync=%s", group_record.get('name', None), group_record.get('last_sync', None))
+                                        if group_record.get('last_sync', None):
+                                            all_groups_synced = True
+                                        else:
+                                            all_groups_synced = False
+                                            break
+                                    if all_groups_synced:
+                                        all_up[feed_record.get('name')] = True
 
                         if False not in all_up.values():
                             _logger.debug("all requests feeds have been synced")

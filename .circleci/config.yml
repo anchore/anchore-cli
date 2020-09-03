@@ -8,7 +8,7 @@
 # Define YAML anchors
 .global_environment_vars: &global_environment_vars
   PROD_IMAGE_REPO: anchore/engine-cli
-  LATEST_RELEASE_MAJOR_VERSION: 0.7
+  LATEST_RELEASE_MAJOR_VERSION: 0.8
   TERM: xterm
 
 .attach_workspace: &attach_workspace
@@ -268,13 +268,6 @@ workflows:
       - push_image:
           name: push_prod_image
           make_job: push-prod
-          context: dockerhub-prod
-          filters: *filter_semver_tags
-          requires:
-            - hold_for_approval
-      - push_image:
-          name: push_redhat_image
-          make_job: push-redhat
           context: dockerhub-prod
           filters: *filter_semver_tags
           requires:
