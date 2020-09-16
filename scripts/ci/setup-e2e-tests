@@ -24,8 +24,8 @@ else
 fi
 
 if ! helm list | grep e2e-testing; then
-    helm repo add stable https://kubernetes-charts.storage.googleapis.com
-    helm install e2e-testing -f tests/e2e/base-values.yaml --set anchoreGlobal.image=anchore/anchore-engine-dev:latest stable/anchore-engine | head -n6
+    helm repo add anchore https://charts.anchore.io
+    helm install e2e-testing -f tests/e2e/base-values.yaml --set anchoreGlobal.image=anchore/anchore-engine-dev:latest anchore/anchore-engine | head -n6
 fi
 
 if ! kubectl get pods | grep anchore-cli; then

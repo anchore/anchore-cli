@@ -54,6 +54,11 @@
   tags:
     only: /^v[0-9]+(\.[0-9]+)*$/
 
+.filter_nightly: &filter_nightly
+  branches:
+    only:
+      - master
+
 # Start circleci configuration
 version: 2.1
 orbs:
@@ -207,23 +212,73 @@ workflows:
             - functional_tests_latest
             - functional_tests_060
             - functional_tests_051
-      - e2e_tests:
-          context: e2e-testing
-          filters: *filter_release_branch
-          requires:
-            - build
       - push_image:
           name: push_dev_image
           make_job: push-dev
           context: dockerhub
           filters: *filter_release_branch
           requires:
-            - e2e_tests
+            - build
       - anchore/image_scan:
           context: dockerhub
           requires:
             - push_dev_image
           image_name: anchore/anchore-cli-dev:${CIRCLE_SHA1}
+          private_registry: true
+          timeout: '2000'
+
+  nightly_build:
+    triggers:
+      - schedule:
+          cron: "0 10 * * *"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - lint
+      - unit_tests:
+          tox_env: "py27 py36"
+      - functional_tests:
+          name: functional_tests_latest
+          tox_env: py36-anchore_latest
+          requires:
+            - lint
+            - unit_tests
+      - functional_tests:
+          name: functional_tests_060
+          tox_env: py36-anchore_0.6.0
+          requires:
+            - lint
+            - unit_tests
+      - functional_tests:
+          name: functional_tests_051
+          tox_env: py36-anchore_0.5.1
+          requires:
+            - lint
+            - unit_tests
+      - build:
+          requires:
+            - functional_tests_latest
+            - functional_tests_060
+            - functional_tests_051
+      - e2e_tests:
+          context: e2e-testing
+          filters: *filter_nightly
+          requires:
+            - build
+      - push_image:
+          name: push_nightly_image
+          make_job: push-nightly
+          context: dockerhub
+          filters: *filter_nightly
+          requires:
+            - e2e_tests
+      - anchore/image_scan:
+          context: dockerhub
+          requires:
+            - push_nightly_image
+          image_name: anchore/anchore-cli-dev:nightly
           private_registry: true
           timeout: '2000'
 
