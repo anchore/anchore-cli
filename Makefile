@@ -69,9 +69,9 @@ GIT_TAG := $(shell echo $${CIRCLE_TAG:=null})
 
 .PHONY: ci build install install-dev
 .PHONY: lint clean clean-all test
-.PHONY: test-unit test-functional setup-and-test-e2e test-e2e test-cli
+.PHONY: test-unit test-functional setup-and-test-e2e test-e2e
 .PHONY: push-dev push-nightly push-rc push-prod push-rebuild
-.PHONY: cluster-up cluster-down 
+.PHONY: cluster-up cluster-down
 .PHONY: setup-test-infra venv printvars help
 
 ci: lint build test ## Run full CI pipeline, locally
@@ -114,9 +114,6 @@ setup-e2e-tests: anchore-ci venv ## Start kind cluster and set up end to end tes
 	@$(ACTIVATE_VENV) && $(CI_CMD) setup-e2e-tests "$(COMMIT_SHA)" "$(DEV_IMAGE_REPO)" "$(GIT_TAG)" "$(TEST_IMAGE_NAME)"
 
 test-e2e: anchore-ci venv ## Run end to end tests (assuming cluster is running and set up has been run)
-	@$(MAKE) test-cli
-
-test-cli: setup-test-infra venv ## Run cli-driven end to end tests (assuming cluster is running and set up has been run)
 	@$(ACTIVATE_VENV) && $(CI_CMD) test-cli
 
 setup-and-test-e2e: anchore-ci venv ## Set up and run end to end tests

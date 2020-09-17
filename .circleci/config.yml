@@ -236,28 +236,34 @@ workflows:
               only:
                 - master
     jobs:
-      - lint
+      - lint:
+          filters: *filter_nightly
       - unit_tests:
+          filters: *filter_nightly
           tox_env: "py27 py36"
       - functional_tests:
+          filters: *filter_nightly
           name: functional_tests_latest
           tox_env: py36-anchore_latest
           requires:
             - lint
             - unit_tests
       - functional_tests:
+          filters: *filter_nightly
           name: functional_tests_060
           tox_env: py36-anchore_0.6.0
           requires:
             - lint
             - unit_tests
       - functional_tests:
+          filters: *filter_nightly
           name: functional_tests_051
           tox_env: py36-anchore_0.5.1
           requires:
             - lint
             - unit_tests
       - build:
+          filters: *filter_nightly
           requires:
             - functional_tests_latest
             - functional_tests_060
@@ -276,6 +282,7 @@ workflows:
             - e2e_tests
       - anchore/image_scan:
           context: dockerhub
+          filters: *filter_nightly
           requires:
             - push_nightly_image
           image_name: anchore/anchore-cli-dev:nightly
