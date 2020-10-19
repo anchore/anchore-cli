@@ -647,47 +647,37 @@ def format_output(config, op, params, payload):
             except Exception:
                 ret = 'Success'
         elif op == 'system_status':
-            obuf = ""
-
-            outlist = []
-
+            out_list = []
             db_version = code_version = None
-            for service_record in payload['service_states']:
-                service_status = "N/A"
-                if service_record['status']:
-                    service_status = "up"
+            for service_record in payload.get('service_states', []):
+                if service_record.get('status', None):
+                    service_status = 'up'
                 else:
-                    service_status = "down ({})".format(service_record['status_message'])
+                    service_status = 'down ({})'.format(service_record.get('status_message', 'Status Unknown'))
 
-                outlist.append("Service "+service_record['servicename']+" ("+service_record['hostid']+", " +service_record['base_url'] +"): " + str(service_status))
+                out_list.append('Service {} ({}, {}): {}'.format(service_record.get('servicename', 'ServiceName Unknown'),
+                                                                 service_record.get('hostid', 'HostID Unknown'),
+                                                                 service_record.get('base_url', 'Base URL Unknown'),
+                                                                 str(service_status)))
+
+                # This is a fallback mechanism to get the db & code versions from a non-api service
+                # (should there be no healthy api service available)
                 if not db_version:
-                    try:
-                        db_version = service_record['service_detail']['db_version']
-                    except:
-                        pass
-
+                    db_version = service_record.get('service_detail', {}).get('db_version', None)
                 if not code_version:
-                    try:
-                        code_version = service_record['service_detail']['version']
-                    except:
-                        pass
+                    code_version = service_record.get('service_detail', {}).get('version', None)
 
-                # override with any discovered API service that is up
-                try:
-                    if service_record['servicename'] == 'apiext' and service_status == 'up':
-                        api_code_version = service_record['service_detail']['version']
-                        code_version = api_code_version
-                except:
-                    pass
+                # Set the code & db versions with the details from the first discovered API service that is up
+                if service_record.get('servicename', '') == 'apiext' and service_status == 'up':
+                    service_detail = service_record.get('service_detail', {})
+                    code_version = service_detail.get('version', None)
+                    db_version = service_detail.get('db_version', None)
 
-            for k in outlist:
-                obuf = obuf + k + "\n"
-            obuf = obuf + "\n"
+            output_buffer = '\n'.join(out_list)
+            output_buffer += '\n\nEngine DB Version: {}\n'.format(db_version or 'Not Found')
+            output_buffer += 'Engine Code Version: {}'.format(code_version or 'Not Found')
 
-            obuf = obuf + "Engine DB Version: {}\n".format(db_version)
-            obuf = obuf + "Engine Code Version: {}\n".format(code_version)
-
-            ret = obuf
+            ret = output_buffer
 
         elif op == 'event_delete':
             if payload is not None and isinstance(payload, list):

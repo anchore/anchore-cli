@@ -231,15 +231,9 @@ def query_content(input_image, content_type):
     """
     INPUT_IMAGE: Input image can be in the following formats: Image Digest, ImageID or registry/repo:tag
 
-    CONTENT_TYPE: The content type can be one of the following types:
-
-      - os: Operating System Packages
-
-      - npm: Node.JS NPM Module
-
-      - gem: Ruby GEM
-
-      - files: Files
+    CONTENT_TYPE: Image content comes in many flavors, and the types are dynamic. If you want to see the content types
+    available for an image, run the following command:
+        $ anchore-cli image content <input_image>
     """
     ecode = 0
 
