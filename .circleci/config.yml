@@ -91,8 +91,11 @@ commands:
 
 jobs:
   lint:
+    parameters:
+      py_version:
+        type: string
     docker:
-      - image: circleci/python:3.8
+      - image: circleci/python:<<parameters.py_version>>
     environment: *global_environment_vars
     steps:
       - checkout
@@ -105,8 +108,10 @@ jobs:
     parameters:
       tox_env:
         type: string
+      py_version:
+        type: string
     docker:
-      - image: circleci/python:3.8
+      - image: circleci/python:<<parameters.py_version>>
     environment: *global_environment_vars
     steps:
       - checkout
@@ -118,8 +123,10 @@ jobs:
     parameters:
       tox_env:
         type: string
+      py_version:
+        type: string
     docker:
-      - image: circleci/python:3.8
+      - image: circleci/python:<<parameters.py_version>>
     resource_class: large
     environment: *global_environment_vars
     steps:
@@ -152,8 +159,11 @@ jobs:
             - caches/*
 
   e2e_tests:
+    parameters:
+      py_version:
+        type: string
     docker:
-      - image: circleci/python:3.8
+      - image: circleci/python:<<parameters.py_version>>
     resource_class: large
     environment: *global_environment_vars
     steps:
@@ -186,32 +196,66 @@ jobs:
 workflows:
   default_workflow:
     jobs:
-      - lint
+      - lint:
+          py_version: "3.8"
       - unit_tests:
+          name: unit_tests_36
+          py_version: "3.6"
+          tox_env: "py27 py36"
+      - unit_tests:
+          name: unit_tests_38
+          py_version: "3.8"
           tox_env: "py27 py38"
       - functional_tests:
-          name: functional_tests_latest
+          name: functional_tests_36_latest
+          tox_env: py36-anchore_latest
+          py_version: "3.6"
+          requires:
+            - lint
+            - unit_tests_36
+      - functional_tests:
+          name: functional_tests_36_081
+          tox_env: py36-anchore_0.8.1
+          py_version: "3.6"
+          requires:
+            - lint
+            - unit_tests_36
+      - functional_tests:
+          name: functional_tests_36_080
+          tox_env: py36-anchore_0.8.0
+          py_version: "3.6"
+          requires:
+            - lint
+            - unit_tests_36
+      - functional_tests:
+          name: functional_tests_38_latest
           tox_env: py38-anchore_latest
+          py_version: "3.8"
           requires:
             - lint
-            - unit_tests
+            - unit_tests_38
       - functional_tests:
-          name: functional_tests_060
-          tox_env: py38-anchore_0.6.0
+          name: functional_tests_38_081
+          tox_env: py38-anchore_0.8.1
+          py_version: "3.8"
           requires:
             - lint
-            - unit_tests
+            - unit_tests_38
       - functional_tests:
-          name: functional_tests_051
-          tox_env: py38-anchore_0.5.1
+          name: functional_tests_38_080
+          tox_env: py38-anchore_0.8.0
+          py_version: "3.8"
           requires:
             - lint
-            - unit_tests
+            - unit_tests_38
       - build:
           requires:
-            - functional_tests_latest
-            - functional_tests_060
-            - functional_tests_051
+            - functional_tests_36_latest
+            - functional_tests_36_081
+            - functional_tests_36_080
+            - functional_tests_38_latest
+            - functional_tests_38_081
+            - functional_tests_38_080
       - push_image:
           name: push_dev_image
           make_job: push-dev
@@ -237,40 +281,77 @@ workflows:
                 - master
     jobs:
       - lint:
+          py_version: "3.8"
           filters: *filter_nightly
       - unit_tests:
-          filters: *filter_nightly
+          name: unit_tests_36
+          py_version: "3.6"
           tox_env: "py27 py36"
+      - unit_tests:
+          name: unit_tests_38
+          py_version: "3.8"
+          tox_env: "py27 py38"
       - functional_tests:
           filters: *filter_nightly
-          name: functional_tests_latest
+          name: functional_tests_36_latest
           tox_env: py36-anchore_latest
+          py_version: "3.6"
           requires:
             - lint
-            - unit_tests
+            - unit_tests_36
       - functional_tests:
           filters: *filter_nightly
-          name: functional_tests_060
-          tox_env: py36-anchore_0.6.0
+          name: functional_tests_36_081
+          tox_env: py36-anchore_0.8.1
+          py_version: "3.6"
           requires:
             - lint
-            - unit_tests
+            - unit_tests_36
       - functional_tests:
           filters: *filter_nightly
-          name: functional_tests_051
-          tox_env: py36-anchore_0.5.1
+          name: functional_tests_36_080
+          tox_env: py36-anchore_0.8.0
+          py_version: "3.6"
           requires:
             - lint
-            - unit_tests
+            - unit_tests_36
+      - functional_tests:
+          filters: *filter_nightly
+          name: functional_tests_38_latest
+          tox_env: py38-anchore_latest
+          py_version: "3.8"
+          requires:
+            - lint
+            - unit_tests_38
+      - functional_tests:
+          filters: *filter_nightly
+          name: functional_tests_38_081
+          tox_env: py38-anchore_0.8.1
+          py_version: "3.8"
+          requires:
+            - lint
+            - unit_tests_38
+      - functional_tests:
+          filters: *filter_nightly
+          name: functional_tests_38_080
+          tox_env: py38-anchore_0.8.0
+          py_version: "3.8"
+          requires:
+            - lint
+            - unit_tests_38
       - build:
           filters: *filter_nightly
           requires:
-            - functional_tests_latest
-            - functional_tests_060
-            - functional_tests_051
+            - functional_tests_36_latest
+            - functional_tests_36_081
+            - functional_tests_36_080
+            - functional_tests_38_latest
+            - functional_tests_38_081
+            - functional_tests_38_080
       - e2e_tests:
           context: e2e-testing
           filters: *filter_nightly
+          py_version: "3.8"
           requires:
             - build
       - push_image:
@@ -297,6 +378,7 @@ workflows:
           name: rc_e2e_tests
           context: e2e-testing
           filters: *filter_rc_tags
+          py_version: "3.8"
           requires:
             - build
       - push_image:
@@ -322,6 +404,7 @@ workflows:
           name: prod_e2e_tests
           context: e2e-testing
           filters: *filter_semver_tags
+          py_version: "3.8"
       - hold_for_approval:
           type: approval
           filters: *filter_semver_tags
@@ -338,40 +421,79 @@ workflows:
   rebuild_image_workflow:
     jobs:
       - lint:
+          py_version: "3.8"
           filters: *filter_rebuild_tags
       - unit_tests:
+          name: unit_tests_36
+          py_version: "3.6"
+          tox_env: "py27 py36"
+          filters: *filter_rebuild_tags
+      - unit_tests:
+          name: unit_tests_38
+          py_version: "3.8"
           tox_env: "py27 py38"
           filters: *filter_rebuild_tags
       - functional_tests:
-          name: functional_tests_latest
+          filters: *filter_rebuild_tags
+          name: functional_tests_36_latest
+          tox_env: py36-anchore_latest
+          py_version: "3.6"
+          requires:
+            - lint
+            - unit_tests_36
+      - functional_tests:
+          filters: *filter_rebuild_tags
+          name: functional_tests_36_081
+          tox_env: py36-anchore_0.8.1
+          py_version: "3.6"
+          requires:
+            - lint
+            - unit_tests_36
+      - functional_tests:
+          filters: *filter_rebuild_tags
+          name: functional_tests_36_080
+          tox_env: py36-anchore_0.8.0
+          py_version: "3.6"
+          requires:
+            - lint
+            - unit_tests_36
+      - functional_tests:
+          filters: *filter_rebuild_tags
+          name: functional_tests_38_latest
           tox_env: py38-anchore_latest
-          filters: *filter_rebuild_tags
+          py_version: "3.8"
           requires:
             - lint
-            - unit_tests
+            - unit_tests_38
       - functional_tests:
-          name: functional_tests_060
-          tox_env: py38-anchore_0.6.0
           filters: *filter_rebuild_tags
+          name: functional_tests_38_081
+          tox_env: py38-anchore_0.8.1
+          py_version: "3.8"
           requires:
             - lint
-            - unit_tests
+            - unit_tests_38
       - functional_tests:
-          name: functional_tests_051
-          tox_env: py38-anchore_0.5.1
           filters: *filter_rebuild_tags
+          name: functional_tests_38_080
+          tox_env: py38-anchore_0.8.0
+          py_version: "3.8"
           requires:
             - lint
-            - unit_tests
+            - unit_tests_38
       - build:
           filters: *filter_rebuild_tags
           requires:
-            - functional_tests_latest
-            - functional_tests_060
-            - functional_tests_051
+            - functional_tests_36_latest
+            - functional_tests_36_081
+            - functional_tests_36_080
+            - functional_tests_38_latest
+            - functional_tests_38_081
+            - functional_tests_38_080
       - e2e_tests:
           context: e2e-testing
           filters: *filter_rebuild_tags
+          py_version: "3.8"
           requires:
             - build
       - push_image:
