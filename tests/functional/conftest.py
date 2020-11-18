@@ -13,17 +13,17 @@ import pytest
 
 
 def get_logger(name):
-    return logging.getLogger('conftest.%s' % name)
+    return logging.getLogger("conftest.%s" % name)
 
 
 def pytest_sessionstart(session):
     BASE_FORMAT = "[%(name)s][%(levelname)-6s] %(message)s"
     FILE_FORMAT = "[%(asctime)s]" + BASE_FORMAT
 
-    root_logger = logging.getLogger('conftest')
+    root_logger = logging.getLogger("conftest")
     dir_path = os.path.dirname(os.path.realpath(__file__))
     top_level = _dir(_dir(dir_path))
-    log_file = os.path.join(top_level, 'pytest-functional-tests.log')
+    log_file = os.path.join(top_level, "pytest-functional-tests.log")
 
     root_logger.setLevel(logging.DEBUG)
 
@@ -35,8 +35,8 @@ def pytest_sessionstart(session):
     root_logger.addHandler(fh)
 
     # Setup the environment variable for the container
-    image = os.environ.get('PYTEST_CONTAINER', 'anchore/inline-scan:latest')
-    os.environ['PYTEST_CONTAINER'] = image
+    image = os.environ.get("PYTEST_CONTAINER", "anchore/inline-scan:latest")
+    os.environ["PYTEST_CONTAINER"] = image
 
 
 def use_environ():
@@ -45,43 +45,52 @@ def use_environ():
     and those should be used. This function checks for those and returns
     a boolean so that the docker client can be instantiated properly
     """
-    for var in ['DOCKER_CERT_PATH', 'DOCKER_HOST', 'DOCKER_MACHINE_NAME', 'DOCKER_TLS_VERIFY']:
+    for var in [
+        "DOCKER_CERT_PATH",
+        "DOCKER_HOST",
+        "DOCKER_MACHINE_NAME",
+        "DOCKER_TLS_VERIFY",
+    ]:
         if os.environ.get(var) is None:
             return False
     return True
 
 
 def create_client():
-    logger = get_logger('create_client')
+    logger = get_logger("create_client")
     try:
         if use_environ():
-            logger.info('using environment to create docker client')
+            logger.info("using environment to create docker client")
             c = docker.from_env()
         else:
-            c = docker.DockerClient(base_url='unix://var/run/docker.sock', version="auto")
+            c = docker.DockerClient(
+                base_url="unix://var/run/docker.sock", version="auto"
+            )
         # XXX ?
         c.run = run(c)
         return c
     except DockerException as e:
-        logger.exception('Unable to connect to a docker socket')
-        raise pytest.UsageError("Could not connect to a running docker socket: %s" % str(e))
+        logger.exception("Unable to connect to a docker socket")
+        raise pytest.UsageError(
+            "Could not connect to a running docker socket: %s" % str(e)
+        )
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def client():
     return create_client()
 
 
 def pytest_assertrepr_compare(op, left, right):
     if isinstance(left, ExitCode) and isinstance(right, ExitCode):
-        return [
-            "failure ExitCode(%s) %s ExitCode(%s)" % (left, op, right),
-            "Exit status assertion failure, stdout and stderr context:",
-            ] + [
-            '   stdout: %s' % line for line in left.stdout.split('\n')
-            ] + [
-            '   stderr: %s' % line for line in left.stderr.split('\n')
-        ]
+        return (
+            [
+                "failure ExitCode(%s) %s ExitCode(%s)" % (left, op, right),
+                "Exit status assertion failure, stdout and stderr context:",
+            ]
+            + ["   stdout: %s" % line for line in left.stdout.split("\n")]
+            + ["   stderr: %s" % line for line in left.stderr.split("\n")]
+        )
 
 
 def pytest_addoption(parser):
@@ -91,35 +100,34 @@ def pytest_addoption(parser):
     keep the container around for easier/faster testing.
     """
     parser.addoption(
-        "--nokeepalive", action="store_true",
-        default=False, help="Do not keep docker container alive"
+        "--nokeepalive",
+        action="store_true",
+        default=False,
+        help="Do not keep docker container alive",
     )
 
 
 def pytest_report_header(config):
-    logger = get_logger('report_header')
+    logger = get_logger("report_header")
     msg = []
     try:
         client = create_client()
-        metadata = client.api.inspect_container('pytest_inline_scan')
+        metadata = client.api.inspect_container("pytest_inline_scan")
     except docker.errors.NotFound:
         logger.info("No running container was found, can't add info to report header")
-        metadata = {'Config': {'Labels': {}}}
-        msg = ['Docker: Anchore inline_scan container not running yet']
+        metadata = {"Config": {"Labels": {}}}
+        msg = ["Docker: Anchore inline_scan container not running yet"]
     except DockerException as e:
-        logger.exception('Unable to connect to a docker socket')
-        msg = ['Anchore Version: Unable to connect to a docker socket']
-        msg.append('Error: %s' % str(e))
+        logger.exception("Unable to connect to a docker socket")
+        msg = ["Anchore Version: Unable to connect to a docker socket"]
+        msg.append("Error: %s" % str(e))
         return msg
 
-    labels = metadata['Config']['Labels']
-    version = labels.get('version', 'unknown')
-    commit = labels.get('anchore_commit', 'unknown')
+    labels = metadata["Config"]["Labels"]
+    version = labels.get("version", "unknown")
+    commit = labels.get("anchore_commit", "unknown")
 
-    msg.extend([
-       'Anchore Version: %s' % version,
-       'Anchore Commit: %s' % commit
-    ])
+    msg.extend(["Anchore Version: %s" % version, "Anchore Commit: %s" % commit])
     return msg
 
 
@@ -128,32 +136,32 @@ def pytest_runtest_logreport(report):
         client = create_client()
 
         test_containers = client.containers.list(
-            all=True,
-            filters={"name": "pytest_inline_scan"})
+            all=True, filters={"name": "pytest_inline_scan"}
+        )
         for container in test_containers:
             # XXX magical number! get the last 10 log lines
             log_lines = [
-                ("Container ID: {!r}:".format(container.attrs['Id'])),
-                ] + container.logs().decode('utf-8').split('\n')[-10:]
+                ("Container ID: {!r}:".format(container.attrs["Id"])),
+            ] + container.logs().decode("utf-8").split("\n")[-10:]
             try:
-                report.longrepr.addsection('docker logs', os.linesep.join(log_lines))
+                report.longrepr.addsection("docker logs", os.linesep.join(log_lines))
             except AttributeError:
                 pass
 
 
-@pytest.fixture(scope='session', autouse=True)
+@pytest.fixture(scope="session", autouse=True)
 def inline_scan(client, request):
     # If the container is already running, this will return the running
     # container identified with `pytest_inline_scan`
-    image = os.environ.get('PYTEST_CONTAINER', 'anchore/inline-scan:latest')
-    os.environ['PYTEST_CONTAINER'] = image
+    image = os.environ.get("PYTEST_CONTAINER", "anchore/inline-scan:latest")
+    os.environ["PYTEST_CONTAINER"] = image
     container = start_container(
         client,
         image=image,
-        name='pytest_inline_scan',
+        name="pytest_inline_scan",
         environment={},
         detach=True,
-        ports={'8228/tcp': 8228}
+        ports={"8228/tcp": 8228},
     )
 
     no_keep_alive = request.config.getoption("--nokeepalive", False)
@@ -165,14 +173,14 @@ def inline_scan(client, request):
 
 
 def teardown_container(client, container=None, name=None):
-    logger = get_logger('teardown_container')
+    logger = get_logger("teardown_container")
     container_name = name or container.name
     if name:
         container_name = name
     else:
         container_name = container.name
-    logger.debug('Tearing down container: %s', container_name)
-    containers = client.containers.list(all=True, filters={'name': container_name})
+    logger.debug("Tearing down container: %s", container_name)
+    containers = client.containers.list(all=True, filters={"name": container_name})
     # TODO: check if stop/remove can take a force=True param
     for available_container in containers:
         available_container.stop()
@@ -184,15 +192,15 @@ def start_container(client, image, name, environment, ports, detach=True):
     Start a container, wait for (successful) completion of entrypoint
     and raise an exception with container logs otherwise
     """
-    logger = get_logger('start_container')
-    logger.info('will try to start container image %s', image)
+    logger = get_logger("start_container")
+    logger.info("will try to start container image %s", image)
     try:
         container = client.containers.get(name)
-        if container.status != 'running':
-            logger.info('%s container found but not running, will start it', name)
+        if container.status != "running":
+            logger.info("%s container found but not running, will start it", name)
             container.start()
     except docker.errors.NotFound:
-        logger.info('%s container not found, will start it', name)
+        logger.info("%s container not found, will start it", name)
         container = client.containers.run(
             image=image,
             name=name,
@@ -204,7 +212,7 @@ def start_container(client, image, name, environment, ports, detach=True):
     start = time.time()
     while time.time() - start < 70:
         out, err, code = call(
-            ['anchore-cli', '--u', 'admin', '--p', 'foobar', 'system', 'status'],
+            ["anchore-cli", "--u", "admin", "--p", "foobar", "system", "status"],
         )
         if code == 0:
             # This path needs to be hit when the container is ready to be
@@ -213,15 +221,15 @@ def start_container(client, image, name, environment, ports, detach=True):
             return container
         time.sleep(2)
 
-    logger.error('Aborting tests: unable to verify a healthy status from container')
+    logger.error("Aborting tests: unable to verify a healthy status from container")
     # If 70 seconds passed and anchore-cli wasn't able to determine an OK
     # status from anchore-engine then failure needs to be raised with as much
     # logging as possible. Can't assume the container is healthy even if the
     # exit code is 0
     print("[ERROR][setup] failed to setup container")
-    for line in out.split('\n'):
+    for line in out.split("\n"):
         print("[ERROR][setup][stdout] {}".format(line))
-    for line in err.split('\n'):
+    for line in err.split("\n"):
         print("[ERROR][setup][stderr] {}".format(line))
     raise RuntimeError()
 
@@ -238,11 +246,12 @@ def run(client):
     def run_command(container_id, command):
         created_command = client.exec_create(container_id, cmd=command)
         result = client.exec_start(created_command)
-        exit_code = client.exec_inspect(created_command)['ExitCode']
+        exit_code = client.exec_inspect(created_command)["ExitCode"]
         if exit_code != 0:
-            msg = 'Non-zero exit code (%d) for command: %s' % (exit_code, command)
-            raise(AssertionError(result), msg)
+            msg = "Non-zero exit code (%d) for command: %s" % (exit_code, command)
+            raise (AssertionError(result), msg)
         return result
+
     return run_command
 
 
@@ -254,10 +263,11 @@ class ExitCode(int):
     `stderr` and `stdout` aside from just the exit code. The normal `int`
     behavior is preserved.
     """
+
     def __init__(self, code):
         self.code = code
-        self.stderr = ''
-        self.stdout = ''
+        self.stderr = ""
+        self.stdout = ""
 
 
 def call(command, **kw):
@@ -279,14 +289,14 @@ def call(command, **kw):
                   split on whitespace. Useful when output keeps changing when tabbing on custom
                   lengths
     """
-    logger = get_logger('call')
-    stdout = get_logger('call.stdout')
-    stderr = get_logger('call.stderr')
-    log_verbose = kw.pop('log_verbose', False)
-    command_msg = "Running command: %s" % ' '.join(command)
+    logger = get_logger("call")
+    stdout = get_logger("call.stdout")
+    stderr = get_logger("call.stderr")
+    log_verbose = kw.pop("log_verbose", False)
+    command_msg = "Running command: %s" % " ".join(command)
     logger.info(command_msg)
-    env = kw.pop('env', None)
-    split = kw.pop('split', False)
+    env = kw.pop("env", None)
+    split = kw.pop("split", False)
     existing_env = os.environ.copy()
     if env:
         for key, value in env.items():
@@ -305,9 +315,9 @@ def call(command, **kw):
     stderr_stream = process.stderr.read()
     returncode = process.wait()
     if not isinstance(stdout_stream, str):
-        stdout_stream = stdout_stream.decode('utf-8')
+        stdout_stream = stdout_stream.decode("utf-8")
     if not isinstance(stderr_stream, str):
-        stderr_stream = stderr_stream.decode('utf-8')
+        stderr_stream = stderr_stream.decode("utf-8")
 
     if returncode != 0:
         # set to true so that we can log the stderr/stdout that callers would
@@ -328,23 +338,21 @@ def call(command, **kw):
     returncode.stdout = stdout_stream
 
     if split:
-        stdout_stream = [line.split() for line in stdout_stream.split('\n')]
-        stderr_stream = [line.split() for line in stderr_stream.split('\n')]
+        stdout_stream = [line.split() for line in stdout_stream.split("\n")]
+        stderr_stream = [line.split() for line in stderr_stream.split("\n")]
 
     return stdout_stream, stderr_stream, returncode
 
 
 def _call(command, **kw):
-    if command[0] != 'anchore-cli':
-        command.insert(0, 'anchore-cli')
+    if command[0] != "anchore-cli":
+        command.insert(0, "anchore-cli")
     return call(
-        command,
-        env={'ANCHORE_CLI_USER': 'admin', 'ANCHORE_CLI_PASS': 'foobar'},
-        **kw
+        command, env={"ANCHORE_CLI_USER": "admin", "ANCHORE_CLI_PASS": "foobar"}, **kw
     )
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def session_admin_call():
     """
     Same as a plain admin call, but scoped for the session (runs once per test
@@ -353,7 +361,7 @@ def session_admin_call():
     return _call
 
 
-@pytest.fixture(scope='class')
+@pytest.fixture(scope="class")
 def class_admin_call():
     """
     Same as a plain admin call, but scoped for a class (runs once for a whole
@@ -369,12 +377,12 @@ def admin_call():
 
 def get_account(account_name, account_list):
     for account in account_list:
-        if account['name'] == account_name:
+        if account["name"] == account_name:
             return account
 
 
 def random_name():
-    return ''.join(random.choice(string.ascii_lowercase) for i in range(8))
+    return "".join(random.choice(string.ascii_lowercase) for i in range(8))
 
 
 @pytest.fixture
@@ -385,26 +393,29 @@ def add_account(request, admin_call):
             # present. This is problematic if that account was previously
             # created and it is currently in `deleting` state.
             for i in range(15):
-                out, _, _ = admin_call(['--json', 'account', 'list'])
+                out, _, _ = admin_call(["--json", "account", "list"])
                 account_list = json.loads(out)
                 account = get_account(account_name, account_list)
                 if account:
                     # created, possibly on deleting status
-                    if account['state'] == 'deleting':
+                    if account["state"] == "deleting":
                         time.sleep(2)
                         continue
-                    elif account['state'] == 'disabled':
+                    elif account["state"] == "disabled":
                         # delete it because we need a clean slate
-                        admin_call(['account', 'del', '--dontask', account_name])
+                        admin_call(["account", "del", "--dontask", account_name])
 
                 else:
                     break
         else:
             account_name = random_name()
-        admin_call(['account', 'add', account_name])
-        def finalizer(): # noqa
-            admin_call(['account', 'disable', account_name])
-            admin_call(['account', 'del', '--dontask', account_name])
+        admin_call(["account", "add", account_name])
+
+        def finalizer():  # noqa
+            admin_call(["account", "disable", account_name])
+            admin_call(["account", "del", "--dontask", account_name])
+
         request.addfinalizer(finalizer)
         return account_name
+
     return apply

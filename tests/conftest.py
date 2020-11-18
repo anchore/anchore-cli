@@ -3,7 +3,6 @@ import pytest
 
 
 class Factory(object):
-
     def __init__(self, **kw):
         for k, v in kw.items():
             setattr(self, k, v)
@@ -16,6 +15,7 @@ def stub_response():
             text = json.dumps(json_text)
         response = Factory(status_code=status_code, text=text)
         return response
+
     return apply
 
 
@@ -31,4 +31,4 @@ def no_fds_closing(monkeypatch):
     * https://github.com/pallets/click/issues/824
     * https://github.com/pytest-dev/pytest/issues/3344
     """
-    monkeypatch.setenv('ANCHORE_CLI_NO_FDS_CLEANUP', '1')
+    monkeypatch.setenv("ANCHORE_CLI_NO_FDS_CLEANUP", "1")
