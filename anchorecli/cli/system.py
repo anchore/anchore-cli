@@ -486,3 +486,51 @@ def delete_data(feed, group=None):
             ecode = 2
 
     anchorecli.cli.utils.doexit(ecode)
+
+
+@system.group(name="webhook", short_help="For testing webhooks")
+def webhook():
+    pass
+
+
+@webhook.command(name="test", short_help="Test that a given webhook works")
+@click.argument("webhook_type", nargs=1, required=False)
+@click.option(
+    "--ntype",
+    default="tag_update",
+    help="The type of notification to send via the given webhook_type",
+    required=False,
+)
+def test_webhook(webhook_type, ntype):
+    """
+    Call the Test Webhook Endpoint on Anchore Engine
+    :param webhook_type: the type of webhook to send a test notification for
+    """
+
+    ecode = 0
+
+    if not webhook_type:
+        webhook_type = "general"
+
+    try:
+        _logger.debug(
+            "Testing Webhook delivery for type '{}', notification_type '{}'".format(
+                webhook_type, ntype
+            )
+        )
+        ret = anchorecli.clients.apiexternal.test_webhook(config, webhook_type, ntype)
+        ecode = anchorecli.cli.utils.get_ecode(ret)
+        if ret["success"]:
+            print(
+                anchorecli.cli.utils.format_output(
+                    config, "test_webhook", {}, ret["payload"]
+                )
+            )
+        else:
+            raise Exception(json.dumps(ret["error"], indent=4))
+    except Exception as err:
+        print(anchorecli.cli.utils.format_error_output(config, "test_webhook", {}, err))
+        if not ecode:
+            ecode = 2
+
+    anchorecli.cli.utils.doexit(ecode)

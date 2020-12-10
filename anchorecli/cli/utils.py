@@ -526,8 +526,15 @@ def format_output(config, op, params, payload):
                 t.add_row(row)
 
             ret = t.get_string(sortby="Registry")
-        elif op == "subscription_list":
+        elif op in ["subscription_list", "subscription_get"]:
+
             header = ["Tag", "Subscription Type", "Active"]
+
+            if params.get("full", ""):
+                header += ["Subscription ID"]
+            if op == "subscription_get":
+                header += ["User ID"]
+
             t = plain_column_table(header)
             for subscription_record in payload:
                 row = [
@@ -535,6 +542,10 @@ def format_output(config, op, params, payload):
                     subscription_record["subscription_type"],
                     str(subscription_record["active"]),
                 ]
+                if params.get("full", ""):
+                    row.append(subscription_record.get("subscription_id", ""))
+                if op == "subscription_get":
+                    row += [subscription_record.get("userId")]
                 t.add_row(row)
 
             ret = t.get_string(sortby="Tag")
@@ -1155,6 +1166,16 @@ def format_output(config, op, params, payload):
                 ]
                 t.add_row(row)
             ret = t.get_string(sortby="Transition Date", reversesort=True) + "\n"
+        elif (
+            op in ["delete_system_service", "test_webhook"]
+            or re.match(".*_delete$", op)
+            or re.match(".*_activate$", op)
+            or re.match(".*_deactivate$", op)
+            or re.match(".*_enable$", op)
+            or re.match(".*_disable$", op)
+        ):
+            # NOTE this should always be the last in the if/elif conditional
+            ret = "Success"
         else:
             raise Exception("no output handler for this operation ({})".format(op))
     except Exception as err:
