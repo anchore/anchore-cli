@@ -2449,3 +2449,30 @@ def add_transition_rule(
         raise err
 
     return ret
+
+
+def test_webhook(config, webhook_type="general", notification_type="tag_update"):
+    """
+    Calls the API to test whether or not a webhook is correctly configured
+
+    :param config: the configuration to retrieve request metadata from
+    :param webhook_type: the type of webhook to test (defaults to general)
+    """
+    user = config["user"]
+    pw = config["pass"]
+    base_url = config["url"]
+
+    base_url = re.sub("/$", "", base_url)
+    url = "/".join([base_url, "system", "webhooks", webhook_type, "test"])
+
+    url = url + "?notification_type={}".format(notification_type)
+
+    set_account_header(config)
+
+    _logger.debug("POST url=%s", str(url))
+    r = requests.post(
+        url, auth=(user, pw), verify=config["ssl_verify"], headers=header_overrides
+    )
+    ret = anchorecli.clients.common.make_client_result(r, raw=False)
+
+    return ret
