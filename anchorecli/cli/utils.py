@@ -1731,3 +1731,12 @@ def parse_dockerimage_string(instr):
         ret["pullstring"] = None
 
     return ret
+
+
+class ContextObject:
+    config = None
+    execute_callback = None
+
+    def __init__(self, config, execute_callback):
+        self.config = config
+        self.execute_callback = execute_callback

@@ -12,32 +12,39 @@ digest_regex = "^sha256:[abcdef0-9]+$"
 
 
 @click.group(name="analysis-archive", short_help="Archive operations")
-@click.pass_obj
-def archive(ctx_config):
-    global config
-    config = ctx_config
+@click.pass_context
+def archive(ctx):
+    def execute():
+        global config
+        config = ctx.parent.obj.config
 
-    try:
-        anchorecli.cli.utils.check_access(config)
-    except Exception as err:
-        print(anchorecli.cli.utils.format_error_output(config, "image", {}, err))
-        sys.exit(2)
+        try:
+            anchorecli.cli.utils.check_access(config)
+        except Exception as err:
+            print(anchorecli.cli.utils.format_error_output(config, "image", {}, err))
+            sys.exit(2)
+
+    ctx.obj = anchorecli.cli.utils.ContextObject(ctx.parent.obj.config, execute)
 
 
 @archive.group(name="images", short_help="Archive operations")
-@click.pass_obj
-def images(ctx_config):
-    pass
+@click.pass_context
+def images(ctx):
+    # since there's nothing to execute here, just pass the parent config and callback down
+    ctx.obj = anchorecli.cli.utils.ContextObject(ctx.parent.obj.config, ctx.parent.obj.execute_callback)
 
 
 @images.command(
     name="restore", short_help="Restore an image to active status from the archive"
 )
 @click.argument("image_digest")
-def image_restore(image_digest):
+@click.pass_context
+def image_restore(ctx, image_digest):
     """
     Add an analyzed image to the analysis archive
     """
+    ctx.parent.obj.execute_callback()
+
     ecode = 0
 
     try:
@@ -74,10 +81,13 @@ def image_restore(image_digest):
     short_help="Add an image analysis to the archive. NOTE: this does not remove the image from the engine.",
 )
 @click.argument("image_digests", nargs=-1)
-def image_add(image_digests):
+@click.pass_context
+def image_add(ctx, image_digests):
     """
     Add an analyzed image to the analysis archive
     """
+    ctx.parent.obj.execute_callback()
+
     ecode = 0
 
     try:
@@ -114,10 +124,13 @@ def image_add(image_digests):
 
 @images.command(name="get", short_help="Get metadata for an archived image analysis")
 @click.argument("digest", nargs=1)
-def image_get(digest):
+@click.pass_context
+def image_get(ctx, digest):
     """
     INPUT_IMAGE: Input Image Digest (ex. sha256:95c9a61d949bbc622a444202e7faf9529f0dab5773023f173f602151f3a107b3)
     """
+    ctx.parent.obj.execute_callback()
+
     ecode = 0
 
     try:
@@ -153,7 +166,10 @@ def image_get(digest):
 
 
 @images.command(name="list", short_help="List all archived image analyses")
-def list_archived_analyses():
+@click.pass_context
+def list_archived_analyses(ctx):
+    ctx.parent.obj.execute_callback()
+
     ecode = 0
 
     try:
@@ -183,10 +199,13 @@ def list_archived_analyses():
 @images.command(name="del", short_help="Delete an archived analysis")
 @click.argument("digest")
 @click.option("--force", is_flag=True, help="Force deletion of archived analysis")
-def image_delete(digest, force):
+@click.pass_context
+def image_delete(ctx, digest, force):
     """
     INPUT_IMAGE: Input Image Digest (ex. sha256:95c9a61d949bbc622a444202e7faf9529f0dab5773023f173f602151f3a107b3)
     """
+    ctx.parent.obj.execute_callback()
+
     ecode = 0
 
     try:
@@ -216,8 +235,10 @@ def image_delete(digest, force):
 
 
 @archive.group(name="rules", short_help="Archive operations")
-def rules():
-    pass
+@click.pass_context
+def rules(ctx):
+    # since there's nothing to execute here, just pass the parent config and callback down
+    ctx.obj = anchorecli.cli.utils.ContextObject(ctx.parent.obj.config, ctx.parent.obj.execute_callback)
 
 
 @rules.command(name="add", short_help="Add a new transition rule")
@@ -259,7 +280,9 @@ def rules():
     help="Days until the exclude block expires",
     type=int,
 )
+@click.pass_context
 def rule_add(
+    ctx,
     days_old,
     tag_versions_newer,
     transition,
@@ -290,6 +313,8 @@ def rule_add(
     exclude_expiration_days: Number of days until exclude block expires
 
     """
+    ctx.parent.obj.execute_callback()
+
     ecode = 0
 
     if days_old == 0 and tag_versions_newer == 0:
@@ -368,7 +393,10 @@ def is_exclude_default(repo, registry, tag):
 
 @rules.command(name="get", short_help="Show detail for a specific transition rule")
 @click.argument("rule_id", nargs=1)
-def rule_get(rule_id):
+@click.pass_context
+def rule_get(ctx, rule_id):
+    ctx.parent.obj.execute_callback()
+
     ecode = 0
 
     try:
@@ -400,7 +428,10 @@ def rule_get(rule_id):
 
 
 @rules.command(name="list", short_help="List all transition rules for the account")
-def list_transition_rules():
+@click.pass_context
+def list_transition_rules(ctx):
+    ctx.parent.obj.execute_callback()
+
     ecode = 0
 
     try:
@@ -429,7 +460,10 @@ def list_transition_rules():
 
 @rules.command(name="del", short_help="Delete a transition rule")
 @click.argument("rule_id")
-def rule_delete(rule_id):
+@click.pass_context
+def rule_delete(ctx, rule_id):
+    ctx.parent.obj.execute_callback()
+
     ecode = 0
 
     try:

@@ -17,21 +17,26 @@ class WaitOnDisabledFeedError(Exception):
 
 @click.group(name="system", short_help="System operations")
 @click.pass_context
-@click.pass_obj
-def system(ctx_config, ctx):
-    global config
-    config = ctx_config
+def system(ctx):
+    def execute():
+        global config
+        config = ctx.parent.obj.config
 
-    if ctx.invoked_subcommand not in ["wait"]:
-        try:
-            anchorecli.cli.utils.check_access(config)
-        except Exception as err:
-            print(anchorecli.cli.utils.format_error_output(config, "system", {}, err))
-            sys.exit(2)
+        if ctx.invoked_subcommand not in ["wait"]:
+            try:
+                anchorecli.cli.utils.check_access(config)
+            except Exception as err:
+                print(anchorecli.cli.utils.format_error_output(config, "system", {}, err))
+                sys.exit(2)
+
+    ctx.obj = anchorecli.cli.utils.ContextObject(ctx.parent.obj.config, execute)
 
 
 @system.command(name="status", short_help="Check current anchore-engine system status")
-def status():
+@click.pass_context
+def status(ctx):
+    ctx.parent.obj.execute_callback()
+
     ecode = 0
 
     try:
@@ -59,7 +64,10 @@ def status():
     name="errorcodes",
     short_help="Describe available anchore system error code names and descriptions",
 )
-def describe_errorcodes():
+@click.pass_context
+def describe_errorcodes(ctx):
+    ctx.parent.obj.execute_callback()
+
     ecode = 0
 
     try:
@@ -111,7 +119,8 @@ def describe_errorcodes():
     default="catalog,apiext,policy_engine,simplequeue,analyzer",
     help='Wait for the specified CSV list of anchore-engine services to have at least one service reporting as available (default="catalog,apiext,policy_engine,simplequeue,analyzer")',
 )
-def wait(timeout, interval, feedsready, servicesready):
+@click.pass_context
+def wait(ctx, timeout, interval, feedsready, servicesready):
     """
     Wait for an image to go to analyzed or analysis_failed status with a specific timeout
 
@@ -120,6 +129,8 @@ def wait(timeout, interval, feedsready, servicesready):
     :param feedsready:
     :return:
     """
+    ctx.parent.obj.execute_callback()
+
     global config
     ecode = 0
 
@@ -290,7 +301,10 @@ def wait(timeout, interval, feedsready, servicesready):
 )
 @click.argument("host_id", nargs=1)
 @click.argument("servicename", nargs=1)
-def delete(host_id, servicename):
+@click.pass_context
+def delete(ctx, host_id, servicename):
+    ctx.parent.obj.execute_callback()
+
     ecode = 0
 
     try:
@@ -319,12 +333,17 @@ def delete(host_id, servicename):
 
 
 @system.group(name="feeds", short_help="Feed data operations")
-def feeds():
-    pass
+@click.pass_context
+def feeds(ctx):
+    # since there's nothing to execute here, just pass the parent config and callback down
+    ctx.obj = anchorecli.cli.utils.ContextObject(ctx.parent.obj.config, ctx.parent.obj.execute_callback)
 
 
 @feeds.command(name="list", short_help="Get a list of loaded data feeds.")
-def list():
+@click.pass_context
+def list(ctx):
+    ctx.parent.obj.execute_callback()
+
     ecode = 0
 
     try:
@@ -356,7 +375,10 @@ def list():
     is_flag=True,
     help="Flush all previous data, including CVE matches, and resync from scratch",
 )
-def feedsync(flush):
+@click.pass_context
+def feedsync(ctx, flush):
+    ctx.parent.obj.execute_callback()
+
     global input
     ecode = 0
 
@@ -407,7 +429,10 @@ def feedsync(flush):
 @click.option("--enable", help="Enable the feed/group", is_flag=True)
 @click.option("--disable", help="Disable the feed/group", is_flag=True)
 @click.argument("feed")
-def toggle_enabled(feed, group=None, enable=None, disable=None):
+@click.pass_context
+def toggle_enabled(ctx, feed, group=None, enable=None, disable=None):
+    ctx.parent.obj.execute_callback()
+
     ecode = 0
 
     try:
@@ -463,7 +488,10 @@ def toggle_enabled(feed, group=None, enable=None, disable=None):
 )
 @click.option("--group", help="Delete data for a specific group only")
 @click.argument("feed")
-def delete_data(feed, group=None):
+@click.pass_context
+def delete_data(ctx, feed, group=None):
+    ctx.parent.obj.execute_callback()
+
     ecode = 0
     try:
         if group:

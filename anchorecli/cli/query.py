@@ -9,17 +9,19 @@ config = {}
 
 
 @click.group(name="query", short_help="Query operations")
-@click.pass_obj
-def query(ctx_config):
-    global config
-    config = ctx_config
+@click.pass_context
+def query(ctx):
+    def execute():
+        global config
+        config = ctx.parent.obj.config
 
-    try:
-        anchorecli.cli.utils.check_access(config)
-    except Exception as err:
-        print(anchorecli.cli.utils.format_error_output(config, "query", {}, err))
-        sys.exit(2)
+        try:
+            anchorecli.cli.utils.check_access(config)
+        except Exception as err:
+            print(anchorecli.cli.utils.format_error_output(config, "query", {}, err))
+            sys.exit(2)
 
+    ctx.obj = anchorecli.cli.utils.ContextObject(ctx.parent.obj.config, execute)
 
 @query.command(
     name="images-by-vulnerability",
@@ -47,10 +49,13 @@ def query(ctx_config):
     is_flag=True,
     help="Only show images with vulnerabilities explicitly deemed applicable by upstream OS vendor, if present",
 )
+@click.pass_context
 def images_by_vulnerability(
-    vulnerability_id, namespace, package, severity, vendor_only
+    ctx, vulnerability_id, namespace, package, severity, vendor_only
 ):
     """ """
+    ctx.parent.obj.execute_callback()
+
     ecode = 0
 
     try:
@@ -100,8 +105,11 @@ def images_by_vulnerability(
 @click.option(
     "--package-type", help="Filter results to only packages of given type (e.g. dpkg)"
 )
-def images_by_package(name, version, package_type):
+@click.pass_context
+def images_by_package(ctx, name, version, package_type):
     """ """
+    ctx.parent.obj.execute_callback()
+
     ecode = 0
 
     try:

@@ -10,16 +10,19 @@ config = {}
 
 
 @click.group(name="repo", short_help="Repository operations")
-@click.pass_obj
-def repo(ctx_config):
-    global config
-    config = ctx_config
+@click.pass_context
+def repo(ctx):
+    def execute():
+        global config
+        config = ctx.parent.obj.config
 
-    try:
-        anchorecli.cli.utils.check_access(config)
-    except Exception as err:
-        print(anchorecli.cli.utils.format_error_output(config, "repo", {}, err))
-        sys.exit(2)
+        try:
+            anchorecli.cli.utils.check_access(config)
+        except Exception as err:
+            print(anchorecli.cli.utils.format_error_output(config, "repo", {}, err))
+            sys.exit(2)
+
+    ctx.obj = anchorecli.cli.utils.ContextObject(ctx.parent.obj.config, execute)
 
 
 @repo.command(name="add", short_help="Add a repository")
@@ -38,10 +41,13 @@ def repo(ctx_config):
     help="List which tags would actually be watched if this repo was added (without actually adding the repo)",
 )
 @click.argument("input_repo", nargs=1)
-def add(input_repo, noautosubscribe, lookuptag, dryrun):
+@click.pass_context
+def add(ctx, input_repo, noautosubscribe, lookuptag, dryrun):
     """
     INPUT_REPO: Input repository can be in the following formats: registry/repo
     """
+    ctx.parent.obj.execute_callback()
+
     response_code = 0
 
     auto_subscribe = not noautosubscribe
@@ -75,7 +81,10 @@ def add(input_repo, noautosubscribe, lookuptag, dryrun):
 
 
 @repo.command(name="list", short_help="List added repositories")
-def listrepos():
+@click.pass_context
+def listrepos(ctx):
+    ctx.parent.obj.execute_callback()
+
     ecode = 0
 
     try:
@@ -100,10 +109,13 @@ def listrepos():
 
 @repo.command(name="get", short_help="Get a repository")
 @click.argument("input_repo", nargs=1)
-def get(input_repo):
+@click.pass_context
+def get(ctx, input_repo):
     """
     INPUT_REPO: Input repository can be in the following formats: registry/repo
     """
+    ctx.parent.obj.execute_callback()
+
     ecode = 0
 
     image_info = anchorecli.cli.utils.parse_dockerimage_string(input_repo)
@@ -137,10 +149,13 @@ def get(input_repo):
     short_help="Delete a repository from the watch list (does not delete already analyzed images)",
 )
 @click.argument("input_repo", nargs=1)
-def delete(input_repo):
+@click.pass_context
+def delete(ctx, input_repo):
     """
     INPUT_REPO: Input repo can be in the following formats: registry/repo
     """
+    ctx.parent.obj.execute_callback()
+
     ecode = 0
 
     image_info = anchorecli.cli.utils.parse_dockerimage_string(input_repo)
@@ -174,10 +189,13 @@ def delete(input_repo):
     short_help="Instruct engine to stop automatically watching the repo for image updates",
 )
 @click.argument("input_repo", nargs=1)
-def unwatch(input_repo):
+@click.pass_context
+def unwatch(ctx, input_repo):
     """
     INPUT_REPO: Input repo can be in the following formats: registry/repo
     """
+    ctx.parent.obj.execute_callback()
+
     ecode = 0
 
     image_info = anchorecli.cli.utils.parse_dockerimage_string(input_repo)
@@ -211,10 +229,13 @@ def unwatch(input_repo):
     short_help="Instruct engine to start automatically watching the repo for image updates",
 )
 @click.argument("input_repo", nargs=1)
-def watch(input_repo):
+@click.pass_context
+def watch(ctx, input_repo):
     """
     INPUT_REPO: Input repo can be in the following formats: registry/repo
     """
+    ctx.parent.obj.execute_callback()
+
     ecode = 0
 
     image_info = anchorecli.cli.utils.parse_dockerimage_string(input_repo)
