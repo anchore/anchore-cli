@@ -124,3 +124,25 @@ def test_wait_for_enabled_feed(monkeypatch, make_feed_response, patch_for_feeds_
     result = runner.invoke(system.wait, ["--servicesready", "", "--timeout", "5"])
     assert result.exit_code == 0
     assert "Feed sync: Success" in result.output
+
+
+class TestSystemSubcommandHelp:
+    @pytest.mark.parametrize(
+        "subcommand, output_start",
+        [
+            (system.status, "Usage: status"),
+            (system.describe_errorcodes, "Usage: errorcodes"),
+            (system.wait, "Usage: wait"),
+            (system.delete, "Usage: del"),
+            (system.feeds, "Usage: feeds"),
+            (system.list, "Usage: list"),
+            (system.feedsync, "Usage: sync"),
+            (system.toggle_enabled, "Usage: config"),
+            (system.delete_data, "Usage: delete"),
+        ]
+    )
+    def test_event_subcommand_help(self, subcommand, output_start):
+        runner = CliRunner()
+        result = runner.invoke(subcommand, ["--help"])
+        assert result.exit_code == 0
+        assert result.output.startswith(output_start)

@@ -43,3 +43,19 @@ def test_list_normalize_level(monkeypatch, input_level, expected_level, expected
         assert result.exit_code == expected_code
     else:
         assert normalized_level == [expected_level]
+
+
+class TestEventSubcommandHelp:
+    @pytest.mark.parametrize(
+        "subcommand, output_start",
+        [
+            (event.list, "Usage: list"),
+            (event.get, "Usage: get"),
+            (event.delete, "Usage: delete"),
+        ]
+    )
+    def test_event_subcommand_help(self, subcommand, output_start):
+        runner = CliRunner()
+        result = runner.invoke(subcommand, ["--help"])
+        assert result.exit_code == 0
+        assert result.output.startswith(output_start)

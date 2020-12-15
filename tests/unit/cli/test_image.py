@@ -93,6 +93,7 @@ class TestQueryVuln:
         runner = CliRunner()
         response(success=False)
         result = runner.invoke(image.query_vuln, ["centos/centos:8", "all"])
+        assert result.exc_info == ""
         assert result.exit_code == 100
 
     def test_not_yet_analyzed(self, monkeypatch, response):
@@ -235,3 +236,25 @@ class TestDeleteImage:
         response(success=True)
         result = runner.invoke(image.delete, ["centos/centos:8"])
         assert result.exit_code == 1
+
+
+class TestImageSubcommandHelp:
+    @pytest.mark.parametrize(
+        "subcommand, output_start",
+        [
+            (image.wait, "Usage: wait"),
+            (image.add, "Usage: add"),
+            (image.import_image, "Usage: import"),
+            (image.get, "Usage: get"),
+            (image.imagelist, "Usage: list"),
+            (image.query_content, "Usage: content"),
+            (image.query_metadata, "Usage: metadata"),
+            (image.query_vuln, "Usage: vuln"),
+            (image.delete, "Usage: del"),
+        ]
+    )
+    def test_image_subcommand_help(self, subcommand, output_start):
+        runner = CliRunner()
+        result = runner.invoke(subcommand, ["--help"])
+        assert result.exit_code == 0
+        assert result.output.startswith(output_start)
