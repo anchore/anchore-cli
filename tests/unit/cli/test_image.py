@@ -93,7 +93,6 @@ class TestQueryVuln:
         runner = CliRunner()
         response(success=False)
         result = runner.invoke(image.query_vuln, ["centos/centos:8", "all"])
-        assert result.exc_info == ""
         assert result.exit_code == 100
 
     def test_not_yet_analyzed(self, monkeypatch, response):
