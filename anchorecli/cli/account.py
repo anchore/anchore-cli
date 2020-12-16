@@ -49,10 +49,19 @@ def account(ctx):
 @click.pass_context
 def get_current_user(ctx):
     global whoami
-
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
+
+    try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+    except RuntimeError as err:
+        print(
+            anchorecli.cli.utils.format_error_output(
+                config, "get_current_user", {}, err
+            )
+        )
+        ecode = 2
+        anchorecli.cli.utils.doexit(ecode)
+
     print(anchorecli.cli.utils.format_output(config, "account_whoami", {}, whoami))
     anchorecli.cli.utils.doexit(ecode)
 
@@ -70,11 +79,11 @@ def add(ctx, account_name, email):
     EMAIL: email address associated with account (optional)
 
     """
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.apiexternal.add_account(
             config, account_name=account_name, email=email
         )
@@ -104,11 +113,11 @@ def get(ctx, account_name):
     ACCOUNT_NAME: name of new account to create
 
     """
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.apiexternal.get_account(
             config, account_name=account_name
         )
@@ -136,10 +145,11 @@ def get(ctx, account_name):
 @click.pass_context
 def list_accounts(ctx):
     """"""
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
+
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.apiexternal.list_accounts(config)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret["success"]:
@@ -171,9 +181,18 @@ def delete(ctx, account_name, dontask):
     ACCOUNT_NAME: name of account to delete (must be disabled first)
 
     """
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
+
+    try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+    except RuntimeError as err:
+        print(
+            anchorecli.cli.utils.format_error_output(
+                config, "account_delete", {}, err
+            )
+        )
+        ecode = 2
+        anchorecli.cli.utils.doexit(ecode)
 
     answer = "n"
     if dontask:
@@ -227,11 +246,11 @@ def enable(ctx, account_name):
     ACCOUNT_NAME: name of account to enable
 
     """
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.apiexternal.enable_account(
             config, account_name=account_name
         )
@@ -263,11 +282,11 @@ def disable(ctx, account_name):
     ACCOUNT_NAME: name of account to disable
 
     """
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.apiexternal.disable_account(
             config, account_name=account_name
         )
@@ -314,14 +333,14 @@ def user_add(ctx, user_name, user_password, account):
     ACCOUNT: optional name of the account to act as
 
     """
-    ctx.parent.obj.execute_callback()
-
-    if not account:
-        account = whoami.get("account", {}).get("name", None)
-
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
+        if not account:
+            account = whoami.get("account", {}).get("name", None)
+
         # do some input validation
         if not re.match(".{6,128}$", user_password):
             raise Exception(
@@ -362,14 +381,14 @@ def user_delete(ctx, user_name, account):
     ACCOUNT: optional name of the account to act as
 
     """
-    ctx.parent.obj.execute_callback()
-
-    if not account:
-        account = whoami.get("account", {}).get("name", None)
-
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
+        if not account:
+            account = whoami.get("account", {}).get("name", None)
+
         ret = anchorecli.clients.apiexternal.del_user(
             config, account_name=account, user_name=user_name
         )
@@ -401,14 +420,14 @@ def user_get(ctx, user_name, account):
     ACCOUNT: optional name of the account to act as
 
     """
-    ctx.parent.obj.execute_callback()
-
-    if not account:
-        account = whoami.get("account", {}).get("name", None)
-
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
+        if not account:
+            account = whoami.get("account", {}).get("name", None)
+
         ret = anchorecli.clients.apiexternal.get_user(
             config, account_name=account, user_name=user_name
         )
@@ -439,14 +458,14 @@ def user_list(ctx, account):
     ACCOUNT: optional name of the account to act as
 
     """
-    ctx.parent.obj.execute_callback()
-
-    if not account:
-        account = whoami.get("account", {}).get("name", None)
-
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
+        if not account:
+            account = whoami.get("account", {}).get("name", None)
+
         ret = anchorecli.clients.apiexternal.list_users(config, account_name=account)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret["success"]:
@@ -477,16 +496,16 @@ def user_setpassword(ctx, user_password, username, account):
     ACCOUNT: optional name of the account to act as
 
     """
-    ctx.parent.obj.execute_callback()
-
-    if not account:
-        account = whoami.get("account", {}).get("name", None)
-    if not username:
-        username = whoami.get("user", {}).get("username", None)
-
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
+        if not account:
+            account = whoami.get("account", {}).get("name", None)
+        if not username:
+            username = whoami.get("user", {}).get("username", None)
+
         ret = anchorecli.clients.apiexternal.update_user_password(
             config,
             account_name=account,

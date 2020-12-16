@@ -99,11 +99,11 @@ def list(
     """
     RESOURCE: Value can be a tag, image digest or repository name. Displays results related to the specific resource
     """
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         if level:
             if level.lower() not in ["info", "error"]:
                 raise Exception(
@@ -157,11 +157,11 @@ def get(ctx, event_id):
     """
     EVENT_ID: ID of the event to be fetched
     """
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.apiexternal.get_event(config, event_id=event_id)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret["success"]:
@@ -209,11 +209,11 @@ def delete(ctx, since=None, before=None, dontask=False, event_id=None, all=False
 
     NOTE: if no options are provided, delete (clear) all events in the engine.  To skip the prompt in this case, use the --dontask flag.
     """
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         if event_id:
             ret = anchorecli.clients.apiexternal.delete_event(config, event_id=event_id)
         else:

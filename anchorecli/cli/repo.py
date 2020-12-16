@@ -46,15 +46,15 @@ def add(ctx, input_repo, noautosubscribe, lookuptag, dryrun):
     """
     INPUT_REPO: Input repository can be in the following formats: registry/repo
     """
-    ctx.parent.obj.execute_callback()
-
     response_code = 0
 
-    auto_subscribe = not noautosubscribe
-    image_info = anchorecli.cli.utils.parse_dockerimage_string(input_repo)
-    input_repo = image_info["registry"] + "/" + image_info["repo"]
-
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
+        autosubscribe = not noautosubscribe
+        image_info = anchorecli.cli.utils.parse_dockerimage_string(input_repo)
+        input_repo = image_info["registry"] + "/" + image_info["repo"]
+
         ret = anchorecli.clients.apiexternal.add_repo(
             config,
             input_repo,
@@ -83,11 +83,11 @@ def add(ctx, input_repo, noautosubscribe, lookuptag, dryrun):
 @repo.command(name="list", short_help="List added repositories")
 @click.pass_context
 def listrepos(ctx):
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.apiexternal.get_repo(config)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret["success"]:
@@ -114,14 +114,14 @@ def get(ctx, input_repo):
     """
     INPUT_REPO: Input repository can be in the following formats: registry/repo
     """
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
 
-    image_info = anchorecli.cli.utils.parse_dockerimage_string(input_repo)
-    input_repo = image_info["registry"] + "/" + image_info["repo"]
-
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
+        image_info = anchorecli.cli.utils.parse_dockerimage_string(input_repo)
+        input_repo = image_info["registry"] + "/" + image_info["repo"]
+
         ret = anchorecli.clients.apiexternal.get_repo(config, input_repo=input_repo)
         if ret:
             ecode = anchorecli.cli.utils.get_ecode(ret)
@@ -154,14 +154,14 @@ def delete(ctx, input_repo):
     """
     INPUT_REPO: Input repo can be in the following formats: registry/repo
     """
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
 
-    image_info = anchorecli.cli.utils.parse_dockerimage_string(input_repo)
-    input_repo = image_info["registry"] + "/" + image_info["repo"]
-
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
+        image_info = anchorecli.cli.utils.parse_dockerimage_string(input_repo)
+        input_repo = image_info["registry"] + "/" + image_info["repo"]
+
         ret = anchorecli.clients.apiexternal.delete_repo(config, input_repo)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret:
@@ -194,14 +194,14 @@ def unwatch(ctx, input_repo):
     """
     INPUT_REPO: Input repo can be in the following formats: registry/repo
     """
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
 
-    image_info = anchorecli.cli.utils.parse_dockerimage_string(input_repo)
-    input_repo = image_info["registry"] + "/" + image_info["repo"]
-
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
+        image_info = anchorecli.cli.utils.parse_dockerimage_string(input_repo)
+        input_repo = image_info["registry"] + "/" + image_info["repo"]
+
         ret = anchorecli.clients.apiexternal.unwatch_repo(config, input_repo)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret:
@@ -234,14 +234,14 @@ def watch(ctx, input_repo):
     """
     INPUT_REPO: Input repo can be in the following formats: registry/repo
     """
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
 
-    image_info = anchorecli.cli.utils.parse_dockerimage_string(input_repo)
-    input_repo = image_info["registry"] + "/" + image_info["repo"]
-
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
+        image_info = anchorecli.cli.utils.parse_dockerimage_string(input_repo)
+        input_repo = image_info["registry"] + "/" + image_info["repo"]
+
         ret = anchorecli.clients.apiexternal.watch_repo(config, input_repo)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret:

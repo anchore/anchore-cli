@@ -39,11 +39,11 @@ def activate(ctx, subscription_type, subscription_key):
 
     SUBSCRIPTION_KEY: Fully qualified name of tag to subscribe to. Eg. docker.io/library/alpine:latest
     """
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.apiexternal.activate_subscription(
             config, subscription_type, subscription_key
         )
@@ -85,11 +85,11 @@ def deactivate(ctx, subscription_type, subscription_key):
 
     SUBSCRIPTION_KEY: Fully qualified name of tag to subscribe to. Eg. docker.io/library/alpine:latest
     """
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.apiexternal.deactivate_subscription(
             config, subscription_type, subscription_key
         )
@@ -123,10 +123,11 @@ def deactivate(ctx, subscription_type, subscription_key):
 )
 @click.pass_context
 def list_subscriptions(ctx, full):
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
+
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.apiexternal.get_subscription(config)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret["success"]:

@@ -15,7 +15,6 @@ _logger = logging.getLogger(__name__)
 @click.group(name="image", short_help="Image operations")
 @click.pass_context
 def image(ctx):
-
     def execute():
         global config
         config = ctx.parent.obj.config
@@ -52,11 +51,11 @@ def wait(ctx, input_image, timeout, interval):
     :param timeout:
     :return:
     """
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         itype = anchorecli.cli.utils.discover_inputimage_format(config, input_image)
         image = input_image
         # timeout = float(timeout)
@@ -147,11 +146,11 @@ def add(ctx, input_image, force, dockerfile, annotation, noautosubscribe):
     """
     INPUT_IMAGE: Input image can be in the following formats: registry/repo:tag
     """
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         itype = anchorecli.cli.utils.discover_inputimage_format(config, input_image)
 
         dockerfile_contents = None
@@ -214,11 +213,11 @@ def add(ctx, input_image, force, dockerfile, annotation, noautosubscribe):
 )
 @click.pass_context
 def import_image(ctx, infile):
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         with open(infile, "r") as FH:
             anchore_data = json.loads(FH.read())
 
@@ -255,11 +254,11 @@ def get(ctx, input_image, show_history):
     """
     INPUT_IMAGE: Input image can be in the following formats: Image Digest, ImageID or registry/repo:tag
     """
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         itype = anchorecli.cli.utils.discover_inputimage_format(config, input_image)
         image = input_image
 
@@ -310,11 +309,11 @@ def get(ctx, input_image, show_history):
 )
 @click.pass_context
 def imagelist(ctx, full, show_all):
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.apiexternal.get_images(config)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret["success"]:
@@ -349,11 +348,11 @@ def query_content(ctx, input_image, content_type):
     available for an image, run the following command:
         $ anchore-cli image content <input_image>
     """
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         itype, image, imageDigest = anchorecli.cli.utils.discover_inputimage(
             config, input_image
         )
@@ -415,11 +414,11 @@ def query_metadata(ctx, input_image, metadata_type):
     METADATA_TYPE: The metadata type can be one of the types returned by running without a type specified
 
     """
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         itype, image, imageDigest = anchorecli.cli.utils.discover_inputimage(
             config, input_image
         )
@@ -484,10 +483,10 @@ def query_vuln(ctx, input_image, vuln_type, vendor_only):
 
       - os: CVE/distro vulnerabilities against operating system packages
     """
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         itype, image, imageDigest = anchorecli.cli.utils.discover_inputimage(
             config, input_image
         )
@@ -543,12 +542,12 @@ def delete(ctx, input_image, force, all):
     """
     INPUT_IMAGE: Input image can be in the following formats: Image Digest, ImageID or registry/repo:tag
     """
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
 
     if all:
         try:
+            anchorecli.cli.utils.handle_parent_callback(ctx)
+
             ret = anchorecli.clients.apiexternal.get_images(config)
             ecode = anchorecli.cli.utils.get_ecode(ret)
             if not ret["success"]:
@@ -589,6 +588,8 @@ def delete(ctx, input_image, force, all):
                 ecode = 2
     else:
         try:
+            anchorecli.cli.utils.handle_parent_callback(ctx)
+
             if input_image is None:
                 raise Exception("Missing argument INPUT_IMAGE")
 

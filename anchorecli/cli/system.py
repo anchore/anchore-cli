@@ -35,11 +35,11 @@ def system(ctx):
 @system.command(name="status", short_help="Check current anchore-engine system status")
 @click.pass_context
 def status(ctx):
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.apiexternal.system_status(config)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret["success"]:
@@ -66,11 +66,11 @@ def status(ctx):
 )
 @click.pass_context
 def describe_errorcodes(ctx):
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.apiexternal.describe_error_codes(config)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret["success"]:
@@ -129,12 +129,12 @@ def wait(ctx, timeout, interval, feedsready, servicesready):
     :param feedsready:
     :return:
     """
-    ctx.parent.obj.execute_callback()
-
     global config
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         sys.stderr.write(
             "Starting checks to wait for anchore-engine to be available timeout={} interval={}\n".format(
                 timeout, interval
@@ -303,11 +303,11 @@ def wait(ctx, timeout, interval, feedsready, servicesready):
 @click.argument("servicename", nargs=1)
 @click.pass_context
 def delete(ctx, host_id, servicename):
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.apiexternal.delete_system_service(
             config, host_id, servicename
         )
@@ -342,11 +342,11 @@ def feeds(ctx):
 @feeds.command(name="list", short_help="Get a list of loaded data feeds.")
 @click.pass_context
 def list(ctx):
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.apiexternal.system_feeds_list(config)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret["success"]:
@@ -377,12 +377,12 @@ def list(ctx):
 )
 @click.pass_context
 def feedsync(ctx, flush):
-    ctx.parent.obj.execute_callback()
-
     global input
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         answer = "n"
         try:
             print(
@@ -431,11 +431,11 @@ def feedsync(ctx, flush):
 @click.argument("feed")
 @click.pass_context
 def toggle_enabled(ctx, feed, group=None, enable=None, disable=None):
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         if not enable and not disable:
             raise Exception("Must set one of --enable or --disable")
         elif enable and disable:
@@ -490,10 +490,10 @@ def toggle_enabled(ctx, feed, group=None, enable=None, disable=None):
 @click.argument("feed")
 @click.pass_context
 def delete_data(ctx, feed, group=None):
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         if group:
             ret = anchorecli.clients.apiexternal.system_feed_group_delete(
                 config, feed, group

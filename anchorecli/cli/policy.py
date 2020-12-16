@@ -34,11 +34,11 @@ def policy(ctx):
 )
 @click.pass_context
 def add(ctx, input_policy):
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         with open(input_policy, "r") as FH:
             policybundle = json.loads(FH.read())
 
@@ -71,11 +71,11 @@ def get(ctx, policyid, detail):
     """
     POLICYID: Policy ID to get
     """
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.apiexternal.get_policy(
             config, policyId=policyid, detail=detail
         )
@@ -100,11 +100,11 @@ def get(ctx, policyid, detail):
 @policy.command(name="list", short_help="List all policies")
 @click.pass_context
 def policylist(ctx):
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.apiexternal.get_policies(config, detail=False)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret["success"]:
@@ -131,11 +131,11 @@ def activate(ctx, policyid):
     """
     POLICYID: Policy ID to be activated
     """
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.apiexternal.get_policy(
             config, policyId=policyid, detail=True
         )
@@ -183,11 +183,11 @@ def delete(ctx, policyid):
     """
     POLICYID: Policy ID to delete
     """
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.apiexternal.delete_policy(config, policyId=policyid)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret["success"]:
@@ -225,10 +225,10 @@ def delete(ctx, policyid):
 )
 @click.pass_context
 def describe(ctx, all=False, gate=None, trigger=None):
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.apiexternal.describe_policy_spec(config)
 
         if ret["success"]:
@@ -277,7 +277,16 @@ def describe(ctx, all=False, gate=None, trigger=None):
 @click.pass_context
 def hub(ctx):
     def execute():
-        ctx.parent.obj.execute_callback()
+        try:
+            anchorecli.cli.utils.handle_parent_callback(ctx)
+        except RuntimeError as err:
+            print(
+                anchorecli.cli.utils.format_error_output(
+                    config, "policy_hub", {}, err
+                )
+            )
+            ecode = 2
+            anchorecli.cli.utils.doexit(ecode)
 
         if ctx.invoked_subcommand not in ["list", "get"]:
             try:
@@ -292,11 +301,11 @@ def hub(ctx):
 @hub.command(name="list")
 @click.pass_context
 def hublist(ctx):
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.hub.get_policies(config)
         if ret["success"]:
             print(
@@ -321,11 +330,11 @@ def hublist(ctx):
 @click.argument("bundlename", nargs=1)
 @click.pass_context
 def hubget(ctx, bundlename):
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.hub.get_policy(config, bundlename)
         if ret["success"]:
             print(
@@ -356,11 +365,11 @@ def hubget(ctx, bundlename):
 )
 @click.pass_context
 def hubinstall(ctx, bundlename, target_id, force):
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.hub.install_policy(
             config, bundlename, target_id=target_id, force=force
         )

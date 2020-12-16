@@ -53,12 +53,14 @@ def query(ctx):
 def images_by_vulnerability(
     ctx, vulnerability_id, namespace, package, severity, vendor_only
 ):
-    """ """
+    """"""
     ctx.parent.obj.execute_callback()
 
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.apiexternal.query_images_by_vulnerability(
             config,
             vulnerability_id,
@@ -107,12 +109,13 @@ def images_by_vulnerability(
 )
 @click.pass_context
 def images_by_package(ctx, name, version, package_type):
-    """ """
+    """"""
     ctx.parent.obj.execute_callback()
-
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.apiexternal.query_images_by_package(
             config, name, version=version, package_type=package_type
         )

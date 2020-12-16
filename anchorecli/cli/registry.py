@@ -62,13 +62,12 @@ def add(
 
     REGISTRY_PASS: Password
     """
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
 
-    registry_types = ["docker_v2", "awsecr"]
-
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
+        registry_types = ["docker_v2", "awsecr"]
         if registry_type and registry_type not in registry_types:
             raise Exception(
                 "input registry type not supported (supported registry_types: "
@@ -158,11 +157,11 @@ def upd(
 
     REGISTRY_PASS: Password
     """
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         if not registry_name:
             registry_name = registry
 
@@ -202,11 +201,11 @@ def delete(ctx, registry):
     """
     REGISTRY: Full hostname/port of registry. Eg. myrepo.example.com:5000
     """
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.apiexternal.delete_registry(config, registry)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret["success"]:
@@ -230,11 +229,11 @@ def delete(ctx, registry):
 @registry.command(name="list", short_help="List all current registries")
 @click.pass_context
 def registrylist(ctx):
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.apiexternal.get_registry(config)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret["success"]:
@@ -262,11 +261,11 @@ def get(ctx, registry):
     """
     REGISTRY: Full hostname/port of registry. Eg. myrepo.example.com:5000
     """
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.apiexternal.get_registry(config, registry=registry)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret["success"]:

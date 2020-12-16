@@ -44,11 +44,11 @@ def check(ctx, input_image, show_history, detail, tag, policy):
     """
     INPUT_IMAGE: Input image can be in the following formats: Image Digest, ImageID or registry/repo:tag
     """
-    ctx.parent.obj.execute_callback()
-
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         itype, image, imageDigest = anchorecli.cli.utils.discover_inputimage(
             config, input_image
         )
