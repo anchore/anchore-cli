@@ -1,5 +1,7 @@
 import pytest
-from anchorecli.cli import image
+
+from anchorecli.cli import image, utils
+from click import Context
 from click.testing import CliRunner
 
 
@@ -81,6 +83,14 @@ vulnerability = [
     "/usr/local/lib64/python3.6/site-packages/aubio",
 ]
 
+def mock_empty_callback():
+    pass
+
+def get_mock_parent_ctx():
+    # The command supplied here will not be used in a way tht impacts the tests, and can
+    # be any arbitrary, non-root command
+    return Context(image.query_vuln, obj=utils.ContextObject(None, mock_empty_callback))
+
 
 class TestQueryVuln:
     def test_is_analyzing(self, monkeypatch, response):
@@ -92,7 +102,10 @@ class TestQueryVuln:
         monkeypatch.setattr(image, "config", {"jsonmode": False})
         runner = CliRunner()
         response(success=False)
-        result = runner.invoke(image.query_vuln, ["centos/centos:8", "all"])
+        # image.query_vuln expects a context containing a parent context with a callback for it to run.
+        # In production this is provided by the image group command, and should never be skipped.
+        # Since that doesn't exist here, just mock it with a no-op callback
+        result = runner.invoke(image.query_vuln, ["centos/centos:8", "all"], parent=get_mock_parent_ctx())
         assert result.exit_code == 100
 
     def test_not_yet_analyzed(self, monkeypatch, response):
@@ -111,7 +124,7 @@ class TestQueryVuln:
                 "message": "image is not analyzed - analysis_status: not_analyzed",
             },
         )
-        result = runner.invoke(image.query_vuln, ["centos/centos:8", "all"])
+        result = runner.invoke(image.query_vuln, ["centos/centos:8", "all"], parent=get_mock_parent_ctx())
         assert result.exit_code == 101
 
     @pytest.mark.parametrize("item", headers)
@@ -124,7 +137,7 @@ class TestQueryVuln:
         monkeypatch.setattr(image, "config", {"jsonmode": False})
         runner = CliRunner()
         response(success=True)
-        result = runner.invoke(image.query_vuln, ["centos/centos:8", "all"])
+        result = runner.invoke(image.query_vuln, ["centos/centos:8", "all"], parent=get_mock_parent_ctx())
         assert result.exit_code == 0
         assert item in result.stdout
 
@@ -138,7 +151,7 @@ class TestQueryVuln:
         monkeypatch.setattr(image, "config", {"jsonmode": False})
         runner = CliRunner()
         response(success=True)
-        result = runner.invoke(image.query_vuln, ["centos/centos:8", "all"])
+        result = runner.invoke(image.query_vuln, ["centos/centos:8", "all"], parent=get_mock_parent_ctx())
         assert result.exit_code == 0
         assert item in result.stdout
 
@@ -163,7 +176,7 @@ class TestDeleteImage:
         )
         runner = CliRunner()
         response(success=True)
-        result = runner.invoke(image.delete, ["centos/centos:8"])
+        result = runner.invoke(image.delete, ["centos/centos:8"], parent=get_mock_parent_ctx())
         assert result.exit_code == 0
 
     def test_delete_failed_pre_v080(self, monkeypatch, response):
@@ -185,7 +198,7 @@ class TestDeleteImage:
         )
         runner = CliRunner()
         response(success=True)
-        result = runner.invoke(image.delete, ["centos/centos:8"])
+        result = runner.invoke(image.delete, ["centos/centos:8"], parent=get_mock_parent_ctx())
         assert result.exit_code == 1
 
     def test_is_deleting(self, monkeypatch, response):
@@ -207,7 +220,7 @@ class TestDeleteImage:
         )
         runner = CliRunner()
         response(success=True)
-        result = runner.invoke(image.delete, ["centos/centos:8"])
+        result = runner.invoke(image.delete, ["centos/centos:8"], parent=get_mock_parent_ctx())
         assert result.exit_code == 0
 
     def test_delete_failed(self, monkeypatch, response):
@@ -233,7 +246,7 @@ class TestDeleteImage:
         )
         runner = CliRunner()
         response(success=True)
-        result = runner.invoke(image.delete, ["centos/centos:8"])
+        result = runner.invoke(image.delete, ["centos/centos:8"], parent=get_mock_parent_ctx())
         assert result.exit_code == 1
 
 
