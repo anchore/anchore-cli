@@ -24,16 +24,16 @@ def archive(ctx):
             print(anchorecli.cli.utils.format_error_output(config, "image", {}, err))
             sys.exit(2)
 
-    ctx.obj = anchorecli.cli.utils.ContextObject(
-        ctx.parent.obj.config, execute
-    )
+    ctx.obj = anchorecli.cli.utils.ContextObject(ctx.parent.obj.config, execute)
 
 
 @archive.group(name="images", short_help="Archive operations")
 @click.pass_context
 def images(ctx):
     # since there's nothing to execute here, just pass the parent config and callback down
-    ctx.obj = anchorecli.cli.utils.ContextObject(ctx.parent.obj.config, ctx.parent.obj.execute_callback)
+    ctx.obj = anchorecli.cli.utils.ContextObject(
+        ctx.parent.obj.config, ctx.parent.obj.execute_callback
+    )
 
 
 @images.command(

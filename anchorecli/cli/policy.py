@@ -386,7 +386,9 @@ def hubinstall(ctx, bundlename, target_id, force):
 
     except Exception as err:
         print(
-            anchorecli.cli.utils.format_error_output(config, "policy_hub_install", {}, err)
+            anchorecli.cli.utils.format_error_output(
+                config, "policy_hub_install", {}, err
+            )
         )
         if not ecode:
             ecode = 2

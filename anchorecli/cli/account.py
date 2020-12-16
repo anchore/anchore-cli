@@ -55,7 +55,9 @@ def get_current_user(ctx):
         anchorecli.cli.utils.handle_parent_callback(ctx)
     except RuntimeError as err:
         print(
-            anchorecli.cli.utils.format_error_output(config, "get_current_user", {}, err)
+            anchorecli.cli.utils.format_error_output(
+                config, "get_current_user", {}, err
+            )
         )
         ecode = 2
         anchorecli.cli.utils.doexit(ecode)
@@ -185,9 +187,7 @@ def delete(ctx, account_name, dontask):
         anchorecli.cli.utils.handle_parent_callback(ctx)
     except RuntimeError as err:
         print(
-            anchorecli.cli.utils.format_error_output(
-                config, "account_delete", {}, err
-            )
+            anchorecli.cli.utils.format_error_output(config, "account_delete", {}, err)
         )
         ecode = 2
         anchorecli.cli.utils.doexit(ecode)
