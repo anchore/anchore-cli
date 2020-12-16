@@ -263,7 +263,7 @@ class TestImageSubcommandHelp:
             (image.query_metadata, "Usage: metadata"),
             (image.query_vuln, "Usage: vuln"),
             (image.delete, "Usage: del"),
-        ]
+        ],
     )
     def test_image_subcommand_help(self, subcommand, output_start):
         runner = CliRunner()

@@ -13,7 +13,7 @@ class TestRepoSubcommandHelp:
             (repo.delete, "Usage: del"),
             (repo.unwatch, "Usage: unwatch"),
             (repo.watch, "Usage: watch"),
-        ]
+        ],
     )
     def test_repo_subcommand_help(self, subcommand, output_start):
         runner = CliRunner()

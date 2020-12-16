@@ -17,7 +17,7 @@ class TestPolicySubcommandHelp:
             (policy.hublist, "Usage: list"),
             (policy.hubget, "Usage: get"),
             (policy.hubinstall, "Usage: install"),
-        ]
+        ],
     )
     def test_policy_subcommand_help(self, subcommand, output_start):
         runner = CliRunner()

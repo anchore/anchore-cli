@@ -12,7 +12,7 @@ class TestRegistrySubcommandHelp:
             (registry.delete, "Usage: del"),
             (registry.registrylist, "Usage: list"),
             (registry.get, "Usage: get"),
-        ]
+        ],
     )
     def test_registry_subcommand_help(self, subcommand, output_start):
         runner = CliRunner()

@@ -10,7 +10,7 @@ class TestSubscriptionSubcommandHelp:
             (subscription.activate, "Usage: activate"),
             (subscription.deactivate, "Usage: deactivate"),
             (subscription.list_subscriptions, "Usage: list"),
-        ]
+        ],
     )
     def test_subscription_subcommand_help(self, subcommand, output_start):
         runner = CliRunner()

@@ -23,6 +23,7 @@ def query(ctx):
 
     ctx.obj = anchorecli.cli.utils.ContextObject(ctx.parent.obj.config, execute)
 
+
 @query.command(
     name="images-by-vulnerability",
     short_help="Search system for images with the given vulnerability ID present",

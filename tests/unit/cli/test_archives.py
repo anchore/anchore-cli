@@ -18,7 +18,7 @@ class TestArchiveSubcommandHelp:
             (archives.rule_get, "Usage: get"),
             (archives.list_transition_rules, "Usage: list"),
             (archives.rule_delete, "Usage: del"),
-        ]
+        ],
     )
     def test_event_subcommand_help(self, subcommand, output_start):
         runner = CliRunner()

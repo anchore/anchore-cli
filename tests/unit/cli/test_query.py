@@ -9,7 +9,7 @@ class TestQuerySubcommandHelp:
         [
             (query.images_by_vulnerability, "Usage: images-by-vulnerability"),
             (query.images_by_package, "Usage: images-by-package"),
-        ]
+        ],
     )
     def test_query_subcommand_help(self, subcommand, output_start):
         runner = CliRunner()

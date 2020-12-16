@@ -8,7 +8,7 @@ class TestEvaluateSubcommandHelp:
         "subcommand, output_start",
         [
             (evaluate.check, "Usage: check"),
-        ]
+        ],
     )
     def test_event_subcommand_help(self, subcommand, output_start):
         runner = CliRunner()

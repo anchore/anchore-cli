@@ -139,7 +139,7 @@ class TestSystemSubcommandHelp:
             (system.feedsync, "Usage: sync"),
             (system.toggle_enabled, "Usage: config"),
             (system.delete_data, "Usage: delete"),
-        ]
+        ],
     )
     def test_event_subcommand_help(self, subcommand, output_start):
         runner = CliRunner()

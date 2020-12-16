@@ -20,7 +20,7 @@ class TestAccountSubcommandHelp:
             (account.user_get, "Usage: get"),
             (account.user_list, "Usage: list"),
             (account.user_setpassword, "Usage: setpassword"),
-        ]
+        ],
     )
     def test_event_subcommand_help(self, subcommand, output_start):
         runner = CliRunner()

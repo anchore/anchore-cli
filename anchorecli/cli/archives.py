@@ -24,7 +24,9 @@ def archive(ctx):
             print(anchorecli.cli.utils.format_error_output(config, "image", {}, err))
             sys.exit(2)
 
-    ctx.obj = anchorecli.cli.utils.ContextObject(ctx.parent.obj.config, execute)
+    ctx.obj = anchorecli.cli.utils.ContextObject(
+        ctx.parent.obj.config, execute
+    )
 
 
 @archive.group(name="images", short_help="Archive operations")
@@ -238,7 +240,9 @@ def image_delete(ctx, digest, force):
 @click.pass_context
 def rules(ctx):
     # since there's nothing to execute here, just pass the parent config and callback down
-    ctx.obj = anchorecli.cli.utils.ContextObject(ctx.parent.obj.config, ctx.parent.obj.execute_callback)
+    ctx.obj = anchorecli.cli.utils.ContextObject(
+        ctx.parent.obj.config, ctx.parent.obj.execute_callback
+    )
 
 
 @rules.command(name="add", short_help="Add a new transition rule")

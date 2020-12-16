@@ -19,7 +19,9 @@ def policy(ctx):
             try:
                 anchorecli.cli.utils.check_access(config)
             except Exception as err:
-                print(anchorecli.cli.utils.format_error_output(config, "policy", {}, err))
+                print(
+                    anchorecli.cli.utils.format_error_output(config, "policy", {}, err)
+                )
                 sys.exit(2)
 
     ctx.obj = anchorecli.cli.utils.ContextObject(ctx.parent.obj.config, execute)
@@ -281,9 +283,7 @@ def hub(ctx):
             anchorecli.cli.utils.handle_parent_callback(ctx)
         except RuntimeError as err:
             print(
-                anchorecli.cli.utils.format_error_output(
-                    config, "policy_hub", {}, err
-                )
+                anchorecli.cli.utils.format_error_output(config, "policy_hub", {}, err)
             )
             ecode = 2
             anchorecli.cli.utils.doexit(ecode)
@@ -292,7 +292,9 @@ def hub(ctx):
             try:
                 anchorecli.cli.utils.check_access(config)
             except Exception as err:
-                print(anchorecli.cli.utils.format_error_output(config, "policy", {}, err))
+                print(
+                    anchorecli.cli.utils.format_error_output(config, "policy", {}, err)
+                )
                 sys.exit(2)
 
     ctx.obj = anchorecli.cli.utils.ContextObject(ctx.parent.obj.config, execute)
@@ -384,9 +386,7 @@ def hubinstall(ctx, bundlename, target_id, force):
 
     except Exception as err:
         print(
-            anchorecli.cli.utils.format_error_output(
-                config, "policy_hub_install", {}, err
-            )
+            anchorecli.cli.utils.format_error_output(config, "policy_hub_install", {}, err)
         )
         if not ecode:
             ecode = 2

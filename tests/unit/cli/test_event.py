@@ -52,7 +52,7 @@ class TestEventSubcommandHelp:
             (event.list, "Usage: list"),
             (event.get, "Usage: get"),
             (event.delete, "Usage: delete"),
-        ]
+        ],
     )
     def test_event_subcommand_help(self, subcommand, output_start):
         runner = CliRunner()

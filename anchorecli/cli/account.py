@@ -55,9 +55,7 @@ def get_current_user(ctx):
         anchorecli.cli.utils.handle_parent_callback(ctx)
     except RuntimeError as err:
         print(
-            anchorecli.cli.utils.format_error_output(
-                config, "get_current_user", {}, err
-            )
+            anchorecli.cli.utils.format_error_output(config, "get_current_user", {}, err)
         )
         ecode = 2
         anchorecli.cli.utils.doexit(ecode)
@@ -319,7 +317,9 @@ def user(ctx):
     global config, whoami
 
     # since there's nothing to execute here, just pass the parent config and callback down
-    ctx.obj = anchorecli.cli.utils.ContextObject(ctx.parent.obj.config, ctx.parent.obj.execute_callback)
+    ctx.obj = anchorecli.cli.utils.ContextObject(
+        ctx.parent.obj.config, ctx.parent.obj.execute_callback
+    )
 
 
 @user.command(name="add", short_help="Add a new user")

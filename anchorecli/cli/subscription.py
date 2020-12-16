@@ -17,7 +17,11 @@ def subscription(ctx):
         try:
             anchorecli.cli.utils.check_access(config)
         except Exception as err:
-            print(anchorecli.cli.utils.format_error_output(config, "subscription", {}, err))
+            print(
+                anchorecli.cli.utils.format_error_output(
+                    config, "subscription", {}, err
+                )
+            )
             sys.exit(2)
 
     ctx.obj = anchorecli.cli.utils.ContextObject(ctx.parent.obj.config, execute)

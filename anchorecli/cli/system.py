@@ -26,7 +26,9 @@ def system(ctx):
             try:
                 anchorecli.cli.utils.check_access(config)
             except Exception as err:
-                print(anchorecli.cli.utils.format_error_output(config, "system", {}, err))
+                print(
+                    anchorecli.cli.utils.format_error_output(config, "system", {}, err)
+                )
                 sys.exit(2)
 
     ctx.obj = anchorecli.cli.utils.ContextObject(ctx.parent.obj.config, execute)
@@ -336,7 +338,9 @@ def delete(ctx, host_id, servicename):
 @click.pass_context
 def feeds(ctx):
     # since there's nothing to execute here, just pass the parent config and callback down
-    ctx.obj = anchorecli.cli.utils.ContextObject(ctx.parent.obj.config, ctx.parent.obj.execute_callback)
+    ctx.obj = anchorecli.cli.utils.ContextObject(
+        ctx.parent.obj.config, ctx.parent.obj.execute_callback
+    )
 
 
 @feeds.command(name="list", short_help="Get a list of loaded data feeds.")
