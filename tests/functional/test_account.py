@@ -3,13 +3,30 @@ import json
 import pytest
 
 @pytest.mark.parametrize(
-    "sub_command", ["add", "del", "disable", "enable", "get", "list", "user", "whoami"]
+    "sub_command, expected_code",
+    [
+        ("add", 2),
+        ("del", 2),
+        ("disable", 2),
+        ("enable", 2),
+        ("get", 2),
+        ("list", 0),
+        ("user", 0),
+        ("whoami", 0),
+    ],
 )
-def test_unauthorized(sub_command):
+def test_unauthorized(sub_command, expected_code):
     out, err, code = call(["anchore-cli", "account", sub_command])
-    assert code == ExitCode(0)
-    assert out.startswith("Usage: anchore-cli account {}".format(sub_command))
-
+    assert code == ExitCode(expected_code)
+    if expected_code == 2:
+        assert err.startswith("Usage: anchore-cli account {}".format(sub_command))
+    else:
+        if sub_command == "list":
+            assert out.startswith("Name")
+        elif sub_command == "whoami":
+            assert out.startswith("Username: admin")
+        else:
+            assert out.startswith("Usage: anchore-cli account {}".format(sub_command))
 
 class TesttList:
     def test_is_authorized(self, admin_call):
