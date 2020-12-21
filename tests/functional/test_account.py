@@ -11,9 +11,9 @@ import pytest
         ("disable", 2),
         ("enable", 2),
         ("get", 2),
-        ("list", 0),
+        ("list", 2),
         ("user", 0),
-        ("whoami", 0),
+        ("whoami", 2),
     ],
 )
 def test_unauthorized(sub_command, expected_code):
