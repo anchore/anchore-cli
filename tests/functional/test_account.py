@@ -3,8 +3,10 @@ import json
 import logging
 import pytest
 
+
 def get_logger(name):
     return logging.getLogger("conftest.%s" % name)
+
 
 @pytest.mark.parametrize(
     "sub_command, expected_code",
@@ -24,7 +26,7 @@ def test_unauthorized(sub_command, expected_code):
 
     out, err, code = call(["anchore-cli", "account", sub_command])
 
-    if sub_command in ["list", "use", "whoami"]:
+    if sub_command in ["list", "user", "whoami"]:
         logger.warning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         logger.warning("! sub_command: " + str(sub_command))
         logger.warning("! out: " + str(out))
@@ -37,11 +39,12 @@ def test_unauthorized(sub_command, expected_code):
         assert err.startswith("Usage: anchore-cli account {}".format(sub_command))
     else:
         if sub_command == "list":
-            assert out.startswith("Name")
+            assert out.startswith("Unauthorized")
         elif sub_command == "whoami":
-            assert out.startswith("Username: admin")
+            assert out.startswith("Unauthorized")
         else:
             assert out.startswith("Usage: anchore-cli account {}".format(sub_command))
+
 
 class TesttList:
     def test_is_authorized(self, admin_call):
