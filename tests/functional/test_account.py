@@ -13,7 +13,7 @@ import pytest
         ("get", 2),
         ("list", 0),
         ("user", 0),
-        ("whoami", 0),
+        ("whoami", 2),
     ],
 )
 def test_unauthorized(sub_command, expected_code):
@@ -25,7 +25,7 @@ def test_unauthorized(sub_command, expected_code):
         if sub_command == "list":
             assert out.startswith("Name")
         elif sub_command == "whoami":
-            assert out.startswith("Username: admin")
+            assert out.startswith("Unauthorized")
         else:
             assert out.startswith("Usage: anchore-cli account {}".format(sub_command))
 
