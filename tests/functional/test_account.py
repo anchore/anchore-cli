@@ -2,14 +2,14 @@ from conftest import call, ExitCode
 import json
 import pytest
 
-
+1
 @pytest.mark.parametrize(
     "sub_command", ["add", "del", "disable", "enable", "get", "list", "user", "whoami"]
 )
 def test_unauthorized(sub_command):
     out, err, code = call(["anchore-cli", "account", sub_command])
-    assert code == ExitCode(2)
-    assert out == '"Unauthorized"\n'
+    assert code == ExitCode(0)
+    assert out.startswith("Usage: anchore-cli account {}".format(sub_command))
 
 
 class TesttList:
