@@ -58,7 +58,7 @@ def add(ctx, input_repo, noautosubscribe, lookuptag, dryrun):
         ret = anchorecli.clients.apiexternal.add_repo(
             config,
             input_repo,
-            auto_subscribe=auto_subscribe,
+            auto_subscribe=autosubscribe,
             lookup_tag=lookuptag,
             dry_run=dryrun,
         )
