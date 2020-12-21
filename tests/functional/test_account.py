@@ -2,7 +2,6 @@ from conftest import call, ExitCode
 import json
 import pytest
 
-1
 @pytest.mark.parametrize(
     "sub_command", ["add", "del", "disable", "enable", "get", "list", "user", "whoami"]
 )
