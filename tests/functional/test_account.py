@@ -2,6 +2,7 @@ from conftest import call, ExitCode
 import json
 import pytest
 
+
 @pytest.mark.parametrize(
     "sub_command, expected_code",
     [
@@ -27,6 +28,7 @@ def test_unauthorized(sub_command, expected_code):
             assert out.startswith("Username: admin")
         else:
             assert out.startswith("Usage: anchore-cli account {}".format(sub_command))
+
 
 class TesttList:
     def test_is_authorized(self, admin_call):
