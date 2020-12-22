@@ -12,7 +12,7 @@ from click.testing import CliRunner
         ("INFO", "info", None),
         ("error", "error", None),
         ("ERROR", "error", None),
-        ("other", None, 1)
+        ("other", None, 1),
     ],
 )
 def test_list_normalize_level(monkeypatch, input_level, expected_level, expected_code):
