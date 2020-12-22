@@ -6,15 +6,16 @@ from click.testing import CliRunner
 
 
 @pytest.mark.parametrize(
-    "input_level, expected_level",
+    "input_level, expected_level, expected_code",
     [
-        ("info", "info"),
-        ("INFO", "info"),
-        ("error", "error"),
-        ("ERROR", "error"),
+        ("info", "info", None),
+        ("INFO", "info", None),
+        ("error", "error", None),
+        ("ERROR", "error", None),
+        ("other", None, 1)
     ],
 )
-def test_list_normalize_level(monkeypatch, input_level, expected_level):
+def test_list_normalize_level(monkeypatch, input_level, expected_level, expected_code):
     normalized_level = []
 
     def mock_method(
@@ -38,4 +39,7 @@ def test_list_normalize_level(monkeypatch, input_level, expected_level):
     )
     runner = CliRunner()
     result = runner.invoke(event.list, ["--level", input_level])
-    assert normalized_level == [expected_level]
+    if expected_code is not None:
+        assert result.exit_code == expected_code
+    else:
+        assert normalized_level == [expected_level]
