@@ -18,16 +18,16 @@ def test_list_normalize_level(monkeypatch, input_level, expected_level):
     normalized_level = []
 
     def mock_method(
-            config,
-            since=None,
-            before=None,
-            level=None,
-            service=None,
-            host=None,
-            resource=None,
-            resource_type=None,
-            event_type=None,
-            all=False,
+        config,
+        since=None,
+        before=None,
+        level=None,
+        service=None,
+        host=None,
+        resource=None,
+        resource_type=None,
+        event_type=None,
+        all=False,
     ):
         normalized_level.append(level)
 
@@ -39,4 +39,3 @@ def test_list_normalize_level(monkeypatch, input_level, expected_level):
     runner = CliRunner()
     result = runner.invoke(event.list, ["--level", input_level])
     assert normalized_level == [expected_level]
-
