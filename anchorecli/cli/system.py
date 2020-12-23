@@ -242,7 +242,9 @@ def wait(timeout, interval, feedsready, servicesready):
                                             group_record.get("name", None),
                                             group_record.get("last_sync", None),
                                         )
-                                        if group_record.get("last_sync", None):
+                                        if group_record.get(
+                                            "last_sync", None
+                                        ) or not group_record.get("enabled", None):
                                             all_groups_synced = True
                                         else:
                                             all_groups_synced = False
