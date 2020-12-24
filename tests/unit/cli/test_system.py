@@ -9,7 +9,28 @@ import anchorecli.clients.apiexternal
 @pytest.fixture
 def make_feed_response():
     def _make_feed_response(additional_vuln_group_records=[]):
-        return {
+        groups = [
+            {
+                "created_at": "2020-03-27T22:48:57Z",
+                "enabled": True,
+                "last_sync": "2020-12-23T19:34:06Z",
+                "name": "alpine:3.7",
+                "record_count": 1412,
+                "updated_at": "2020-12-23T19:34:07Z",
+            },
+            {
+                "created_at": "2020-03-27T22:48:57Z",
+                "enabled": True,
+                "last_sync": "2020-12-23T19:33:29Z",
+                "name": "centos:5",
+                "record_count": 1347,
+                "updated_at": "2020-12-23T19:34:06Z",
+            },
+        ]
+
+        groups += additional_vuln_group_records
+
+        response = {
             "success": True,
             "httpcode": 200,
             "payload": [
@@ -18,28 +39,12 @@ def make_feed_response():
                     "enabled": True,
                     "last_full_sync": "2020-12-23T19:34:29Z",
                     "updated_at": "2020-12-23T19:34:29Z",
-                    "groups": [
-                        {
-                            "created_at": "2020-03-27T22:48:57Z",
-                            "enabled": True,
-                            "last_sync": "2020-12-23T19:34:06Z",
-                            "name": "alpine:3.7",
-                            "record_count": 1412,
-                            "updated_at": "2020-12-23T19:34:07Z",
-                        },
-                        {
-                            "created_at": "2020-03-27T22:48:57Z",
-                            "enabled": True,
-                            "last_sync": "2020-12-23T19:33:29Z",
-                            "name": "centos:5",
-                            "record_count": 1347,
-                            "updated_at": "2020-12-23T19:34:06Z",
-                        },
-                        *additional_vuln_group_records,
-                    ],
+                    "groups": groups,
                 }
             ],
         }
+
+        return response
 
     return _make_feed_response
 
