@@ -11,7 +11,7 @@ config = {}
 _logger = logging.getLogger(__name__)
 
 
-class WaitOnDisabledFeed(Exception):
+class WaitOnDisabledFeedError(Exception):
     pass
 
 
@@ -239,7 +239,7 @@ def wait(timeout, interval, feedsready, servicesready):
                             )
                             if feed_record.get("name", None) in all_up:
                                 if not feed_record.get("enabled"):
-                                    raise WaitOnDisabledFeed(
+                                    raise WaitOnDisabledFeedError(
                                         "Requesting wait for disabled feed: {}".format(
                                             feed_record.get("name")
                                         )
@@ -268,7 +268,7 @@ def wait(timeout, interval, feedsready, servicesready):
                             break
                         else:
                             _logger.debug("some feeds not yet synced %s", all_up)
-                except WaitOnDisabledFeed as err:
+                except WaitOnDisabledFeedError as err:
                     raise err
                 except Exception as err:
                     print("service feeds list failed {}".format(err))
