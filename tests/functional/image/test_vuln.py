@@ -26,6 +26,7 @@ class TestNonOsVulnerabilities:
         Fetch the output of non-os vulnerabilities in user-friendly format,
         split on newlines. This fixture is used once for the whole class
         """
+        # XXX This needs to point to an anchore image
         out, err, code = class_admin_call(
             ["image", "vuln", "alfredodeza/vulnerable", "non-os"]
         )
@@ -89,6 +90,5 @@ class TestNonOsVulnerabilities:
     def test_package_paths(self, stdout):
         output = "".join(stdout)
         assert "/usr/local/lib64/python3.6/site-packages/aubio         " in output
-        assert "/usr/local/lib/python3.6/site-packages/python-dbusmock " in output
-        assert "/usr/local/lib64/python3.6/site-packages/aubio         " in output
-        assert "/usr/local/lib64/python3.6/site-packages/aubio         " in output
+        # See issue https://github.com/anchore/anchore-cli/issues/149
+        # assert "/usr/local/lib/python3.6/site-packages/python-dbusmock " in output
