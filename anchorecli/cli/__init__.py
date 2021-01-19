@@ -14,6 +14,7 @@ from . import (
     query,
     account,
     archives,
+    enterprise,
 )
 
 from anchorecli import version
@@ -103,4 +104,5 @@ main_entry.add_command(event.event)
 main_entry.add_command(query.query)
 main_entry.add_command(account.account)
 main_entry.add_command(archives.archive)
+main_entry.add_command(enterprise.enterprise)
 # main_entry.add_command(interactive.interactive)

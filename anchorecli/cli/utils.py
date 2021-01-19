@@ -1166,8 +1166,38 @@ def format_output(config, op, params, payload):
                 ]
                 t.add_row(row)
             ret = t.get_string(sortby="Transition Date", reversesort=True) + "\n"
+        elif op in ["list_corrections"]:
+            header = ["ID", "Match", "Replace", "Created At", "Description"]
+            t = plain_column_table(header)
+            for record in payload:
+                row = [
+                    str(record["uuid"]),
+                    str(record["match"]),
+                    str(record["replace"]),
+                    str(record["created_at"]),
+                    str(record["description"]),
+                ]
+                t.add_row(row)
+            ret = t.get_string(sortby="Created At", reversesort=True) + "\n"
+        elif op in ["get_correction"]:
+            ret = (
+                "UUID: %s\nMatch: %s\nReplace: %s\nCreated At: %s\nDescription: %s\n"
+                % (
+                    str(payload["uuid"]),
+                    str(payload["match"]),
+                    str(payload["replace"]),
+                    str(payload["created_at"]),
+                    str(payload["description"]),
+                )
+            )
         elif (
-            op in ["delete_system_service", "test_webhook"]
+            op
+            in [
+                "delete_system_service",
+                "test_webhook",
+                "add_correction",
+                "delete_correction",
+            ]
             or re.match(".*_delete$", op)
             or re.match(".*_activate$", op)
             or re.match(".*_deactivate$", op)
