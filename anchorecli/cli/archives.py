@@ -116,7 +116,7 @@ def image_add(image_digests):
 @click.argument("digest", nargs=1)
 def image_get(digest):
     """
-    INPUT_IMAGE: Input image can be in the following formats: Image Digest, ImageID or registry/repo:tag
+    INPUT_IMAGE: Input Image Digest (ex. sha256:95c9a61d949bbc622a444202e7faf9529f0dab5773023f173f602151f3a107b3)
     """
     ecode = 0
 
@@ -185,7 +185,7 @@ def list_archived_analyses():
 @click.option("--force", is_flag=True, help="Force deletion of archived analysis")
 def image_delete(digest, force):
     """
-    INPUT_IMAGE: Input image can be in the following formats: Image Digest, ImageID or registry/repo:tag
+    INPUT_IMAGE: Input Image Digest (ex. sha256:95c9a61d949bbc622a444202e7faf9529f0dab5773023f173f602151f3a107b3)
     """
     ecode = 0
 

@@ -11,6 +11,10 @@ config = {}
 _logger = logging.getLogger(__name__)
 
 
+class WaitOnDisabledFeedError(Exception):
+    pass
+
+
 @click.group(name="system", short_help="System operations")
 @click.pass_context
 @click.pass_obj
@@ -234,6 +238,13 @@ def wait(timeout, interval, feedsready, servicesready):
                                 feed_record.get("last_full_sync"),
                             )
                             if feed_record.get("name", None) in all_up:
+                                if not feed_record.get("enabled"):
+                                    raise WaitOnDisabledFeedError(
+                                        "Requesting wait for disabled feed: {}".format(
+                                            feed_record.get("name")
+                                        )
+                                    )
+
                                 if feed_record.get("last_full_sync", None):
                                     all_groups_synced = False
                                     for group_record in feed_record.get("groups", []):
@@ -242,7 +253,9 @@ def wait(timeout, interval, feedsready, servicesready):
                                             group_record.get("name", None),
                                             group_record.get("last_sync", None),
                                         )
-                                        if group_record.get("last_sync", None):
+                                        if group_record.get(
+                                            "last_sync", None
+                                        ) or not group_record.get("enabled", None):
                                             all_groups_synced = True
                                         else:
                                             all_groups_synced = False
@@ -255,6 +268,8 @@ def wait(timeout, interval, feedsready, servicesready):
                             break
                         else:
                             _logger.debug("some feeds not yet synced %s", all_up)
+                except WaitOnDisabledFeedError as err:
+                    raise err
                 except Exception as err:
                     print("service feeds list failed {}".format(err))
                 time.sleep(interval)
