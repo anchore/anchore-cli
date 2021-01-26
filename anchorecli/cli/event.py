@@ -98,13 +98,13 @@ def list(
 
     try:
         if level:
-            if level.upper() not in ["INFO", "ERROR"]:
+            if level.lower() not in ["info", "error"]:
                 raise Exception(
                     "{} is an invalid value for --level. Supported values are 'info' or 'error'".format(
                         level
                     )
                 )
-            level = level.upper()
+            level = level.lower()
 
         ret = anchorecli.clients.apiexternal.list_events(
             config,

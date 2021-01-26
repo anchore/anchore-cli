@@ -2466,3 +2466,84 @@ def test_webhook(config, webhook_type="general", notification_type="tag_update")
     ret = anchorecli.clients.common.make_client_result(r, raw=False)
 
     return ret
+
+
+def render_url(config, path_parts):
+    base_url = config["url"]
+
+    base_url = re.sub("/$", "", base_url)
+
+    path_parts.insert(0, base_url)
+    return "/".join(path_parts)
+
+
+def enterprise_add_correction(config, correction):
+    user = config["user"]
+    pw = config["pass"]
+
+    url = render_url(config, ["enterprise", "corrections"])
+
+    set_account_header(config)
+
+    _logger.debug("POST url=%s", str(url))
+    r = requests.post(
+        url,
+        auth=(user, pw),
+        verify=config["ssl_verify"],
+        headers=header_overrides,
+        data=json.dumps(correction),
+    )
+    ret = anchorecli.clients.common.make_client_result(r, raw=False)
+
+    return ret
+
+
+def enterprise_get_correction(config, correction_id):
+    user = config["user"]
+    pw = config["pass"]
+
+    url = render_url(config, ["enterprise", "corrections", correction_id])
+
+    set_account_header(config)
+
+    _logger.debug("GET url=%s", str(url))
+    r = requests.get(
+        url, auth=(user, pw), verify=config["ssl_verify"], headers=header_overrides
+    )
+    ret = anchorecli.clients.common.make_client_result(r, raw=False)
+
+    return ret
+
+
+def enterprise_list_corrections(config):
+    user = config["user"]
+    pw = config["pass"]
+
+    url = render_url(config, ["enterprise", "corrections"])
+
+    set_account_header(config)
+
+    _logger.debug("GET url=%s", str(url))
+    r = requests.get(
+        url, auth=(user, pw), verify=config["ssl_verify"], headers=header_overrides
+    )
+    ret = anchorecli.clients.common.make_client_result(r, raw=False)
+
+    return ret
+
+
+def enterprise_delete_correction(config, correction_id):
+    user = config["user"]
+    pw = config["pass"]
+
+    url = render_url(config, ["enterprise", "corrections", correction_id])
+
+    set_account_header(config)
+
+    _logger.debug("DELETE url=%s", str(url))
+    r = requests.delete(
+        url, auth=(user, pw), verify=config["ssl_verify"], headers=header_overrides
+    )
+    ret = anchorecli.clients.common.make_client_result(r, raw=False)
+
+    return ret
