@@ -241,6 +241,11 @@ def rules():
     is_flag=True,
     help="If true, make this a global rule (admin only)",
 )
+@click.option(
+    "--max-images-per-account",
+    help="Set the maximum number of images per account",
+    type=int,
+)
 def rule_add(
     days_old,
     tag_versions_newer,
@@ -249,6 +254,7 @@ def rule_add(
     repository_selector,
     tag_selector,
     is_global,
+    max_images_per_account,
 ):
     """
     Add an analyzed image to the analysis archive
@@ -258,6 +264,8 @@ def rule_add(
     TAG_VERSIONS_NEWER: the number of newer mappings of a tag to a digest that must exist for the tag to be selected by the rule
 
     archive|delete: the transition to execute - archive or delete. delete transitions occur on already archived analysis, not on the active image analysis
+
+    max_images_per_account: The maximum number of images per account. If specified, no selector should be. Also, it can only be specified on a global rule
 
     """
     ecode = 0
@@ -272,6 +280,20 @@ def rule_add(
             ecode = 0
             anchorecli.cli.utils.doexit(ecode)
 
+    if max_images_per_account and not is_global:
+        print("Error: max_images_per_account can only be specified on a global rule")
+        anchorecli.cli.utils.doexit(2)
+
+    if max_images_per_account and is_selector_default(
+        repository_selector, registry_selector, tag_selector
+    ):
+        repository_selector = ""
+        registry_selector = ""
+        tag_selector = ""
+    elif max_images_per_account:
+        print("Error: Selector cannot be specified along with max_images_per_account")
+        anchorecli.cli.utils.doexit(2)
+
     try:
         ret = anchorecli.clients.apiexternal.add_transition_rule(
             config,
@@ -282,6 +304,7 @@ def rule_add(
             tag_selector,
             transition,
             is_global,
+            max_images_per_account,
         )
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret["success"]:
@@ -303,6 +326,10 @@ def rule_add(
             ecode = 2
 
     anchorecli.cli.utils.doexit(ecode)
+
+
+def is_selector_default(repo, registry, tag):
+    return repo == "*" and registry == "*" and tag == "*"
 
 
 @rules.command(name="get", short_help="Show detail for a specific transition rule")
