@@ -2375,6 +2375,7 @@ def add_transition_rule(
     selector_tag="*",
     transition="archive",
     is_global=False,
+    max_images_per_account=None,
 ):
     """
     POST /archives/rules
@@ -2387,6 +2388,7 @@ def add_transition_rule(
     :param selector_tag: Wild-card supported string to match registry (e.g. 'docker.io', '*', or '*amazonaws.com')
     :param transition: which transition to use, either 'archive' or 'delete'
     :param is_global: should the rule be a global rule (bool)
+    :param max_images_per_account: the maximum number of images per account (must be only
     :return:
     """
 
@@ -2420,6 +2422,7 @@ def add_transition_rule(
         "analysis_age_days": analysis_age_days,
         "transition": transition,
         "system_global": is_global,
+        "max_images_per_account": max_images_per_account,
     }
 
     try:
