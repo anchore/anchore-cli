@@ -2376,6 +2376,10 @@ def add_transition_rule(
     transition="archive",
     is_global=False,
     max_images_per_account=None,
+    registry_exclude="",
+    repository_exclude="",
+    tag_exclude="",
+    exclude_expiration_days="-1",
 ):
     """
     POST /archives/rules
@@ -2389,6 +2393,10 @@ def add_transition_rule(
     :param transition: which transition to use, either 'archive' or 'delete'
     :param is_global: should the rule be a global rule (bool)
     :param max_images_per_account: the maximum number of images per account (must be only
+    :param registry_exclude: registries to exclude from archiving
+    :param repository_exclude:  repositories to exclude from archiving
+    :param tag_exclude: tags to exclude from archiving
+    :param exclude_expiration_days: number of days until exclude expires
     :return:
     """
 
@@ -2413,20 +2421,40 @@ def add_transition_rule(
         raise TypeError("tag_versions_newer must be an integer")
 
     payload = {
-        "selector": {
-            "registry": selector_registry,
-            "repository": selector_repository,
-            "tag": selector_tag,
-        },
         "tag_versions_newer": tag_versions_newer,
         "analysis_age_days": analysis_age_days,
         "transition": transition,
         "system_global": is_global,
-        "max_images_per_account": max_images_per_account,
     }
+
+    if max_images_per_account:
+        payload.update(
+            {
+                "max_images_per_account": max_images_per_account,
+            }
+        )
+    else:
+        payload.update(
+            {
+                "selector": {
+                    "registry": selector_registry,
+                    "repository": selector_repository,
+                    "tag": selector_tag,
+                },
+                "exclude": {
+                    "expiration_days": exclude_expiration_days,
+                    "selector": {
+                        "registry": registry_exclude,
+                        "repository": repository_exclude,
+                        "tag": tag_exclude,
+                    },
+                },
+            }
+        )
 
     try:
         _logger.debug("POST url=%s", str(url))
+        _logger.debug(json.dumps(payload))
         r = requests.post(
             url,
             data=json.dumps(payload),
