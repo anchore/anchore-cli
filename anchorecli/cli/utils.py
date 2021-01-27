@@ -1135,6 +1135,11 @@ def format_output(config, op, params, payload):
                 "Registry",
                 "Repository",
                 "Tag",
+                "Max Images",
+                "Registry Exclude",
+                "Repo Exclude",
+                "Tag Exclude",
+                "Exclude Exp Days",
                 "Last Updated",
             ]
             t = plain_column_table(header)
@@ -1150,6 +1155,11 @@ def format_output(config, op, params, payload):
                     str(record["selector"]["registry"]),
                     str(record["selector"]["repository"]),
                     str(record["selector"]["tag"]),
+                    str(record["max_images_per_account"]),
+                    str(record["exclude"]["selector"]["registry"]),
+                    str(record["exclude"]["selector"]["repository"]),
+                    str(record["exclude"]["selector"]["tag"]),
+                    str(record["exclude"]["expiration_days"]),
                     str(record["last_updated"]),
                 ]
                 t.add_row(row)
