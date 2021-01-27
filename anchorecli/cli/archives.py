@@ -246,6 +246,19 @@ def rules():
     help="Set the maximum number of images per account",
     type=int,
 )
+@click.option(
+    "--registry-exclude", default="", help="Registry to exclude, wildcard supported"
+)
+@click.option(
+    "--repository-exclude", default="", help="Repository to exclude, wildcard supported"
+)
+@click.option("--tag-exclude", default="", help="Tag to exclude, wildcard supported")
+@click.option(
+    "--exclude-expiration-days",
+    default="-1",
+    help="Days until the exclude block expires",
+    type=int,
+)
 def rule_add(
     days_old,
     tag_versions_newer,
@@ -255,6 +268,10 @@ def rule_add(
     tag_selector,
     is_global,
     max_images_per_account,
+    registry_exclude,
+    repository_exclude,
+    tag_exclude,
+    exclude_expiration_days,
 ):
     """
     Add an analyzed image to the analysis archive
@@ -266,6 +283,11 @@ def rule_add(
     archive|delete: the transition to execute - archive or delete. delete transitions occur on already archived analysis, not on the active image analysis
 
     max_images_per_account: The maximum number of images per account. If specified, no selector should be. Also, it can only be specified on a global rule
+
+    registry_exclude: registries to be excluded
+    repository_exclude: repositories to be excluded
+    tag_exclude: tags to be excluded
+    exclude_expiration_days: Number of days until exclude block expires
 
     """
     ecode = 0
@@ -284,14 +306,18 @@ def rule_add(
         print("Error: max_images_per_account can only be specified on a global rule")
         anchorecli.cli.utils.doexit(2)
 
-    if max_images_per_account and is_selector_default(
-        repository_selector, registry_selector, tag_selector
+    if (
+        max_images_per_account
+        and is_selector_default(repository_selector, registry_selector, tag_selector)
+        and is_exclude_default(registry_exclude, repository_exclude, tag_exclude)
     ):
         repository_selector = ""
         registry_selector = ""
         tag_selector = ""
     elif max_images_per_account:
-        print("Error: Selector cannot be specified along with max_images_per_account")
+        print(
+            "Error: Selector and exclude cannot be specified along with max_images_per_account"
+        )
         anchorecli.cli.utils.doexit(2)
 
     try:
@@ -305,6 +331,10 @@ def rule_add(
             transition,
             is_global,
             max_images_per_account,
+            registry_exclude,
+            repository_exclude,
+            tag_exclude,
+            exclude_expiration_days,
         )
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret["success"]:
@@ -330,6 +360,10 @@ def rule_add(
 
 def is_selector_default(repo, registry, tag):
     return repo == "*" and registry == "*" and tag == "*"
+
+
+def is_exclude_default(repo, registry, tag):
+    return repo == "" and registry == "" and tag == ""
 
 
 @rules.command(name="get", short_help="Show detail for a specific transition rule")
