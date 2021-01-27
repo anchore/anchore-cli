@@ -14,7 +14,7 @@ def image_command(admin_call):
         return json.loads(out)
 
     return apply
-https://github.com/anchore/syft/actions/runs/426001921
+
 
 def test_image_add(image_command):
     result = image_command("add", [input_image])
