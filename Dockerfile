@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi8/ubi:8.2 as anchore-cli-builder
+FROM registry.access.redhat.com/ubi8/ubi:8.3 as anchore-cli-builder
 
 ######## This is stage1 where anchore wheels, binary deps, and any items from the source tree get staged to /build_output ########
 
@@ -24,7 +24,7 @@ RUN set -ex && \
 
 RUN tar -z -c -v -C /build_output -f /anchore-buildblob.tgz .
 
-FROM registry.access.redhat.com/ubi8/ubi:8.2 as anchore-cli-final
+FROM registry.access.redhat.com/ubi8/ubi:8.3 as anchore-cli-final
 
 ARG CLI_COMMIT
 ARG ANCHORE_CLI_VERSION="0.9.1"
