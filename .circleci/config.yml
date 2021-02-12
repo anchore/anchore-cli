@@ -199,34 +199,9 @@ workflows:
       - lint:
           py_version: "3.8"
       - unit_tests:
-          name: unit_tests_36
-          py_version: "3.6"
-          tox_env: "py27 py36"
-      - unit_tests:
           name: unit_tests_38
           py_version: "3.8"
           tox_env: "py27 py38"
-      - functional_tests:
-          name: functional_tests_36_latest
-          tox_env: py36-anchore_latest
-          py_version: "3.6"
-          requires:
-            - lint
-            - unit_tests_36
-      - functional_tests:
-          name: functional_tests_36_081
-          tox_env: py36-anchore_0.8.1
-          py_version: "3.6"
-          requires:
-            - lint
-            - unit_tests_36
-      - functional_tests:
-          name: functional_tests_36_080
-          tox_env: py36-anchore_0.8.0
-          py_version: "3.6"
-          requires:
-            - lint
-            - unit_tests_36
       - functional_tests:
           name: functional_tests_38_latest
           tox_env: py38-anchore_latest
@@ -250,9 +225,6 @@ workflows:
             - unit_tests_38
       - build:
           requires:
-            - functional_tests_36_latest
-            - functional_tests_36_081
-            - functional_tests_36_080
             - functional_tests_38_latest
             - functional_tests_38_081
             - functional_tests_38_080
@@ -284,37 +256,9 @@ workflows:
           py_version: "3.8"
           filters: *filter_nightly
       - unit_tests:
-          name: unit_tests_36
-          py_version: "3.6"
-          tox_env: "py27 py36"
-      - unit_tests:
           name: unit_tests_38
           py_version: "3.8"
           tox_env: "py27 py38"
-      - functional_tests:
-          filters: *filter_nightly
-          name: functional_tests_36_latest
-          tox_env: py36-anchore_latest
-          py_version: "3.6"
-          requires:
-            - lint
-            - unit_tests_36
-      - functional_tests:
-          filters: *filter_nightly
-          name: functional_tests_36_081
-          tox_env: py36-anchore_0.8.1
-          py_version: "3.6"
-          requires:
-            - lint
-            - unit_tests_36
-      - functional_tests:
-          filters: *filter_nightly
-          name: functional_tests_36_080
-          tox_env: py36-anchore_0.8.0
-          py_version: "3.6"
-          requires:
-            - lint
-            - unit_tests_36
       - functional_tests:
           filters: *filter_nightly
           name: functional_tests_38_latest
@@ -342,9 +286,6 @@ workflows:
       - build:
           filters: *filter_nightly
           requires:
-            - functional_tests_36_latest
-            - functional_tests_36_081
-            - functional_tests_36_080
             - functional_tests_38_latest
             - functional_tests_38_081
             - functional_tests_38_080
@@ -424,39 +365,10 @@ workflows:
           py_version: "3.8"
           filters: *filter_rebuild_tags
       - unit_tests:
-          name: unit_tests_36
-          py_version: "3.6"
-          tox_env: "py27 py36"
-          filters: *filter_rebuild_tags
-      - unit_tests:
           name: unit_tests_38
           py_version: "3.8"
           tox_env: "py27 py38"
           filters: *filter_rebuild_tags
-      - functional_tests:
-          filters: *filter_rebuild_tags
-          name: functional_tests_36_latest
-          tox_env: py36-anchore_latest
-          py_version: "3.6"
-          requires:
-            - lint
-            - unit_tests_36
-      - functional_tests:
-          filters: *filter_rebuild_tags
-          name: functional_tests_36_081
-          tox_env: py36-anchore_0.8.1
-          py_version: "3.6"
-          requires:
-            - lint
-            - unit_tests_36
-      - functional_tests:
-          filters: *filter_rebuild_tags
-          name: functional_tests_36_080
-          tox_env: py36-anchore_0.8.0
-          py_version: "3.6"
-          requires:
-            - lint
-            - unit_tests_36
       - functional_tests:
           filters: *filter_rebuild_tags
           name: functional_tests_38_latest
@@ -484,9 +396,6 @@ workflows:
       - build:
           filters: *filter_rebuild_tags
           requires:
-            - functional_tests_36_latest
-            - functional_tests_36_081
-            - functional_tests_36_080
             - functional_tests_38_latest
             - functional_tests_38_081
             - functional_tests_38_080
