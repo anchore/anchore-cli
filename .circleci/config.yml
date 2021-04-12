@@ -267,28 +267,10 @@ workflows:
           requires:
             - lint
             - unit_tests_38
-      - functional_tests:
-          filters: *filter_nightly
-          name: functional_tests_38_081
-          tox_env: py38-anchore_0.8.1
-          py_version: "3.8"
-          requires:
-            - lint
-            - unit_tests_38
-      - functional_tests:
-          filters: *filter_nightly
-          name: functional_tests_38_080
-          tox_env: py38-anchore_0.8.0
-          py_version: "3.8"
-          requires:
-            - lint
-            - unit_tests_38
       - build:
           filters: *filter_nightly
           requires:
             - functional_tests_38_latest
-            - functional_tests_38_081
-            - functional_tests_38_080
       - e2e_tests:
           context: e2e-testing
           filters: *filter_nightly
