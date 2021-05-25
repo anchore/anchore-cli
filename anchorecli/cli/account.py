@@ -121,7 +121,7 @@ def get(account_name):
     name="list", short_help="List information about all accounts (admin only)"
 )
 def list_accounts():
-    """"""
+    """ """
     ecode = 0
     try:
         ret = anchorecli.clients.apiexternal.list_accounts(config)
