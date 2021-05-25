@@ -50,7 +50,7 @@ def query(ctx_config):
 def images_by_vulnerability(
     vulnerability_id, namespace, package, severity, vendor_only
 ):
-    """"""
+    """ """
     ecode = 0
 
     try:
@@ -101,7 +101,7 @@ def images_by_vulnerability(
     "--package-type", help="Filter results to only packages of given type (e.g. dpkg)"
 )
 def images_by_package(name, version, package_type):
-    """"""
+    """ """
     ecode = 0
 
     try:
