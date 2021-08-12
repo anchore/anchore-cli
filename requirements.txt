@@ -2,6 +2,6 @@ Click==7.0
 prettytable==0.7.2
 python-dateutil==2.8.1
 PyYAML==5.4.1
-requests==2.23.0
+requests==2.26.0
 six==1.14.0
-urllib3==1.25.9
+urllib3==1.26.6
