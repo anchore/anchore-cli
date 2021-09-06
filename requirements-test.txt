@@ -1,0 +1,4 @@
+pytest
+memory_profiler
+coverage==5.3.1
+
