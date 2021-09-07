@@ -27,7 +27,7 @@ RUN tar -z -c -v -C /build_output -f /anchore-buildblob.tgz .
 FROM registry.access.redhat.com/ubi8/ubi:8.4 as anchore-cli-final
 
 ARG CLI_COMMIT
-ARG ANCHORE_CLI_VERSION="0.9.1"
+ARG ANCHORE_CLI_VERSION="0.9.2"
 ARG ANCHORE_CLI_RELEASE="r0"
 
 # Copy artifacts from build step
