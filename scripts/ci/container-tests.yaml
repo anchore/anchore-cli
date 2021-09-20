@@ -1,5 +1,5 @@
 schemaVersion: "2.0.0"
 commandTests:
   - name: "anchore-cli"
-    command: "/anchore-cli/bin/anchore-cli"
+    command: "/usr/local/bin/anchore-cli"
     args: ["-h"]
