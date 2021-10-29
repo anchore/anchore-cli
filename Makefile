@@ -139,6 +139,8 @@ push-prod: anchore-ci ## (Not available outside of CI) Push release Anchore CLI 
 push-rebuild: anchore-ci ## (Not available outside of CI) Rebuild and push prod Anchore CLI docker image to Docker Hub
 	@$(CI_CMD) push-prod-image-rebuild "$(DEV_IMAGE_REPO)" "$(GIT_BRANCH)" "$(GIT_TAG)"
 
+ironbank-artifacts: anchore-ci ## (Not available outside of CI) Create and upload ironbank buildblob artifacts
+	@$(CI_CMD) create-ironbank-artifacts anchore-cli "$(GIT_TAG)"
 
 # Helper targets
 ####################
