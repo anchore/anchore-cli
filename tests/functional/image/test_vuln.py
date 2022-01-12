@@ -18,6 +18,7 @@ class TestNonOsVulnerabilities:
     GHSA-74xw-82v7-hmrm        python-dbusmock-0.15        High            0.15.1        CVE-2015-1326         https://github.com/advisories/GHSA-74xw-82v7-hmrm        python        github:python        /usr/local/lib/python3.6/site-packages/python-dbusmock
     GHSA-7vvr-h4p5-m7fh        aubio-0.4.8                 High            0.4.9         CVE-2018-19801        https://github.com/advisories/GHSA-7vvr-h4p5-m7fh        python        github:python        /usr/local/lib64/python3.6/site-packages/aubio
     GHSA-c6jq-h4jp-72pr        aubio-0.4.8                 High            0.4.9         CVE-2018-19802        https://github.com/advisories/GHSA-c6jq-h4jp-72pr        python        github:python        /usr/local/lib64/python3.6/site-packages/aubio
+    GHSA-6p56-wp2h-9hxr        numpy-1.18.1                Medium          1.21          CVE-2021-33430        https://github.com/advisories/GHSA-6p56-wp2h-9hxr        python        github:python        /usr/local/lib64/python3.6/site-packages/numpy
     """
 
     @pytest.fixture(scope="class")
@@ -36,7 +37,7 @@ class TestNonOsVulnerabilities:
         return len([i for i in lines if item in i])
 
     def test_plain_output(self, stdout):
-        assert len(stdout) == 6
+        assert len(stdout) == 7
 
     def test_severity(self, stdout):
         assert self.item_count(" Critical ", stdout) == 1
@@ -46,31 +47,33 @@ class TestNonOsVulnerabilities:
         os.environ["PYTEST_CONTAINER"] in skip_versions, reason=skip_reason
     )
     def test_github_com(self, stdout):
-        assert self.item_count("https://github.com/", stdout) == 4
+        assert self.item_count("https://github.com/", stdout) == 5
 
     @pytest.mark.skipif(
         os.environ["PYTEST_CONTAINER"] in skip_versions, reason=skip_reason
     )
     def test_vulnerability_ids(self, stdout):
         output = "".join(stdout)
-        assert " GHSA-grmf-4fq6-2r79" in output
-        assert " GHSA-74xw-82v7-hmrm" in output
-        assert " GHSA-7vvr-h4p5-m7fh" in output
-        assert " GHSA-c6jq-h4jp-72pr" in output
+        assert " GHSA-grmf-4fq6-2r79" in output  # aubio-0.4.8
+        assert " GHSA-74xw-82v7-hmrm" in output  # python-dbusmock-0.15
+        assert " GHSA-7vvr-h4p5-m7fh" in output  # aubio-0.4.8
+        assert " GHSA-c6jq-h4jp-72pr" in output  # aubio-0.4.8
+        assert " GHSA-6p56-wp2h-9hxr" in output  # numpy-1.18.1
 
     @pytest.mark.skipif(
         os.environ["PYTEST_CONTAINER"] in skip_versions, reason=skip_reason
     )
     def test_feed_group(self, stdout):
-        assert self.item_count("github:python", stdout) == 4
+        assert self.item_count("github:python", stdout) == 5
 
     def test_type(self, stdout):
-        assert self.item_count(" python ", stdout) == 4
+        assert self.item_count(" python ", stdout) == 5
 
     def test_packages(self, stdout):
         output = "".join(stdout)
         assert self.item_count(" aubio-0.4.8 ", stdout) == 3
         assert "python-dbusmock-0.15" in output
+        assert "numpy-1.18.1" in output
 
     @pytest.mark.skipif(
         os.environ["PYTEST_CONTAINER"] in skip_versions, reason=skip_reason
@@ -82,13 +85,14 @@ class TestNonOsVulnerabilities:
 
     def test_cve_refs(self, stdout):
         output = "".join(stdout)
-        assert " CVE-2018-19800" in output
-        assert " CVE-2015-1326 " in output
-        assert " CVE-2018-19801" in output
-        assert " CVE-2018-19802" in output
+        assert " CVE-2018-19800" in output  # aubio-0.4.8
+        assert " CVE-2015-1326 " in output  # python-dbusmock-0.15
+        assert " CVE-2018-19801" in output  # aubio-0.4.8
+        assert " CVE-2018-19802" in output  # aubio-0.4.8
+        assert " CVE-2021-33430" in output  # numpy-1.18.1
 
     def test_package_paths(self, stdout):
         output = "".join(stdout)
-        assert "/usr/local/lib64/python3.6/site-packages/aubio         " in output
-        # See issue https://github.com/anchore/anchore-cli/issues/149
-        # assert "/usr/local/lib/python3.6/site-packages/python-dbusmock " in output
+        assert "/usr/local/lib64/python3.6/site-packages/aubio" in output
+        assert "/usr/local/lib/python3.6/site-packages/dbusmock" in output
+        assert "/usr/local/lib64/python3.6/site-packages/numpy" in output
