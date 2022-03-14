@@ -64,6 +64,7 @@ version: 2.1
 orbs:
   anchore: anchore/anchore-engine@1
   slack: circleci/slack@4.5
+  grype: anchore/grype@0.2.0
 
 commands:
   run_tests:
@@ -301,6 +302,11 @@ workflows:
           image_name: anchore/anchore-cli-dev:${CIRCLE_SHA1}
           private_registry: true
           timeout: '2000'
+      - grype/list-image-vulns:
+          context: dockerhub
+          requires:
+            - push_dev_image
+          image-name: anchore/anchore-cli-dev:${CIRCLE_SHA1}
 
   nightly_build:
     triggers:
@@ -351,6 +357,11 @@ workflows:
           image_name: anchore/anchore-cli-dev:nightly
           private_registry: true
           timeout: '2000'
+      - grype/list-image-vulns:
+          context: dockerhub
+          requires:
+            - push_dev_image
+          image-name: anchore/anchore-cli-dev:nightly
 
   rc_image_workflow:
     jobs:
@@ -379,6 +390,11 @@ workflows:
           private_registry: true
           timeout: '2000'
           policy_failure: true
+      - grype/list-image-vulns:
+          context: dockerhub
+          requires:
+            - push_dev_image
+          image-name: anchore/anchore-cli-dev:rc
 
   prod_image_workflow:
     jobs:
@@ -459,6 +475,11 @@ workflows:
           private_registry: true
           timeout: '2000'
           policy_failure: true
+      - grype/list-image-vulns:
+          context: dockerhub
+          requires:
+            - push_dev_image
+          image-name: anchore/anchore-cli-dev:${CIRCLE_SHA1}
       - hold_for_approval:
           type: approval
           filters: *filter_rebuild_tags
