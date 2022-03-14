@@ -360,7 +360,7 @@ workflows:
       - grype/list-image-vulns:
           context: dockerhub
           requires:
-            - push_dev_image
+            - push_nightly_image
           image-name: anchore/anchore-cli-dev:nightly
 
   rc_image_workflow:
@@ -393,7 +393,7 @@ workflows:
       - grype/list-image-vulns:
           context: dockerhub
           requires:
-            - push_dev_image
+            - push_rc_image
           image-name: anchore/anchore-cli-dev:rc
 
   prod_image_workflow:
