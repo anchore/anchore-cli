@@ -62,7 +62,6 @@
 # Start circleci configuration
 version: 2.1
 orbs:
-  anchore: anchore/anchore-engine@1
   slack: circleci/slack@4.5
   grype: anchore/grype@0.2.0
 
@@ -295,13 +294,6 @@ workflows:
           filters: *filter_release_branch
           requires:
             - build
-      - anchore/image_scan:
-          context: dockerhub
-          requires:
-            - push_dev_image
-          image_name: anchore/anchore-cli-dev:${CIRCLE_SHA1}
-          private_registry: true
-          timeout: '2000'
       - grype/list-image-vulns:
           context: dockerhub
           requires:
@@ -349,14 +341,6 @@ workflows:
           filters: *filter_nightly
           requires:
             - e2e_tests
-      - anchore/image_scan:
-          context: dockerhub
-          filters: *filter_nightly
-          requires:
-            - push_nightly_image
-          image_name: anchore/anchore-cli-dev:nightly
-          private_registry: true
-          timeout: '2000'
       - grype/list-image-vulns:
           context: dockerhub
           requires:
@@ -381,15 +365,6 @@ workflows:
           filters: *filter_rc_tags
           requires:
             - rc_e2e_tests
-      - anchore/image_scan:
-          context: dockerhub
-          filters: *filter_rc_tags
-          requires:
-            - push_rc_image
-          image_name: anchore/anchore-cli-dev:${CIRCLE_TAG}
-          private_registry: true
-          timeout: '2000'
-          policy_failure: true
       - grype/list-image-vulns:
           context: dockerhub
           requires:
@@ -465,16 +440,6 @@ workflows:
           filters: *filter_rebuild_tags
           requires:
             - e2e_tests
-      - anchore/image_scan:
-          name: anchore_image_scan
-          context: dockerhub
-          filters: *filter_rebuild_tags
-          requires:
-            - push_dev_image
-          image_name: anchore/anchore-cli-dev:${CIRCLE_SHA1}
-          private_registry: true
-          timeout: '2000'
-          policy_failure: true
       - grype/list-image-vulns:
           context: dockerhub
           requires:
