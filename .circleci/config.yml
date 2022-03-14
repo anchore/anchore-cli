@@ -304,9 +304,9 @@ workflows:
           timeout: '2000'
       - grype/list-image-vulns:
           context: dockerhub
-          requires:
-            - push_dev_image
-          image-name: anchore/anchore-cli-dev:${CIRCLE_SHA1}
+          # requires:
+          #   - push_dev_image
+          image-name: anchore/anchore-cli-dev:nightly
 
   nightly_build:
     triggers:
