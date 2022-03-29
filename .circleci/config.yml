@@ -277,19 +277,19 @@ jobs:
     docker:
       - image: cimg/python:3.8.4
     steps:
-    - <<: *setup_remote_docker
-    - checkout
-    - <<: *attach_workspace
-    - <<: *load_docker_image
-    - run:
-        name: Login to Registry
-        command: "echo ${DOCKER_PASS} | docker login --username ${DOCKER_USER} --password-stdin"
-    - grype/scan-image:
-        image-name: << parameters.image_name >>
-        output-format: "table"
-    - run:
-        name: List Grype Vulns
-        command: "cat grype-vulns.output"
+      - setup_remote_docker
+      - checkout
+      - <<: *attach_workspace
+      - <<: *load_docker_image
+      - run:
+          name: Login to Registry
+          command: "echo ${DOCKER_PASS} | docker login --username ${DOCKER_USER} --password-stdin"
+      - grype/scan-image:
+          image-name: << parameters.image_name >>
+          output-format: "table"
+      - run:
+          name: List Grype Vulns
+          command: "cat grype-vulns.output"
 
 workflows:
   default_workflow:
@@ -469,7 +469,7 @@ workflows:
           type: approval
           filters: *filter_rebuild_tags
           requires:
-            - grype_list_image_vulns
+            - grype_vuln_scan
       - push_image:
           name: push_rebuild_image
           make_job: push-rebuild
