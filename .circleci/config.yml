@@ -268,6 +268,29 @@ jobs:
           name: create ironbank artifacts
           command: make ironbank-artifacts
 
+  grype_vuln_scan:
+    description: "Uses grype orb for vuln scans"
+    parameters:
+      image_name:
+        type: string
+        default: "docker:anchore-cli-dev:dev"
+    docker:
+      - image: cimg/python:3.8.4
+    steps:
+    - <<: *setup_remote_docker
+    - checkout
+    - <<: *attach_workspace
+    - <<: *load_docker_image
+    - run:
+        name: Login to Registry
+        command: "echo ${DOCKER_PASS} | docker login --username ${DOCKER_USER} --password-stdin"
+    - grype/scan-image:
+        image-name: << parameters.image_name >>
+        output-format: "table"
+    - run:
+        name: List Grype Vulns
+        command: "cat grype-vulns.output"
+
 workflows:
   default_workflow:
     jobs:
@@ -294,11 +317,11 @@ workflows:
           filters: *filter_release_branch
           requires:
             - build
-      - grype/list-image-vulns:
+
+      - grype_vuln_scan:
           context: dockerhub
           requires:
-            - push_dev_image
-          image-name: anchore/anchore-cli-dev:${CIRCLE_SHA1}
+            - build
 
   nightly_build:
     triggers:
@@ -341,11 +364,10 @@ workflows:
           filters: *filter_nightly
           requires:
             - e2e_tests
-      - grype/list-image-vulns:
+      - grype_vuln_scan:
           context: dockerhub
           requires:
             - push_nightly_image
-          image-name: anchore/anchore-cli-dev:nightly
 
   rc_image_workflow:
     jobs:
@@ -365,11 +387,10 @@ workflows:
           filters: *filter_rc_tags
           requires:
             - rc_e2e_tests
-      - grype/list-image-vulns:
+      - grype_vuln_scan:
           context: dockerhub
           requires:
             - push_rc_image
-          image-name: anchore/anchore-cli-dev:${CIRCLE_TAG}
 
   prod_image_workflow:
     jobs:
@@ -440,12 +461,10 @@ workflows:
           filters: *filter_rebuild_tags
           requires:
             - e2e_tests
-      - grype/list-image-vulns:
-          name: grype_list_image_vulns
+      - grype_vuln_scan:
           context: dockerhub
           requires:
             - push_dev_image
-          image-name: anchore/anchore-cli-dev:${CIRCLE_TAG}
       - hold_for_approval:
           type: approval
           filters: *filter_rebuild_tags
