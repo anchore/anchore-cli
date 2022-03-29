@@ -273,7 +273,7 @@ jobs:
     parameters:
       image_name:
         type: string
-        default: "docker:anchore-cli-dev:dev"
+        default: "docker:anchore-cli:dev"
     docker:
       - image: cimg/python:3.8.4
     steps:
