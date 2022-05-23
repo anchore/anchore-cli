@@ -8,7 +8,8 @@ FROM ${BASE_REGISTRY}/${BASE_IMAGE}:${BASE_TAG} as anchore-cli-builder
 
 ENV LANG=en_US.UTF-8 
 ENV LC_ALL=C.UTF-8
-ENV PIP_VERSION=21.0.1
+ENV PIP_VERSION=22.1.1
+ENV SETUPTOOLS_VERSION=62.3.2
 
 COPY . /buildsource
 WORKDIR /buildsource
@@ -28,11 +29,11 @@ RUN set -ex && \
         make \
         python38 \
         python38-wheel && \
-    pip3 install pip=="${PIP_VERSION}"
+    pip3 install pip=="${PIP_VERSION}" setuptools=="${SETUPTOOLS_VERSION}"
 
 # stage anchore wheels and default configs into /build_output
 RUN set -ex && \
-    pip3 download -d /build_output/wheels pip=="${PIP_VERSION}" && \
+    pip3 download -d /build_output/wheels pip=="${PIP_VERSION}" setuptools=="${SETUPTOOLS_VERSION}" && \
     echo "installing anchore" && \
     pip3 wheel --wheel-dir=/build_output/wheels . && \
     cp ./LICENSE /build_output/ && \
@@ -80,7 +81,7 @@ RUN yum update -y && \
         python38 \
         python38-wheel && \
     yum clean all && \
-    pip3 install --upgrade --no-index --find-links=/build_output/wheels/ pip
+    pip3 install --upgrade --no-index --find-links=/build_output/wheels/ pip setuptools
 
 # Setup container default configs and directories
 RUN set -ex && \
