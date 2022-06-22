@@ -6,6 +6,11 @@
 # syntax dereferences it.
 #
 # Define YAML anchors
+parameters:
+  force_trigger_nightly_build:
+    type: boolean
+    default: false
+
 .global_environment_vars: &global_environment_vars
   PROD_IMAGE_REPO: anchore/engine-cli
   LATEST_RELEASE_MAJOR_VERSION: 0.9
@@ -293,6 +298,9 @@ jobs:
 
 workflows:
   default_workflow:
+    when:
+      not:
+        equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
     jobs:
       - lint:
           py_version: "3.8"
@@ -324,13 +332,12 @@ workflows:
             - build
 
   nightly_build:
-    triggers:
-      - schedule:
-          cron: "0 5 * * *"
-          filters:
-            branches:
-              only:
-                - master
+    when:
+      or:
+        - and:
+            - equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
+            - equal: [ "nightly_build", << pipeline.schedule.name >> ]
+        - << pipeline.parameters.force_trigger_nightly_build >>
     jobs:
       - lint:
           py_version: "3.8"
@@ -370,6 +377,9 @@ workflows:
             - push_nightly_image
 
   rc_image_workflow:
+    when:
+      not:
+        equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
     jobs:
       - build:
           filters: *filter_rc_tags
@@ -393,6 +403,9 @@ workflows:
             - push_rc_image
 
   prod_image_workflow:
+    when:
+      not:
+        equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]  
     jobs:
       - e2e_tests:
           name: prod_e2e_tests
@@ -427,6 +440,9 @@ workflows:
             - hold_for_approval
 
   rebuild_image_workflow:
+    when:
+      not:
+        equal: [ scheduled_pipeline, << pipeline.trigger_source >> ]
     jobs:
       - lint:
           py_version: "3.8"
