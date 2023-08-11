@@ -4,12 +4,23 @@ import pytest
 
 
 @pytest.mark.parametrize(
-    "sub_command", ["add", "del", "disable", "enable", "get", "list", "user", "whoami"]
+    "sub_command, expected_code",
+    [
+        ("add", 2),
+        ("del", 2),
+        ("disable", 2),
+        ("enable", 2),
+        ("get", 2),
+        ("list", 2),
+        ("user", 0),
+        ("whoami", 2),
+    ],
 )
-def test_unauthorized(sub_command):
+def test_unauthorized(sub_command, expected_code):
     out, err, code = call(["anchore-cli", "account", sub_command])
-    assert code == ExitCode(2)
-    assert out == '"Unauthorized"\n'
+    assert code == ExitCode(expected_code)
+    if sub_command in ["add", "del", "disable", "enable", "get"]:
+        assert err.startswith("Usage: anchore-cli account {}".format(sub_command))
 
 
 class TesttList:

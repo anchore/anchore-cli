@@ -19,6 +19,7 @@ from . import (
 
 from anchorecli import version
 import anchorecli.clients  # noqa
+from .utils import ContextObject
 
 
 @click.group(context_settings=dict(help_option_names=["-h", "--help", "help"]))
@@ -73,7 +74,7 @@ def main_entry(
     if config["debug"]:
         logging.basicConfig(level=logging.DEBUG)
 
-    ctx.obj = config
+    ctx.obj = ContextObject(config, None)
 
 
 class Help(click.Command):
