@@ -1,3 +1,11 @@
+Important
+========
+
+**As of 2024, Anchore CLI is no longer maintained.** There will be no future versions released. Users are advised to use AnchoreCTL when interacting with Anchore Enterprise.
+
+For users interested in the supported commercial solution for container scanning and complaiance, schedule a demo to see Anchore Enterprise's broad set of enterprise capabilities including SBOM management, vulnerability management, and compliance management.
+
+
 Overview
 ========
 
