@@ -8,22 +8,30 @@ config = {}
 
 
 @click.group(name="subscription", short_help="Subscription operations")
-@click.pass_obj
-def subscription(ctx_config):
-    global config
-    config = ctx_config
+@click.pass_context
+def subscription(ctx):
+    def execute():
+        global config
+        config = ctx.parent.obj.config
 
-    try:
-        anchorecli.cli.utils.check_access(config)
-    except Exception as err:
-        print(anchorecli.cli.utils.format_error_output(config, "subscription", {}, err))
-        sys.exit(2)
+        try:
+            anchorecli.cli.utils.check_access(config)
+        except Exception as err:
+            print(
+                anchorecli.cli.utils.format_error_output(
+                    config, "subscription", {}, err
+                )
+            )
+            sys.exit(2)
+
+    ctx.obj = anchorecli.cli.utils.ContextObject(ctx.parent.obj.config, execute)
 
 
 @subscription.command(name="activate", short_help="Activate a subscription")
 @click.argument("subscription_type", nargs=1, required=True)
 @click.argument("subscription_key", nargs=1, required=True)
-def activate(subscription_type, subscription_key):
+@click.pass_context
+def activate(ctx, subscription_type, subscription_key):
     """
     SUBSCRIPTION_TYPE: Type of subscription. Valid options:
 
@@ -38,6 +46,8 @@ def activate(subscription_type, subscription_key):
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.apiexternal.activate_subscription(
             config, subscription_type, subscription_key
         )
@@ -66,7 +76,8 @@ def activate(subscription_type, subscription_key):
 @subscription.command(name="deactivate", short_help="Deactivate a subscription")
 @click.argument("subscription_type", nargs=1, required=True)
 @click.argument("subscription_key", nargs=1, required=True)
-def deactivate(subscription_type, subscription_key):
+@click.pass_context
+def deactivate(ctx, subscription_type, subscription_key):
     """
     SUBSCRIPTION_TYPE: Type of subscription. Valid options:
 
@@ -81,6 +92,8 @@ def deactivate(subscription_type, subscription_key):
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.apiexternal.deactivate_subscription(
             config, subscription_type, subscription_key
         )
@@ -112,9 +125,13 @@ def deactivate(subscription_type, subscription_key):
     is_flag=True,
     help="Print additional details about the subscriptions as they're being listed",
 )
-def list_subscriptions(full):
+@click.pass_context
+def list_subscriptions(ctx, full):
     ecode = 0
+
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.apiexternal.get_subscription(config)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret["success"]:

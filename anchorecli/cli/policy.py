@@ -10,17 +10,21 @@ config = {}
 
 @click.group(name="policy", short_help="Policy operations")
 @click.pass_context
-@click.pass_obj
-def policy(ctx_config, ctx):
-    global config
-    config = ctx_config
+def policy(ctx):
+    def execute():
+        global config
+        config = ctx.parent.obj.config
 
-    if ctx.invoked_subcommand not in ["hub"]:
-        try:
-            anchorecli.cli.utils.check_access(config)
-        except Exception as err:
-            print(anchorecli.cli.utils.format_error_output(config, "policy", {}, err))
-            sys.exit(2)
+        if ctx.invoked_subcommand not in ["hub"]:
+            try:
+                anchorecli.cli.utils.check_access(config)
+            except Exception as err:
+                print(
+                    anchorecli.cli.utils.format_error_output(config, "policy", {}, err)
+                )
+                sys.exit(2)
+
+    ctx.obj = anchorecli.cli.utils.ContextObject(ctx.parent.obj.config, execute)
 
 
 @policy.command(name="add", short_help="Add a policy bundle")
@@ -30,10 +34,13 @@ def policy(ctx_config, ctx):
     type=click.Path(exists=True),
     metavar="<Anchore Policy Bundle File>",
 )
-def add(input_policy):
+@click.pass_context
+def add(ctx, input_policy):
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         with open(input_policy, "r") as FH:
             policybundle = json.loads(FH.read())
 
@@ -61,13 +68,16 @@ def add(input_policy):
 @policy.command(name="get", short_help="Get a policy bundle")
 @click.argument("policyid", nargs=1)
 @click.option("--detail", is_flag=True, help="Get policy bundle as JSON")
-def get(policyid, detail):
+@click.pass_context
+def get(ctx, policyid, detail):
     """
     POLICYID: Policy ID to get
     """
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.apiexternal.get_policy(
             config, policyId=policyid, detail=detail
         )
@@ -90,10 +100,13 @@ def get(policyid, detail):
 
 
 @policy.command(name="list", short_help="List all policies")
-def policylist():
+@click.pass_context
+def policylist(ctx):
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.apiexternal.get_policies(config, detail=False)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret["success"]:
@@ -115,13 +128,16 @@ def policylist():
 
 @policy.command(name="activate", short_help="Activate a policyid")
 @click.argument("policyid", nargs=1)
-def activate(policyid):
+@click.pass_context
+def activate(ctx, policyid):
     """
     POLICYID: Policy ID to be activated
     """
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.apiexternal.get_policy(
             config, policyId=policyid, detail=True
         )
@@ -164,13 +180,16 @@ def activate(policyid):
 
 @policy.command(name="del", short_help="Delete a policy bundle")
 @click.argument("policyid", nargs=1)
-def delete(policyid):
+@click.pass_context
+def delete(ctx, policyid):
     """
     POLICYID: Policy ID to delete
     """
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.apiexternal.delete_policy(config, policyId=policyid)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret["success"]:
@@ -206,9 +225,12 @@ def delete(policyid):
     "--trigger",
     help="Pick a specific trigger to describe instead of all, requires the --gate option to be specified",
 )
-def describe(all=False, gate=None, trigger=None):
+@click.pass_context
+def describe(ctx, all=False, gate=None, trigger=None):
     ecode = 0
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.apiexternal.describe_policy_spec(config)
 
         if ret["success"]:
@@ -256,19 +278,36 @@ def describe(all=False, gate=None, trigger=None):
 @policy.group(name="hub", short_help="Anchore Hub Operations")
 @click.pass_context
 def hub(ctx):
-    if ctx.invoked_subcommand not in ["list", "get"]:
+    def execute():
         try:
-            anchorecli.cli.utils.check_access(config)
-        except Exception as err:
-            print(anchorecli.cli.utils.format_error_output(config, "policy", {}, err))
-            sys.exit(2)
+            anchorecli.cli.utils.handle_parent_callback(ctx)
+        except RuntimeError as err:
+            print(
+                anchorecli.cli.utils.format_error_output(config, "policy_hub", {}, err)
+            )
+            ecode = 2
+            anchorecli.cli.utils.doexit(ecode)
+
+        if ctx.invoked_subcommand not in ["list", "get"]:
+            try:
+                anchorecli.cli.utils.check_access(config)
+            except Exception as err:
+                print(
+                    anchorecli.cli.utils.format_error_output(config, "policy", {}, err)
+                )
+                sys.exit(2)
+
+    ctx.obj = anchorecli.cli.utils.ContextObject(ctx.parent.obj.config, execute)
 
 
 @hub.command(name="list")
-def hublist():
+@click.pass_context
+def hublist(ctx):
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.hub.get_policies(config)
         if ret["success"]:
             print(
@@ -291,10 +330,13 @@ def hublist():
 
 @hub.command(name="get")
 @click.argument("bundlename", nargs=1)
-def hubget(bundlename):
+@click.pass_context
+def hubget(ctx, bundlename):
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.hub.get_policy(config, bundlename)
         if ret["success"]:
             print(
@@ -323,10 +365,13 @@ def hubget(bundlename):
     help="Install specified bundleid in place of existing policy bundle with same ID, if present",
     is_flag=True,
 )
-def hubinstall(bundlename, target_id, force):
+@click.pass_context
+def hubinstall(ctx, bundlename, target_id, force):
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.hub.install_policy(
             config, bundlename, target_id=target_id, force=force
         )

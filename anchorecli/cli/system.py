@@ -17,24 +17,31 @@ class WaitOnDisabledFeedError(Exception):
 
 @click.group(name="system", short_help="System operations")
 @click.pass_context
-@click.pass_obj
-def system(ctx_config, ctx):
-    global config
-    config = ctx_config
+def system(ctx):
+    def execute():
+        global config
+        config = ctx.parent.obj.config
 
-    if ctx.invoked_subcommand not in ["wait"]:
-        try:
-            anchorecli.cli.utils.check_access(config)
-        except Exception as err:
-            print(anchorecli.cli.utils.format_error_output(config, "system", {}, err))
-            sys.exit(2)
+        if ctx.invoked_subcommand not in ["wait"]:
+            try:
+                anchorecli.cli.utils.check_access(config)
+            except Exception as err:
+                print(
+                    anchorecli.cli.utils.format_error_output(config, "system", {}, err)
+                )
+                sys.exit(2)
+
+    ctx.obj = anchorecli.cli.utils.ContextObject(ctx.parent.obj.config, execute)
 
 
 @system.command(name="status", short_help="Check current anchore-engine system status")
-def status():
+@click.pass_context
+def status(ctx):
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.apiexternal.system_status(config)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret["success"]:
@@ -59,10 +66,13 @@ def status():
     name="errorcodes",
     short_help="Describe available anchore system error code names and descriptions",
 )
-def describe_errorcodes():
+@click.pass_context
+def describe_errorcodes(ctx):
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.apiexternal.describe_error_codes(config)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret["success"]:
@@ -111,7 +121,8 @@ def describe_errorcodes():
     default="catalog,apiext,policy_engine,simplequeue,analyzer",
     help='Wait for the specified CSV list of anchore-engine services to have at least one service reporting as available (default="catalog,apiext,policy_engine,simplequeue,analyzer")',
 )
-def wait(timeout, interval, feedsready, servicesready):
+@click.pass_context
+def wait(ctx, timeout, interval, feedsready, servicesready):
     """
     Wait for an image to go to analyzed or analysis_failed status with a specific timeout
 
@@ -124,6 +135,8 @@ def wait(timeout, interval, feedsready, servicesready):
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         sys.stderr.write(
             "Starting checks to wait for anchore-engine to be available timeout={} interval={}\n".format(
                 timeout, interval
@@ -290,10 +303,13 @@ def wait(timeout, interval, feedsready, servicesready):
 )
 @click.argument("host_id", nargs=1)
 @click.argument("servicename", nargs=1)
-def delete(host_id, servicename):
+@click.pass_context
+def delete(ctx, host_id, servicename):
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.apiexternal.delete_system_service(
             config, host_id, servicename
         )
@@ -319,15 +335,22 @@ def delete(host_id, servicename):
 
 
 @system.group(name="feeds", short_help="Feed data operations")
-def feeds():
-    pass
+@click.pass_context
+def feeds(ctx):
+    # since there's nothing to execute here, just pass the parent config and callback down
+    ctx.obj = anchorecli.cli.utils.ContextObject(
+        ctx.parent.obj.config, ctx.parent.obj.execute_callback
+    )
 
 
 @feeds.command(name="list", short_help="Get a list of loaded data feeds.")
-def list():
+@click.pass_context
+def list(ctx):
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.apiexternal.system_feeds_list(config)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret["success"]:
@@ -356,11 +379,14 @@ def list():
     is_flag=True,
     help="Flush all previous data, including CVE matches, and resync from scratch",
 )
-def feedsync(flush):
+@click.pass_context
+def feedsync(ctx, flush):
     global input
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         answer = "n"
         try:
             print(
@@ -407,10 +433,13 @@ def feedsync(flush):
 @click.option("--enable", help="Enable the feed/group", is_flag=True)
 @click.option("--disable", help="Disable the feed/group", is_flag=True)
 @click.argument("feed")
-def toggle_enabled(feed, group=None, enable=None, disable=None):
+@click.pass_context
+def toggle_enabled(ctx, feed, group=None, enable=None, disable=None):
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         if not enable and not disable:
             raise Exception("Must set one of --enable or --disable")
         elif enable and disable:
@@ -463,9 +492,12 @@ def toggle_enabled(feed, group=None, enable=None, disable=None):
 )
 @click.option("--group", help="Delete data for a specific group only")
 @click.argument("feed")
-def delete_data(feed, group=None):
+@click.pass_context
+def delete_data(ctx, feed, group=None):
     ecode = 0
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         if group:
             ret = anchorecli.clients.apiexternal.system_feed_group_delete(
                 config, feed, group

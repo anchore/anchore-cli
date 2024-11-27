@@ -13,16 +13,19 @@ _logger = logging.getLogger(__name__)
 
 
 @click.group(name="image", short_help="Image operations")
-@click.pass_obj
-def image(ctx_config):
-    global config
-    config = ctx_config
+@click.pass_context
+def image(ctx):
+    def execute():
+        global config
+        config = ctx.parent.obj.config
 
-    try:
-        anchorecli.cli.utils.check_access(config)
-    except Exception as err:
-        print(anchorecli.cli.utils.format_error_output(config, "image", {}, err))
-        sys.exit(2)
+        try:
+            anchorecli.cli.utils.check_access(config)
+        except Exception as err:
+            print(anchorecli.cli.utils.format_error_output(config, "image", {}, err))
+            sys.exit(2)
+
+    ctx.obj = anchorecli.cli.utils.ContextObject(ctx.parent.obj.config, execute)
 
 
 @image.command(short_help="Wait for an image to analyze")
@@ -39,7 +42,8 @@ def image(ctx_config):
     default=5.0,
     help="Interval between checks, in seconds (default=5)",
 )
-def wait(input_image, timeout, interval):
+@click.pass_context
+def wait(ctx, input_image, timeout, interval):
     """
     Wait for an image to go to analyzed or analysis_failed status with a specific timeout
 
@@ -50,6 +54,8 @@ def wait(input_image, timeout, interval):
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         itype = anchorecli.cli.utils.discover_inputimage_format(config, input_image)
         image = input_image
         # timeout = float(timeout)
@@ -135,13 +141,16 @@ def wait(input_image, timeout, interval):
     is_flag=True,
     help="If set, instruct the engine to disable tag_update subscription for the added tag.",
 )
-def add(input_image, force, dockerfile, annotation, noautosubscribe):
+@click.pass_context
+def add(ctx, input_image, force, dockerfile, annotation, noautosubscribe):
     """
     INPUT_IMAGE: Input image can be in the following formats: registry/repo:tag
     """
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         itype = anchorecli.cli.utils.discover_inputimage_format(config, input_image)
 
         dockerfile_contents = None
@@ -202,10 +211,13 @@ def add(input_image, force, dockerfile, annotation, noautosubscribe):
 @click.option(
     "--infile", required=True, type=click.Path(exists=True), metavar="<file.json>"
 )
-def import_image(infile):
+@click.pass_context
+def import_image(ctx, infile):
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         with open(infile, "r") as FH:
             anchore_data = json.loads(FH.read())
 
@@ -237,13 +249,16 @@ def import_image(infile):
     is_flag=True,
     help="Show history of images that match the input image, if input image is of the form registry/repo:tag",
 )
-def get(input_image, show_history):
+@click.pass_context
+def get(ctx, input_image, show_history):
     """
     INPUT_IMAGE: Input image can be in the following formats: Image Digest, ImageID or registry/repo:tag
     """
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         itype = anchorecli.cli.utils.discover_inputimage_format(config, input_image)
         image = input_image
 
@@ -292,10 +307,13 @@ def get(input_image, show_history):
     is_flag=True,
     help="Show all images in the system instead of just the latest for a given tag",
 )
-def imagelist(full, show_all):
+@click.pass_context
+def imagelist(ctx, full, show_all):
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.apiexternal.get_images(config)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret["success"]:
@@ -321,7 +339,8 @@ def imagelist(full, show_all):
 @image.command(name="content", short_help="Get contents of image")
 @click.argument("input_image", nargs=1)
 @click.argument("content_type", nargs=1, required=False)
-def query_content(input_image, content_type):
+@click.pass_context
+def query_content(ctx, input_image, content_type):
     """
     INPUT_IMAGE: Input image can be in the following formats: Image Digest, ImageID or registry/repo:tag
 
@@ -332,6 +351,8 @@ def query_content(input_image, content_type):
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         itype, image, imageDigest = anchorecli.cli.utils.discover_inputimage(
             config, input_image
         )
@@ -385,7 +406,8 @@ def query_content(input_image, content_type):
 @image.command(name="metadata", short_help="Get metadata about an image")
 @click.argument("input_image", nargs=1)
 @click.argument("metadata_type", nargs=1, required=False)
-def query_metadata(input_image, metadata_type):
+@click.pass_context
+def query_metadata(ctx, input_image, metadata_type):
     """
     INPUT_IMAGE: Input image can be in the following formats: Image Digest, ImageID or registry/repo:tag
 
@@ -395,6 +417,8 @@ def query_metadata(input_image, metadata_type):
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         itype, image, imageDigest = anchorecli.cli.utils.discover_inputimage(
             config, input_image
         )
@@ -450,7 +474,8 @@ def query_metadata(input_image, metadata_type):
     type=bool,
     help="Show only vulnerabilities marked by upstream vendor as applicable (default=True)",
 )
-def query_vuln(input_image, vuln_type, vendor_only):
+@click.pass_context
+def query_vuln(ctx, input_image, vuln_type, vendor_only):
     """
     INPUT_IMAGE: Input image can be in the following formats: Image Digest, ImageID or registry/repo:tag
 
@@ -460,6 +485,8 @@ def query_vuln(input_image, vuln_type, vendor_only):
     """
     ecode = 0
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         itype, image, imageDigest = anchorecli.cli.utils.discover_inputimage(
             config, input_image
         )
@@ -510,7 +537,8 @@ def query_vuln(input_image, vuln_type, vendor_only):
     help="Force deletion of image by cancelling any subscription/notification settings prior to image delete",
 )
 @click.option("--all", is_flag=True, help="Delete all images")
-def delete(input_image, force, all):
+@click.pass_context
+def delete(ctx, input_image, force, all):
     """
     INPUT_IMAGE: Input image can be in the following formats: Image Digest, ImageID or registry/repo:tag
     """
@@ -518,6 +546,8 @@ def delete(input_image, force, all):
 
     if all:
         try:
+            anchorecli.cli.utils.handle_parent_callback(ctx)
+
             ret = anchorecli.clients.apiexternal.get_images(config)
             ecode = anchorecli.cli.utils.get_ecode(ret)
             if not ret["success"]:
@@ -558,6 +588,8 @@ def delete(input_image, force, all):
                 ecode = 2
     else:
         try:
+            anchorecli.cli.utils.handle_parent_callback(ctx)
+
             if input_image is None:
                 raise Exception("Missing argument INPUT_IMAGE")
 

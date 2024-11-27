@@ -1731,3 +1731,22 @@ def parse_dockerimage_string(instr):
         ret["pullstring"] = None
 
     return ret
+
+
+class ContextObject:
+    config = None
+    execute_callback = None
+
+    def __init__(self, config, execute_callback):
+        self.config = config
+        self.execute_callback = execute_callback
+
+
+def handle_parent_callback(ctx):
+    if ctx.parent and ctx.parent.obj and ctx.parent.obj.execute_callback:
+        ctx.parent.obj.execute_callback()
+    else:
+        # This error should never be raised, and would likely be indicative of a regression.
+        raise RuntimeError(
+            "Unable to execute parent callback. This is an unexpected logical error."
+        )

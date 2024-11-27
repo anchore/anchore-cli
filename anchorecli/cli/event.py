@@ -9,16 +9,19 @@ config = {}
 
 
 @click.group(name="event", short_help="Event operations")
-@click.pass_obj
-def event(ctx_config):
-    global config
-    config = ctx_config
+@click.pass_context
+def event(ctx):
+    def execute():
+        global config
+        config = ctx.parent.obj.config
 
-    try:
-        anchorecli.cli.utils.check_access(config)
-    except Exception as err:
-        print(anchorecli.cli.utils.format_error_output(config, "event", {}, err))
-        sys.exit(2)
+        try:
+            anchorecli.cli.utils.check_access(config)
+        except Exception as err:
+            print(anchorecli.cli.utils.format_error_output(config, "event", {}, err))
+            sys.exit(2)
+
+    ctx.obj = anchorecli.cli.utils.ContextObject(ctx.parent.obj.config, execute)
 
 
 @event.command(name="list", short_help="List events")
@@ -79,7 +82,9 @@ def event(ctx_config):
     help="Display all columns for wider output.",
 )
 @click.argument("resource", nargs=1, required=False)
+@click.pass_context
 def list(
+    ctx,
     since=None,
     before=None,
     level=None,
@@ -97,6 +102,8 @@ def list(
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         if level:
             if level.lower() not in ["info", "error"]:
                 raise Exception(
@@ -145,13 +152,16 @@ def list(
 
 @event.command(name="get", short_help="Get an event")
 @click.argument("event_id", nargs=1)
-def get(event_id):
+@click.pass_context
+def get(ctx, event_id):
     """
     EVENT_ID: ID of the event to be fetched
     """
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.apiexternal.get_event(config, event_id=event_id)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret["success"]:
@@ -191,7 +201,8 @@ def get(event_id):
 )
 @click.argument("event_id", nargs=1, required=False)
 @click.option("--all", help="Delete all events", is_flag=True, default=False)
-def delete(since=None, before=None, dontask=False, event_id=None, all=False):
+@click.pass_context
+def delete(ctx, since=None, before=None, dontask=False, event_id=None, all=False):
     global input
     """
     EVENT_ID: ID of the event to be deleted. --since and --before options will be ignored if this is specified
@@ -201,6 +212,8 @@ def delete(since=None, before=None, dontask=False, event_id=None, all=False):
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         if event_id:
             ret = anchorecli.clients.apiexternal.delete_event(config, event_id=event_id)
         else:

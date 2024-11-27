@@ -9,16 +9,19 @@ config = {}
 
 
 @click.group(name="registry", short_help="Registry operations")
-@click.pass_obj
-def registry(ctx_config):
-    global config
-    config = ctx_config
+@click.pass_context
+def registry(ctx):
+    def execute():
+        global config
+        config = ctx.parent.obj.config
 
-    try:
-        anchorecli.cli.utils.check_access(config)
-    except Exception as err:
-        print(anchorecli.cli.utils.format_error_output(config, "registry", {}, err))
-        sys.exit(2)
+        try:
+            anchorecli.cli.utils.check_access(config)
+        except Exception as err:
+            print(anchorecli.cli.utils.format_error_output(config, "registry", {}, err))
+            sys.exit(2)
+
+    ctx.obj = anchorecli.cli.utils.ContextObject(ctx.parent.obj.config, execute)
 
 
 @registry.command(name="add", short_help="Add a registry")
@@ -41,7 +44,9 @@ def registry(ctx_config):
     "--registry-name",
     help="Specify a human name for this registry (default=same as 'registry')",
 )
+@click.pass_context
 def add(
+    ctx,
     registry,
     registry_user,
     registry_pass,
@@ -59,9 +64,10 @@ def add(
     """
     ecode = 0
 
-    registry_types = ["docker_v2", "awsecr"]
-
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
+        registry_types = ["docker_v2", "awsecr"]
         if registry_type and registry_type not in registry_types:
             raise Exception(
                 "input registry type not supported (supported registry_types: "
@@ -133,7 +139,9 @@ def add(
     "--registry-name",
     help="Specify a human name for this registry (default=same as 'registry')",
 )
+@click.pass_context
 def upd(
+    ctx,
     registry,
     registry_user,
     registry_pass,
@@ -152,6 +160,8 @@ def upd(
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         if not registry_name:
             registry_name = registry
 
@@ -186,13 +196,16 @@ def upd(
 
 @registry.command(name="del", short_help="Delete a registry")
 @click.argument("registry", nargs=1, required=True)
-def delete(registry):
+@click.pass_context
+def delete(ctx, registry):
     """
     REGISTRY: Full hostname/port of registry. Eg. myrepo.example.com:5000
     """
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.apiexternal.delete_registry(config, registry)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret["success"]:
@@ -214,10 +227,13 @@ def delete(registry):
 
 
 @registry.command(name="list", short_help="List all current registries")
-def registrylist():
+@click.pass_context
+def registrylist(ctx):
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.apiexternal.get_registry(config)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret["success"]:
@@ -240,13 +256,16 @@ def registrylist():
 
 @registry.command(name="get", short_help="Get a registry")
 @click.argument("registry", nargs=1, required=True)
-def get(registry):
+@click.pass_context
+def get(ctx, registry):
     """
     REGISTRY: Full hostname/port of registry. Eg. myrepo.example.com:5000
     """
     ecode = 0
 
     try:
+        anchorecli.cli.utils.handle_parent_callback(ctx)
+
         ret = anchorecli.clients.apiexternal.get_registry(config, registry=registry)
         ecode = anchorecli.cli.utils.get_ecode(ret)
         if ret["success"]:
