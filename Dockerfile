@@ -48,7 +48,7 @@ RUN set -ex && \
 FROM ${BASE_REGISTRY}/${BASE_IMAGE}:${BASE_TAG} as anchore-cli-final
 
 ARG CLI_COMMIT
-ARG ANCHORE_CLI_VERSION="0.9.4"
+ARG ANCHORE_CLI_VERSION="0.9.5"
 ARG ANCHORE_CLI_RELEASE="r0"
 
 # Container metadata section
