@@ -1,6 +1,6 @@
 ARG BASE_REGISTRY=registry.access.redhat.com
 ARG BASE_IMAGE=ubi8/ubi
-ARG BASE_TAG=8.5
+ARG BASE_TAG=8.7-1112
 
 #### Start first stage
 #### Anchore wheels, binary dependencies, etc. are staged to /build_output for second stage
@@ -26,8 +26,8 @@ RUN set -ex && \
     yum install -y \
         gcc \
         make \
-        python38 \
-        python38-wheel && \
+        python39 \
+        python39-wheel && \
     pip3 install pip=="${PIP_VERSION}"
 
 # stage anchore wheels and default configs into /build_output
@@ -77,8 +77,8 @@ COPY --from=anchore-cli-builder /build_output /build_output
 # install OS dependencies
 RUN yum update -y && \
     yum install -y \
-        python38 \
-        python38-wheel && \
+        python39 \
+        python39-wheel && \
     yum clean all && \
     pip3 install --upgrade --no-index --find-links=/build_output/wheels/ pip
 
